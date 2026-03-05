@@ -1,77 +1,101 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-import axios from 'axios';
-import { API_BASE_URL } from './config';
+import { useState } from "react";
+import "./App.css";
+import axios from "axios";
+import { API_BASE_URL } from "./config";
 
 interface Vehiculo {
   id: number;
-  marca: string;
-  modelo: string;
-  precio: number;
+  brand: string;
+  model: string;
+  price: number;
 }
 
 function App() {
-  const [vehiculos, setVehiculos] = useState<Vehiculo[]>([]); // estado para los datos
+  const [vehiculos, setVehiculos] = useState<Vehiculo[]>([]);
+  const [searchId, setSearchId] = useState("");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false); // estado de carga
 
   const handleGetVehiculos = () => {
-    axios.get(`${API_BASE_URL}/vehiculos`)
-      .then(res => {
-        setVehiculos(res.data); // guardamos los datos en el estado
+    setErrorMessage(null);
+    setLoading(true);
+    axios
+      .get(`${API_BASE_URL}/vehicles`)
+      .then((res) => {
+        setVehiculos(res.data);
       })
-      .catch(err => {
-        console.error('Error al obtener vehículos:', err);
+      .catch(() => {
+        setErrorMessage("Error al obtener vehículos");
+        setVehiculos([]);
+      })
+      .finally(() => {
+        setLoading(false);
       });
   };
 
   const handleGetVehiculo = () => {
-    let input_id = document.getElementById("search-id") as HTMLInputElement
-    const id = input_id.value
-    axios.get(`${API_BASE_URL}/vehiculos/${id}`)
-      .then(res => {
-        setVehiculos([res.data]); // guardamos los datos en el estado
+    if (!searchId) {
+      alert("Introduce un ID");
+      return;
+    }
+
+    setErrorMessage(null);
+    setLoading(true);
+    axios
+      .get(`${API_BASE_URL}/vehicles/${searchId}`)
+      .then((res) => {
+        setVehiculos([res.data]);
       })
-      .catch(err => {
-        console.error('Error al obtener vehículos:', err);
+      .catch((err) => {
+        setVehiculos([]);
+        if (err.response?.status === 404) {
+          setErrorMessage("Vehículo no encontrado");
+        } else {
+          setErrorMessage("Error al obtener vehículo");
+        }
+      })
+      .finally(() => {
+        setLoading(false);
       });
   };
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <p>Esto es una prueba</p>
+      <h1>REDLINE MOTORS</h1>
 
-      <button onClick={handleGetVehiculos}>
-        Obtener todos
-      </button>
+      <button onClick={handleGetVehiculos}>Obtener todos</button>
       <p>
-        <input id='search-id' type="text" placeholder='Id' />
-        <button onClick={handleGetVehiculo}>
-          Buscar
-        </button>
+        <input
+          type="text"
+          placeholder="Id"
+          value={searchId}
+          onChange={(e) => setSearchId(e.target.value)}
+        />
+        <button onClick={handleGetVehiculo}>Buscar</button>
       </p>
 
       <div>
         <h2>Vehículos</h2>
-        <ul>
-          {vehiculos.map(v => (
-            <li key={v.id}>
-              {v.marca} {v.modelo} - ${v.precio}
-            </li>
-          ))}
-        </ul>
+
+        {loading && <p>Cargando vehículos...</p>} {/* ✅ mostrar mientras carga */}
+        {errorMessage && <p style={{ color: "red" }}>{errorMessage}</p>}
+
+        {!loading && !errorMessage && vehiculos.length === 0 && (
+          <p>No hay vehículos disponibles</p>
+        )}
+
+        {!loading && vehiculos.length > 0 && (
+          <ul>
+            {vehiculos.map((v) => (
+              <li key={v.id}>
+                {v.brand} {v.model} - ${v.price}
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
