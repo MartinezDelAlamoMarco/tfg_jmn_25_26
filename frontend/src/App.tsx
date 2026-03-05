@@ -25,6 +25,18 @@ function App() {
       });
   };
 
+  const handleGetVehiculo = () => {
+    let input_id = document.getElementById("search-id") as HTMLInputElement
+    const id = input_id.value
+    axios.get(`${API_BASE_URL}/vehiculos/${id}`)
+      .then(res => {
+        setVehiculos([res.data]); // guardamos los datos en el estado
+      })
+      .catch(err => {
+        console.error('Error al obtener vehículos:', err);
+      });
+  };
+
   return (
     <>
       <div>
@@ -39,8 +51,14 @@ function App() {
       <p>Esto es una prueba</p>
 
       <button onClick={handleGetVehiculos}>
-        Mandar petición GET
+        Obtener todos
       </button>
+      <p>
+        <input id='search-id' type="text" placeholder='Id' />
+        <button onClick={handleGetVehiculo}>
+          Buscar
+        </button>
+      </p>
 
       <div>
         <h2>Vehículos</h2>

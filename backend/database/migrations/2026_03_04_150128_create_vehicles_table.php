@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('vehicles', function (Blueprint $table) {
             $table->id();
-            $table->string('marca');
-            $table->string('modelo');
-            $table->decimal('precio');
+            $table->string('brand');
+            $table->string('model');
+            $table->decimal('price');
             $table->timestamps();
         });
     }

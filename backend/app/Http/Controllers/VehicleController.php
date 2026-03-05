@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Vehicle;
 use Illuminate\Http\Request;
 
-class VehiculoController extends Controller
+class VehicleController extends Controller
 {
     public function index()
     {
@@ -20,5 +20,10 @@ class VehiculoController extends Controller
         $vehiculos = Vehicle::all();
 
         return response()->json($vehiculos);
+    }
+
+    public function find(string $id) {
+        $vehiculo = Vehicle::find($id);
+        return response()->json($vehiculo);
     }
 }
