@@ -116,7 +116,7 @@ function App() {
                   (e) => {
                     const  selected = e.target.value; 
                     setBrandId(selected); 
-                    if (selected) {
+                    if (brandId) {
                       handleGetVehiclesByBrand(selected)
                     } else {
                       handleGetVehicles()
