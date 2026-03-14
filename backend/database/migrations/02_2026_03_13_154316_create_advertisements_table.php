@@ -24,7 +24,7 @@ return new class extends Migration
             $table->integer('doors');
             $table->string('color');
             $table->text('description');
-            $table->string('condition');
+            $table->string('vehicle_condition');
             $table->string('province');
             $table->integer('views');
             $table->timestamps();
