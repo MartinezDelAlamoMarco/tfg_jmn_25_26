@@ -11,19 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('rents', function (Blueprint $table) {
-            $table->id('rent_id');
+        Schema::create('transactions', function (Blueprint $table) {
+            $table->id('transaction_id');
             $table->unsignedBigInteger('advertisement_id');
-            $table->unsignedBigInteger('owner_id');
-            $table->unsignedBigInteger('renter_id');
-            $table->date('start_date');
-            $table->date('end_date');
+            $table->unsignedBigInteger('buyer_id');
+            $table->unsignedBigInteger('seller_id');
             $table->decimal('price', 8,2);
             $table->timestamps();
 
             $table->foreign('advertisement_id')->references('advertisement_id')->on('advertisements')->onDelete('cascade')->onUpdate('cascade');
-            $table->foreign('owner_id')->references('user_id')->on('users')->onDelete('cascade')->onUpdate('cascade');
-            $table->foreign('renter_id')->references('user_id')->on('users')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('buyer_id')->references('id')->on('users')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('seller_id')->references('id')->on('users')->onDelete('cascade')->onUpdate('cascade');
         });
     }
 
@@ -32,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('rents');
+        Schema::dropIfExists('transactions');
     }
 };

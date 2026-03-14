@@ -15,12 +15,12 @@ return new class extends Migration
             $table->id('review_id');
             $table->unsignedBigInteger('reviewer_id');
             $table->unsignedBigInteger('reviewed_user_id');
-            $table->number('rating');
+            $table->integer('rating');
             $table->string('comment');
             $table->timestamps();
 
-            $table->foreign('reviewer_id')->references('user_id')->on('users')->onDelete('cascade')->onUpdate('cascade');
-            $table->foreign('reviewed_user_id')->references('user_id')->on('users')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('reviewer_id')->references('id')->on('users')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('reviewed_user_id')->references('id')->on('users')->onDelete('cascade')->onUpdate('cascade');
         });
     }
 

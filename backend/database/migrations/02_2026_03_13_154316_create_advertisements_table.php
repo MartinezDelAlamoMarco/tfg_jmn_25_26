@@ -16,21 +16,21 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('model_id');
             $table->decimal('price', 8,2);
-            $table->number('km');
-            $table->number('year');
+            $table->integer('km');
+            $table->integer('year');
             $table->string('fuel_type');
             $table->string('transmission');
-            $table->number('power_hp');
-            $table->number('doors');
+            $table->integer('power_hp');
+            $table->integer('doors');
             $table->string('color');
             $table->text('description');
             $table->string('condition');
             $table->string('province');
-            $table->number('views');
+            $table->integer('views');
             $table->timestamps();
 
-            $table->foreign('user_id')->references('user_id')->on('users')->onDelete('cascade')->onUpdate('cascade');
-            $table->foreign('model_id')->references('model_id')->on('models')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('model_id')->references('id')->on('vehicle_models')->onDelete('cascade')->onUpdate('cascade');
         });
     }
 

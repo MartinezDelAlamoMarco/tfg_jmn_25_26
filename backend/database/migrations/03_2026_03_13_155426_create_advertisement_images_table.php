@@ -11,17 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('transactions', function (Blueprint $table) {
-            $table->id('transaction_id');
+        Schema::create('advertisement_images', function (Blueprint $table) {
+            $table->id('image_id');
             $table->unsignedBigInteger('advertisement_id');
-            $table->unsignedBigInteger('buyer_id');
-            $table->unsignedBigInteger('seller_id');
-            $table->decimal('price', 8,2);
+            $table->string('image_url');
+            $table->integer('position');
             $table->timestamps();
 
             $table->foreign('advertisement_id')->references('advertisement_id')->on('advertisements')->onDelete('cascade')->onUpdate('cascade');
-            $table->foreign('buyer_id')->references('user_id')->on('users')->onDelete('cascade')->onUpdate('cascade');
-            $table->foreign('seller_id')->references('user_id')->on('users')->onDelete('cascade')->onUpdate('cascade');
         });
     }
 
@@ -30,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('transactions');
+        Schema::dropIfExists('advertisement_images');
     }
 };

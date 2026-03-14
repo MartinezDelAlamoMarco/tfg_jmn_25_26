@@ -11,13 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('advertisement_images', function (Blueprint $table) {
-            $table->id('image_id');
+        Schema::create('favourites', function (Blueprint $table) {
+            $table->id('favourite_id');
+            $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('advertisement_id');
-            $table->string('image_url');
-            $table->number('position');
             $table->timestamps();
 
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade')->onUpdate('cascade');
             $table->foreign('advertisement_id')->references('advertisement_id')->on('advertisements')->onDelete('cascade')->onUpdate('cascade');
         });
     }
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('advertisement_images');
+        Schema::dropIfExists('favourites');
     }
 };
