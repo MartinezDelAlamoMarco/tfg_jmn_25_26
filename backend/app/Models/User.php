@@ -45,4 +45,20 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+    public function rents(){
+        return $this->hasMany(Rent::class);
+    }
+    public function reviews(){
+        return $this->hasMany(Review::class);
+    }
+    public function transactions(){
+        return $this->hasMany(Transactions::class);
+    }
+    public function favourites(){
+        return $this->hasMany(Favourite::class);
+    }
+    public function advertisements(){
+        return $this->hasMany(Advertisement::class);
+    }
+    
 }
