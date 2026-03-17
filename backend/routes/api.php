@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdvertisementController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\MyAdvertisements;
@@ -19,3 +20,6 @@ Route::get('/brands', [VehicleController::class, 'brands']);
 Route::get('/users/{userId}/advertisements', [MyAdvertisements::class, 'index']);
 
 Route::get('/vehicles/{id}', [VehicleController::class, 'show']);
+
+Route::get('/advertisements', [AdvertisementController::class, 'index']);
+Route::get('/advertisements/brand/{brand_id}', [AdvertisementController::class, 'byBrand'])->whereNumber('brand_id');

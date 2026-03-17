@@ -9,10 +9,16 @@ interface Brand {
   name: string;
 }
 
-interface Vehiculo {
-  id: number;
-  name: string;
-  brand: Brand;
+interface Advertisement {
+  advertisement_id: number;
+  model: {
+    name: string;
+    brand: Brand;
+  };
+  price: number;
+  description: string;
+  vehicle_condition: string;
+  views: number;
 }
 
 const Home = () => {
@@ -21,11 +27,11 @@ const Home = () => {
 
   useEffect(() => {
     handleGetBrands();
-    handleGetVehicles();
+    handleGetAdvertisements();
   }, []);
 
   const [brands, setBrands] = useState<Brand[]>([]);
-  const [vehiculos, setVehicles] = useState<Vehiculo[]>([]);
+  const [advertisements, setAdvertisements] = useState<Advertisement[]>([]);
   const [brandId, setBrandId] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -43,34 +49,34 @@ const Home = () => {
       });
   };
 
-  const handleGetVehicles = () => {
+  const handleGetAdvertisements = () => {
     setErrorMessage(null);
     setLoading(true);
     axios
-      .get(`${API_BASE_URL}/vehicles`)
+      .get(`${API_BASE_URL}/advertisements`)
       .then((res) => {
-        setVehicles(res.data);
+        setAdvertisements(res.data);
       })
       .catch(() => {
         setErrorMessage("Error al obtener vehículos");
-        setVehicles([]);
+        setAdvertisements([]);
       })
       .finally(() => {
         setLoading(false);
       });
   };
 
-  const handleGetVehiclesByBrand = (selectedBrandId: string) => {
+  const handleGetAdvertisementsByBrand = (selectedBrandId: string) => {
     setErrorMessage(null);
     setLoading(true);
     axios
-      .get(`${API_BASE_URL}/vehicles/brand/${selectedBrandId}`)
+      .get(`${API_BASE_URL}/advertisements/brand/${selectedBrandId}`)
       .then((res) => {
-        setVehicles(res.data);
+        setAdvertisements(res.data);
       })
       .catch(() => {
         setErrorMessage("Error al obtener vehículos");
-        setVehicles([]);
+        setAdvertisements([]);
       })
       .finally(() => {
         setLoading(false);
@@ -104,9 +110,9 @@ const Home = () => {
                   const selected = e.target.value;
                   setBrandId(selected);
                   if (selected) {
-                    handleGetVehiclesByBrand(selected);
+                    handleGetAdvertisementsByBrand(selected);
                   } else {
-                    handleGetVehicles();
+                    handleGetAdvertisements();
                   }
                 }}
                 className="w-full px-4 py-3 bg-zinc-700 border border-zinc-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition duration-200"
@@ -123,7 +129,7 @@ const Home = () => {
             {/* Get All Button */}
             <div className="flex items-end">
               <button
-                onClick={handleGetVehicles}
+                onClick={handleGetAdvertisements}
                 className="w-full px-6 py-3 bg-red-700 hover:bg-red-600 text-white font-medium rounded-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-zinc-800"
               >
                 Ver todos los vehículos
@@ -132,7 +138,7 @@ const Home = () => {
           </div>
         </div>
 
-        {/* Vehicles Section */}
+        {/* Advertisements Section */}
         <div>
           <h2 className="text-3xl font-bold text-white mb-8">Vehículos</h2>
 
@@ -148,26 +154,40 @@ const Home = () => {
             </div>
           )}
 
-          {!loading && !errorMessage && vehiculos.length === 0 && (
+          {!loading && !errorMessage && advertisements.length === 0 && (
             <div className="text-center py-12">
               <p className="text-zinc-400 text-lg">No hay vehículos disponibles</p>
             </div>
           )}
 
-          {!loading && vehiculos.length > 0 && (
+          {!loading && advertisements.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {vehiculos.map((v) => (
-                <div key={v.id} className="bg-zinc-800 rounded-xl p-6 border border-zinc-700 shadow-lg hover:shadow-xl transition duration-300">
-                  <Link to={`/vehicle/${v.id}`} className="mt-6 block w-full text-center py-3 bg-red-700 hover:bg-red-600 rounded-lg font-bold transition-colors">
+              {advertisements.map((v) => (
+                <div key={v.advertisement_id} className="bg-zinc-800 rounded-xl p-6 border border-zinc-700 shadow-lg hover:shadow-xl transition duration-300">
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <h3 className="text-xl font-semibold text-white">{`${v.model.brand.name} ${v.model.name}`}</h3>
+                      <p className="text-sm text-zinc-400 mt-1 line-clamp-2">{v.description}</p>
+                    </div>
+                    <span className="px-3 py-1 text-xs font-semibold uppercase tracking-wide rounded-full bg-red-700/20 text-red-300">
+                      {v.vehicle_condition}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <p className="text-3xl font-extrabold text-white">{Number(v.price).toLocaleString('es-ES')} €</p>
+                      <p className="text-xs text-zinc-500">Vistas: {v.views}</p>
+                    </div>
+                    <p className="text-sm text-zinc-400">ID: {v.advertisement_id}</p>
+                  </div>
+
+                  <Link
+                    to={`/advertisement/${v.advertisement_id}`}
+                    className="mt-auto block w-full text-center py-3 bg-red-700 hover:bg-red-600 rounded-lg font-bold transition-colors"
+                  >
                     Ver detalles
                   </Link>
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xl font-semibold text-white">{v.name}</h3>
-                    <span className="text-red-500 font-medium">{v.brand.name}</span>
-                  </div>
-                  <div className="text-zinc-400">
-                    <p>ID: {v.id}</p>
-                  </div>
                 </div>
               ))}
             </div>

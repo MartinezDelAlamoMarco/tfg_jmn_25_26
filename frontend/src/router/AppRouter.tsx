@@ -21,7 +21,7 @@ export default function AppRouter() {
           <Route path="/register" element={<Register />} />
           <Route path="/password-recovery" element={<PasswordRecovery />} />
           <Route path="/create-profile" element={<CreateProfile />} />
-          <Route path="/vehicle/:id" element={<VehicleDetail />} />
+          <Route path="/advertisement/:id" element={<VehicleDetail />} />
 
         </Route>
 
