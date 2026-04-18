@@ -1,28 +1,35 @@
 import React, { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom' 
 import axios from "axios";
+import { API_BASE_URL } from "../../config";
+import LoadingScreen from "../../components/LoadingScreen"; // Importamos tu nuevo componente
 
 const Login = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [isLoggingIn, setIsLoggingIn] = useState(false); // Estado para la ruletita
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
+    setIsLoggingIn(true); // Arrancamos la carga
+
     try {
-      const response = await axios.post('/login', { email, password })
-      const { token, user } = response.data
+        const response = await axios.post(`${API_BASE_URL}/login`, { email, password });
+        const { token, user } = response.data;
 
-      // Guardar token y datos del usuario
-      localStorage.setItem('auth_token', token)
-      localStorage.setItem('user', JSON.stringify(user))
+        localStorage.setItem('auth_token', token);
+        localStorage.setItem('user', JSON.stringify(user));
 
-      // Redirigir a home
-      alert('Login exitoso')
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+        // Redirección inmediata sin alert
+        navigate('/'); 
     } catch (error) {
-      console.error('Error en login:', error)
-      alert('Credenciales inválidas')
+        setIsLoggingIn(false); // Paramos la carga si falla
+        alert('Credenciales inválidas');
     }
-  }
+  };
 
   useEffect(() => {
     const script = document.createElement('script')
@@ -33,32 +40,38 @@ const Login = () => {
     script.onload = () => {
       function handleCredentialResponse(response: any) {
         console.log("Encoded JWT ID token: " + response.credential)
-        // Aquí puedes enviar el token a tu backend para autenticación
       }
 
       ;(window as any).google.accounts.id.initialize({
-        client_id: "YOUR_GOOGLE_CLIENT_ID", // Reemplaza con tu client ID real
+        client_id: "YOUR_GOOGLE_CLIENT_ID", 
         callback: handleCredentialResponse
       })
       ;(window as any).google.accounts.id.renderButton(
         document.getElementById("buttonDiv"),
-        { theme: "outline", size: "large" }  // customization attributes
+        { theme: "outline", size: "large" }
       )
-      ;(window as any).google.accounts.id.prompt() // also display the One Tap dialog
     }
 
     return () => {
-      // Limpiar el script si el componente se desmonta
-      document.head.removeChild(script)
+      if (document.head.contains(script)) {
+        document.head.removeChild(script)
+      }
     }
   }, [])
+
+  // Si estamos en proceso de login, mostramos la ruletita
+  if (isLoggingIn) {
+    return <LoadingScreen message="Validando credenciales..." />;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12">
       <div className="max-w-md w-full">
         <div className="bg-zinc-800 rounded-2xl shadow-2xl p-8 border border-zinc-700">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-white mb-2">Bienvenido</h1>
+            <h1 className="text-3xl font-bold text-white mb-2 italic uppercase tracking-tighter">
+              Redline <span className="text-red-600">Motors</span>
+            </h1>
             <p className="text-zinc-400">Inicia sesión en tu cuenta</p>
           </div>
 
@@ -95,7 +108,7 @@ const Login = () => {
 
             <button
               type="submit"
-              className="w-full bg-red-700 hover:bg-red-600 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-zinc-800"
+              className="w-full bg-red-700 hover:bg-red-600 text-white font-black uppercase py-3 px-4 rounded-lg transition duration-200 shadow-lg shadow-red-900/20 active:scale-95"
             >
               Iniciar sesión
             </button>
@@ -106,30 +119,17 @@ const Login = () => {
               <div className="w-full border-t border-zinc-600"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-zinc-800 text-zinc-400">O</span>
+              <span className="px-2 bg-zinc-800 text-zinc-400 font-bold uppercase italic">O</span>
             </div>
           </div>
 
-          <button
-            onClick={() => {
-              // Aquí puedes integrar el flujo de OAuth manualmente si no usas el botón oficial
-              //window.location.href = 'https://google.com'
-            }}
-            className="w-full bg-white hover:bg-gray-100 text-black font-semibold py-3 px-4 rounded-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-zinc-800 flex items-center justify-center border border-gray-300"
-          >
-            <img
-              src="https://developers.google.com/identity/images/g-logo.png"
-              alt="Google Logo"
-              className="w-5 h-5 mr-3"
-            />
-            Iniciar sesión con Google
-          </button>
+          <div id="buttonDiv" className="w-full flex justify-center"></div>
 
           <div className="mt-6 text-center">
             <p className="text-zinc-400">
               ¿No tienes cuenta?{' '}
-              <Link to="/register" className="text-red-500 hover:text-red-400 font-medium transition duration-200">
-                Regístrate
+              <Link to="/register" className="text-red-500 hover:text-red-400 font-bold transition duration-200">
+                REGÍSTRATE
               </Link>
             </p>
           </div>

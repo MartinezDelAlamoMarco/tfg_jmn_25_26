@@ -36,10 +36,8 @@ class VehicleController extends Controller
         return response()->json($vehicles);
     }
 
-    // 🔥 ESTA ES LA FUNCIÓN QUE ARREGLA LA VISTA DETALLE 🔥
     public function show($id)
     {
-        // Traemos absolutamente todas las especificaciones técnicas del coche
         $advertisement = Advertisement::with([
             'vehicle.model.brand',
             'vehicle.fuelType',

@@ -11,22 +11,32 @@ class AuthController extends Controller
 {
     public function login(Request $request)
     {
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
-
-        if (Auth::attempt($request->only('email', 'password'))) {
-            $user = User::where('email', $request->email)->firstOrFail();
-            $token = $user->createToken('API Token')->plainTextToken; // Sanctum genera el token
-
-            return response()->json([
-                'user' => $user,
-                'token' => $token,
+        try {
+            $request->validate([
+                'email' => 'required|email',
+                'password' => 'required',
             ]);
-        }
 
-        return response()->json(['error' => 'Credenciales inválidas'], 401);
+            if (Auth::attempt($request->only('email', 'password'))) {
+                /** @var \App\Models\User $user */ // <-- Esta línea le dice a VS Code quién es $user
+                $user = Auth::user();
+
+                // Generamos el token
+                $token = $user->createToken('API Token')->plainTextToken;
+
+                return response()->json([
+                    'user' => $user,
+                    'token' => $token,
+                ], 200);
+            }
+
+            return response()->json(['error' => 'Credenciales inválidas'], 401);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Error interno del servidor',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function register(Request $request)

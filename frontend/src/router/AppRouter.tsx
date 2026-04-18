@@ -7,7 +7,10 @@ import Login from "../pages/nucleo/Login"
 import Register from "../pages/nucleo/Register"
 import PasswordRecovery from "../pages/nucleo/PasswordRecovery"
 import CreateProfile from "../pages/nucleo/CreateProfile"
-import VehicleDetail from "../pages/nucleo/VehicleDetail" // Importamos el nuevo componente
+import VehicleDetail from "../pages/nucleo/VehicleDetail" 
+import AdvertisementsScreen from "../pages/gestionVendedor/AdvertisementsScreen" 
+import CreateAd from "../pages/gestionVendedor/CreateAd";
+import EditAd from '../pages/gestionVendedor/EditAd';
 
 export default function AppRouter() {
   return (
@@ -22,6 +25,9 @@ export default function AppRouter() {
           <Route path="/password-recovery" element={<PasswordRecovery />} />
           <Route path="/create-profile" element={<CreateProfile />} />
           <Route path="/advertisement/:id" element={<VehicleDetail />} />
+          <Route path="/mis-anuncios" element={<AdvertisementsScreen />} />
+          <Route path="/create-ad" element={<CreateAd />} />
+          <Route path="/editar-anuncio/:id" element={<EditAd />} />
 
         </Route>
 
