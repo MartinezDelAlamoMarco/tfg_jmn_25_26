@@ -1,121 +1,82 @@
--- =========================
--- VEHICLE BRANDS
--- =========================
+-- NIVEL 0: TABLAS INDEPENDIENTES Y USUARIOS
+-- Contraseña para todos: 'password'
+INSERT INTO users (id, name, email, password, telephone, role, created_at, updated_at) VALUES
+(1, 'Nuria Admin', 'admin@redlinemotors.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '600111222', 'admin', NOW(), NOW()),
+(2, 'Javier Vendedor', 'javi@redlinemotors.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '600333444', 'user', NOW(), NOW()),
+(3, 'Marco Comprador', 'marco@redlinemotors.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '600555666', 'user', NOW(), NOW());
 
-INSERT INTO vehicle_brands (name, created_at) VALUES
-('Toyota',NOW()),
-('BMW',NOW()),
-('Audi',NOW()),
-('Mercedes',NOW()),
-('Volkswagen',NOW()),
-('Ford',NOW()),
-('Seat',NOW()),
-('Hyundai',NOW());
+INSERT INTO provinces (id, name, created_at, updated_at) VALUES
+(1, 'Madrid', NOW(), NOW()), (2, 'Barcelona', NOW(), NOW()), (3, 'Valencia', NOW(), NOW()), (4, 'Sevilla', NOW(), NOW());
 
--- =========================
--- VEHICLE MODELS
--- =========================
+INSERT INTO fuel_types (id, name, created_at, updated_at) VALUES
+(1, 'Gasolina', NOW(), NOW()), (2, 'Diésel', NOW(), NOW()), (3, 'Híbrido', NOW(), NOW()), (4, 'Eléctrico', NOW(), NOW());
 
-INSERT INTO vehicle_models (name,brand_id,created_at) VALUES
-('Corolla',1,NOW()),
-('Yaris',1,NOW()),
-('Serie 3',2,NOW()),
-('Serie 5',2,NOW()),
-('A3',3,NOW()),
-('A4',3,NOW()),
-('Clase C',4,NOW()),
-('Clase A',4,NOW()),
-('Golf',5,NOW()),
-('Passat',5,NOW()),
-('Focus',6,NOW()),
-('Fiesta',6,NOW()),
-('Leon',7,NOW()),
-('Ibiza',7,NOW()),
-('i30',8,NOW());
+INSERT INTO transmissions (id, name, created_at, updated_at) VALUES
+(1, 'Manual', NOW(), NOW()), (2, 'Automático', NOW(), NOW());
 
--- =========================
--- USERS
--- password = "password"
--- =========================
+INSERT INTO tonalities (id, name, created_at, updated_at) VALUES
+(1, 'Blanco Perla', NOW(), NOW()), (2, 'Negro Mate', NOW(), NOW()), (3, 'Rojo Fuego', NOW(), NOW()), (4, 'Gris Nardo', NOW(), NOW());
 
-INSERT INTO users (name,email,password,created_at) VALUES
-('Juan Perez','juan@test.com','$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.ogB7qkY3HqQ9K7gW',NOW()),
-('Maria Lopez','maria@test.com','$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.ogB7qkY3HqQ9K7gW',NOW()),
-('Carlos Ruiz','carlos@test.com','$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.ogB7qkY3HqQ9K7gW',NOW()),
-('Laura Gomez','laura@test.com','$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.ogB7qkY3HqQ9K7gW',NOW()),
-('Pedro Sanchez','pedro@test.com','$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.ogB7qkY3HqQ9K7gW',NOW());
+INSERT INTO ad_states (id, name, created_at, updated_at) VALUES
+(1, 'Disponible', NOW(), NOW()), (2, 'Reservado', NOW(), NOW()), (3, 'Vendido', NOW(), NOW());
 
--- =========================
--- ADVERTISEMENTS
--- =========================
+INSERT INTO vehicle_brands (id, name, created_at, updated_at) VALUES
+(1, 'Toyota', NOW(), NOW()), (2, 'BMW', NOW(), NOW()), (3, 'Ford', NOW(), NOW());
 
-INSERT INTO advertisements
-(user_id,model_id,price,km,year,fuel_type,transmission,power_hp,doors,color,description,vehicle_condition,province,views,created_at)
-VALUES
-(1,9,14500,85000,2018,'diesel','manual',150,5,'black','Volkswagen Golf muy cuidado','used','Madrid',12,NOW()),
-(2,5,18500,60000,2019,'diesel','manual',150,5,'white','Audi A3 en perfecto estado','used','Barcelona',20,NOW()),
-(3,3,32000,30000,2021,'gasoline','automatic',190,5,'blue','BMW Serie 3 prácticamente nuevo','used','Valencia',5,NOW()),
-(4,13,17000,50000,2020,'diesel','manual',150,5,'red','Seat Leon FR muy equipado','used','Sevilla',7,NOW()),
-(5,11,12000,90000,2017,'diesel','manual',120,5,'grey','Ford Focus económico','used','Bilbao',15,NOW()),
-(1,1,9000,120000,2015,'gasoline','manual',110,5,'silver','Toyota Corolla fiable','used','Madrid',9,NOW()),
-(2,7,28000,40000,2020,'diesel','automatic',200,5,'black','Mercedes Clase C premium','used','Barcelona',11,NOW()),
-(3,6,24000,55000,2019,'diesel','automatic',180,5,'white','Audi A4 muy cómodo','used','Valencia',14,NOW());
 
--- =========================
--- ADVERTISEMENT IMAGES
--- =========================
+-- NIVEL 1: MODELOS (Dependen de marcas)
+INSERT INTO vehicle_models (id, brand_id, name, created_at, updated_at) VALUES
+(1, 1, 'Corolla', NOW(), NOW()),
+(2, 2, 'Serie 3', NOW(), NOW()),
+(3, 3, 'Mustang GT', NOW(), NOW());
 
-INSERT INTO advertisement_images
-(advertisement_id,image_url,position,created_at)
-VALUES
-(1,'https://via.placeholder.com/800x600?text=Car+Image',1,NOW()),
-(2,'https://via.placeholder.com/800x600?text=Car+Image',1,NOW()),
-(3,'https://via.placeholder.com/800x600?text=Car+Image',1,NOW()),
-(4,'https://via.placeholder.com/800x600?text=Car+Image',1,NOW()),
-(5,'https://via.placeholder.com/800x600?text=Car+Image',1,NOW()),
-(6,'https://via.placeholder.com/800x600?text=Car+Image',1,NOW()),
-(7,'https://via.placeholder.com/800x600?text=Car+Image',1,NOW()),
-(8,'https://via.placeholder.com/800x600?text=Car+Image',1,NOW());
 
--- =========================
--- FAVOURITES
--- =========================
+-- NIVEL 2: VEHÍCULOS (Dependen de todo lo anterior)
+-- Coche 1: De Javi (Corolla, Híbrido, Automático, Blanco)
+-- Coche 2: De Javi (BMW, Diésel, Automático, Negro)
+-- Coche 3: De Marco (Mustang, Gasolina, Manual, Rojo)
+INSERT INTO vehicles (id, owner_id, model_id, fuel_type_id, transmission_id, tonality_id, year, km, power_hp, doors, created_at, updated_at) VALUES
+(1, 2, 1, 3, 2, 1, 2021, 45000, 122, 5, NOW(), NOW()), 
+(2, 2, 2, 2, 2, 2, 2019, 95000, 190, 4, NOW(), NOW()), 
+(3, 3, 3, 1, 1, 3, 2018, 60000, 450, 2, NOW(), NOW()); 
 
-INSERT INTO favourites (user_id,advertisement_id,created_at) VALUES
-(1,2,NOW()),
-(1,3,NOW()),
-(2,1,NOW()),
-(3,4,NOW()),
-(4,5,NOW());
 
--- =========================
--- REVIEWS
--- =========================
+-- NIVEL 3: ANUNCIOS E IMÁGENES
+INSERT INTO advertisements (id, vehicle_id, province_id, ad_state_id, price, description, views, created_at, updated_at) VALUES
+(1, 1, 1, 1, 18500.00, 'Toyota Corolla muy cuidado, siempre en garaje. Etiqueta ECO.', 120, NOW(), NOW()),
+(2, 2, 2, 1, 24000.00, 'BMW Serie 3 paquete M. Todas las revisiones al día en casa oficial.', 340, NOW(), NOW()),
+(3, 3, 1, 3, 35000.00, 'Ford Mustang V8. Sonido espectacular, capricho de fin de semana.', 890, NOW(), NOW());
 
-INSERT INTO reviews
-(reviewer_id,reviewed_user_id,rating,comment,created_at)
-VALUES
-(2,1,5,'Muy buen vendedor',NOW()),
-(3,1,4,'Todo correcto',NOW()),
-(1,2,5,'Compra perfecta',NOW()),
-(4,3,4,'Vehículo tal como en el anuncio',NOW());
+-- Fotos sacadas de Unsplash para que queden bonitas en el frontend
+INSERT INTO advertisement_images (id, advertisement_id, image_url, is_main, created_at, updated_at) VALUES
+(1, 1, 'https://images.unsplash.com/photo-1629897048514-3dd7415494d6', true, NOW(), NOW()),
+(2, 2, 'https://images.unsplash.com/photo-1555353540-64fd1b62f790', true, NOW(), NOW()),
+(3, 3, 'https://images.unsplash.com/photo-1584345611124-2c091bc8601c', true, NOW(), NOW());
 
--- =========================
--- TRANSACTIONS
--- =========================
 
-INSERT INTO transactions
-(advertisement_id,buyer_id,seller_id,price,created_at)
-VALUES
-(1,2,1,14500,NOW()),
-(5,4,5,12000,NOW());
+-- NIVEL 4: NEGOCIO E INTERACCIONES
+-- 1. Marco (3) le pide información a Javi (2) por el Corolla (Anuncio 1)
+INSERT INTO ad_requests (id, advertisement_id, sender_id, type, status, message, created_at, updated_at) VALUES
+(1, 1, 3, 'informacion', 'pendiente', 'Hola Javi, ¿el precio del Corolla es algo negociable?', NOW(), NOW());
 
--- =========================
--- RENTS
--- =========================
+-- 2. Transacción: Javi (2) le compra el Mustang (Anuncio 3) a Marco (3)
+INSERT INTO transactions (id, advertisement_id, buyer_id, seller_id, final_price, date, created_at, updated_at) VALUES
+(1, 3, 2, 3, 34000.00, '2026-04-15', NOW(), NOW());
 
-INSERT INTO rents
-(advertisement_id,owner_id,renter_id,start_date,end_date,price,created_at)
-VALUES
-(3,3,2,'2026-04-01','2026-04-10',900,NOW()),
-(7,2,5,'2026-05-05','2026-05-12',1200,NOW());
+-- 3. Review: Tras la compra, Javi (2) valora a Marco (3)
+INSERT INTO reviews (id, reviewer_id, evaluated_id, rating, comment, created_at, updated_at) VALUES
+(1, 2, 3, 5, 'Vendedor de 10. El Mustang estaba impecable, tal cual las fotos.', NOW(), NOW());
+
+-- 4. Favoritos: Marco (3) guarda el BMW (Anuncio 2) en su lista de deseados
+INSERT INTO favourites (id, user_id, advertisement_id, created_at, updated_at) VALUES
+(1, 3, 2, NOW(), NOW());
+
+-- 5. Alquileres: Nuria Admin (1) alquila el BMW (Anuncio 2) de Javi
+INSERT INTO rents (id, advertisement_id, renter_id, start_date, end_date, total_price, created_at, updated_at) VALUES
+(1, 2, 1, '2026-05-01', '2026-05-05', 300.00, NOW(), NOW());
+
+
+-- SOLUCIONAR ERRORES DE LOS ID'S
+SELECT setval('users_id_seq', (SELECT MAX(id) FROM users));
+SELECT setval('vehicles_id_seq', (SELECT MAX(id) FROM vehicles));
+SELECT setval('advertisements_id_seq', (SELECT MAX(id) FROM advertisements));

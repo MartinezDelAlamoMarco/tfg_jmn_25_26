@@ -1,8 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { API_BASE_URL, APP_NAME } from "../../config";
-import { useEffect } from "react";
-import { Link } from "react-router-dom"
+import { Link } from "react-router-dom";
 
 interface Brand {
   id: string;
@@ -10,15 +9,18 @@ interface Brand {
 }
 
 interface Advertisement {
-  advertisement_id: number;
-  model: {
-    name: string;
-    brand: Brand;
-  };
+  id: number;
   price: number;
   description: string;
-  vehicle_condition: string;
   views: number;
+  state: { name: string };
+  images: { image_url: string }[];
+  vehicle: {
+    model: {
+      name: string;
+      brand: Brand;
+    };
+  };
 }
 
 const Home = () => {
@@ -89,7 +91,8 @@ const Home = () => {
         {/* Hero Section */}
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
-            {autoPart}<span className="text-red-700">{marketPart}</span>
+            {autoPart}
+            <span className="text-red-700">{marketPart}</span>
           </h1>
           <p className="text-xl text-zinc-400 max-w-2xl mx-auto">
             Encuentra el vehículo perfecto para ti
@@ -99,7 +102,6 @@ const Home = () => {
         {/* Search and Filter Section */}
         <div className="bg-zinc-800 rounded-2xl p-8 mb-12 border border-zinc-700 shadow-2xl">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Filter by Brand */}
             <div>
               <label className="block text-sm font-medium text-zinc-300 mb-2">
                 Filtrar por marca
@@ -126,7 +128,6 @@ const Home = () => {
               </select>
             </div>
 
-            {/* Get All Button */}
             <div className="flex items-end">
               <button
                 onClick={handleGetAdvertisements}
@@ -156,34 +157,60 @@ const Home = () => {
 
           {!loading && !errorMessage && advertisements.length === 0 && (
             <div className="text-center py-12">
-              <p className="text-zinc-400 text-lg">No hay vehículos disponibles</p>
+              <p className="text-zinc-400 text-lg">
+                No hay vehículos disponibles
+              </p>
             </div>
           )}
 
           {!loading && advertisements.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {advertisements.map((v) => (
-                <div key={v.advertisement_id} className="bg-zinc-800 rounded-xl p-6 border border-zinc-700 shadow-lg hover:shadow-xl transition duration-300">
+                <div
+                  key={v.id}
+                  className="bg-zinc-800 rounded-xl p-6 border border-zinc-700 shadow-lg hover:shadow-xl transition duration-300 flex flex-col"
+                >
+                  {/* Thumbnail de la imagen */}
+                  <div className="h-48 bg-zinc-900 rounded-lg mb-4 overflow-hidden border border-zinc-700">
+                    {v.images && v.images.length > 0 ? (
+                      <img
+                        src={v.images[0].image_url}
+                        alt="Coche"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-zinc-600">
+                        Sin foto
+                      </div>
+                    )}
+                  </div>
+
                   <div className="flex items-start justify-between mb-4">
                     <div>
-                      <h3 className="text-xl font-semibold text-white">{`${v.model.brand.name} ${v.model.name}`}</h3>
-                      <p className="text-sm text-zinc-400 mt-1 line-clamp-2">{v.description}</p>
+                      <h3 className="text-xl font-semibold text-white">
+                        {`${v?.vehicle?.model?.brand?.name || "Marca Desconocida"} ${v?.vehicle?.model?.name || ""}`}
+                      </h3>
+                      <p className="text-sm text-zinc-400 mt-1 line-clamp-2">
+                        {v.description}
+                      </p>
                     </div>
                     <span className="px-3 py-1 text-xs font-semibold uppercase tracking-wide rounded-full bg-red-700/20 text-red-300">
-                      {v.vehicle_condition}
+                      {v?.state?.name || 'Sin Estado'}
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between mb-6">
                     <div>
-                      <p className="text-3xl font-extrabold text-white">{Number(v.price).toLocaleString('es-ES')} €</p>
+                      <p className="text-3xl font-extrabold text-white">
+                        {Number(v.price).toLocaleString("es-ES")} €
+                      </p>
                       <p className="text-xs text-zinc-500">Vistas: {v.views}</p>
                     </div>
-                    <p className="text-sm text-zinc-400">ID: {v.advertisement_id}</p>
+                    <p className="text-sm text-zinc-400">ID: {v.id}</p>
                   </div>
 
                   <Link
-                    to={`/advertisement/${v.advertisement_id}`}
+                    to={`/advertisement/${v.id}`}
                     className="mt-auto block w-full text-center py-3 bg-red-700 hover:bg-red-600 rounded-lg font-bold transition-colors"
                   >
                     Ver detalles

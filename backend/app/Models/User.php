@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+// Importaciones necesarias para la autenticación y tokens
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -10,24 +10,23 @@ use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
+    // HasApiTokens permite generar los tokens para React
     use HasApiTokens, HasFactory, Notifiable;
 
     /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
+     * Los atributos que se pueden rellenar de forma masiva.
+     * Aquí añadimos 'telephone' y 'role'.
      */
     protected $fillable = [
         'name',
         'email',
         'password',
+        'telephone',
+        'role',
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
+     * Atributos que deben ocultarse en las respuestas de la API (JSON).
      */
     protected $hidden = [
         'password',
@@ -35,31 +34,54 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
+     * Atributos que deben convertirse a tipos nativos.
      */
-    protected function casts(): array
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+    ];
+
+    // =========================================================
+    // RELACIONES ELOQUENT (Lógica de Redline Motors)
+    // =========================================================
+
+    /**
+     * Un usuario posee varios vehículos.
+     */
+    public function vehicles()
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return $this->hasMany(Vehicle::class, 'owner_id');
     }
-    public function rents(){
-        return $this->hasMany(Rent::class);
-    }
-    public function reviews(){
-        return $this->hasMany(Review::class);
-    }
-    public function transactions(){
-        return $this->hasMany(Transactions::class);
-    }
-    public function favourites(){
+
+    /**
+     * Un usuario puede guardar muchos anuncios en favoritos.
+     */
+    public function favourites()
+    {
         return $this->hasMany(Favourite::class);
     }
-    public function advertisements(){
-        return $this->hasMany(Advertisement::class);
+
+    /**
+     * Valoraciones que ha RECIBIDO este usuario (como vendedor).
+     */
+    public function reviewsReceived()
+    {
+        return $this->hasMany(Review::class, 'evaluated_id');
     }
-    
+
+    /**
+     * Valoraciones que ha ESCRITO este usuario (como comprador).
+     */
+    public function reviewsGiven()
+    {
+        return $this->hasMany(Review::class, 'reviewer_id');
+    }
+
+    /**
+     * Solicitudes de contacto/reserva que ha enviado el usuario.
+     */
+    public function adRequests()
+    {
+        return $this->hasMany(AdRequest::class, 'sender_id');
+    }
 }
