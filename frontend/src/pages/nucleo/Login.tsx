@@ -23,8 +23,7 @@ const Login = () => {
 
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
-        // Redirección inmediata sin alert
-        navigate('/'); 
+        window.location.href = '/'; 
     } catch (error) {
         setIsLoggingIn(false); // Paramos la carga si falla
         alert('Credenciales inválidas');
