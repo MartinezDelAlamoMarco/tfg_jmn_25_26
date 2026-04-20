@@ -1,5 +1,3 @@
-import React from 'react';
-
 const LoadingScreen = ({ message = "Cargando..." }) => {
   return (
     <div className="min-h-screen bg-zinc-900 flex flex-col items-center justify-center text-white">
