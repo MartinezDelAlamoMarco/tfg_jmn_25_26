@@ -31,6 +31,6 @@ Route::get('/transmissions', [MasterDataController::class, 'getTransmissions']);
 
 // --- CONSULTAS PÚBLICAS (CATÁLOGO GENERAL) ---
 Route::get('/vehicles', [VehicleController::class, 'index']);
-Route::get('/vehicles/{id}', [VehicleController::class, 'show']); // Solo una ruta para el ID
+Route::get('/vehicles/{id}', [VehicleController::class, 'show']);
 Route::get('/advertisements', [AdvertisementController::class, 'index']);
 Route::get('/advertisements/brand/{brand_id}', [AdvertisementController::class, 'byBrand']);

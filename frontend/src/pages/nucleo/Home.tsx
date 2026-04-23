@@ -8,19 +8,16 @@ interface Brand {
   name: string;
 }
 
+// Nueva interfaz plana a juego con la Base de Datos
 interface Advertisement {
   id: number;
   price: number;
   description: string;
   views: number;
-  state: { name: string };
-  images: { image_url: string }[];
-  vehicle: {
-    model: {
-      name: string;
-      brand: Brand;
-    };
-  };
+  state_name: string;
+  images: { image_url: string; is_main: boolean }[];
+  model_name: string;
+  brand_name: string;
 }
 
 const Home = () => {
@@ -88,7 +85,6 @@ const Home = () => {
   return (
     <div className="min-h-screen text-white ">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Hero Section */}
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
             {autoPart}
@@ -99,7 +95,6 @@ const Home = () => {
           </p>
         </div>
 
-        {/* Search and Filter Section */}
         <div className="bg-zinc-800 rounded-2xl p-8 mb-12 border border-zinc-700 shadow-2xl">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
@@ -139,7 +134,6 @@ const Home = () => {
           </div>
         </div>
 
-        {/* Advertisements Section */}
         <div>
           <h2 className="text-3xl font-bold text-white mb-8">Vehículos</h2>
 
@@ -170,7 +164,6 @@ const Home = () => {
                   key={v.id}
                   className="bg-zinc-800 rounded-xl p-6 border border-zinc-700 shadow-lg hover:shadow-xl transition duration-300 flex flex-col"
                 >
-                  {/* Thumbnail de la imagen */}
                   <div className="h-48 bg-zinc-900 rounded-lg mb-4 overflow-hidden border border-zinc-700">
                     {v.images && v.images.length > 0 ? (
                       <img
@@ -187,15 +180,16 @@ const Home = () => {
 
                   <div className="flex items-start justify-between mb-4">
                     <div>
+                      {/* Aquí usamos las variables planas correctas */}
                       <h3 className="text-xl font-semibold text-white">
-                        {`${v?.vehicle?.model?.brand?.name || "Marca Desconocida"} ${v?.vehicle?.model?.name || ""}`}
+                        {`${v.brand_name || "Marca"} ${v.model_name || ""}`}
                       </h3>
                       <p className="text-sm text-zinc-400 mt-1 line-clamp-2">
                         {v.description}
                       </p>
                     </div>
                     <span className="px-3 py-1 text-xs font-semibold uppercase tracking-wide rounded-full bg-red-700/20 text-red-300">
-                      {v?.state?.name || 'Sin Estado'}
+                      {v.state_name || 'Sin Estado'}
                     </span>
                   </div>
 

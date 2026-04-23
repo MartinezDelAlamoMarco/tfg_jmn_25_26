@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\VehicleBrand;
 use App\Models\VehicleModel;
-use App\Models\Advertisement;
+use App\Models\AdvertisementView; // Importamos la Vista
 use Illuminate\Http\Request;
 
 class VehicleController extends Controller
@@ -38,15 +38,8 @@ class VehicleController extends Controller
 
     public function show($id)
     {
-        $advertisement = Advertisement::with([
-            'vehicle.model.brand',
-            'vehicle.fuelType',
-            'vehicle.transmission',
-            'vehicle.tonality',
-            'province',
-            'state',
-            'images'
-        ])->findOrFail($id);
+        // Aquí cambiamos para que los detalles carguen desde la Vista
+        $advertisement = AdvertisementView::findOrFail($id);
 
         return response()->json($advertisement);
     }

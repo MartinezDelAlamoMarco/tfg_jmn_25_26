@@ -3,34 +3,29 @@ import { useParams, Link } from "react-router-dom";
 import axios from "axios";
 import { API_BASE_URL } from "../../config";
 
+// Nueva interfaz plana
 interface Advertisement {
   id: number;
   price: string;
   description: string;
   views: number;
-  state: { name: string };
-  province: { name: string };
+  state_name: string;
+  province_name: string;
   images: { image_url: string; is_main: boolean }[];
-  vehicle: {
-    km: number;
-    year: number;
-    power_hp: number;
-    doors: number;
-    fuel_type: { name: string }; // <--- Antes fuelType
-    transmission: { name: string };
-    tonality: { name: string };
-    model: {
-      name: string;
-      brand: { name: string };
-    };
-  };
+  km: number;
+  year: number;
+  power_hp: number;
+  doors: number;
+  fuel_type_name: string;
+  transmission_name: string;
+  tonality_name: string;
+  model_name: string;
+  brand_name: string;
 }
 
 const VehicleDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const [advertisement, setAdvertisement] = useState<Advertisement | null>(
-    null,
-  );
+  const [advertisement, setAdvertisement] = useState<Advertisement | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -69,9 +64,6 @@ const VehicleDetail = () => {
       </div>
     );
   }
-
-  // Usamos el Optional Chaining (?.) para evitar que la pantalla se quede en negro
-  const car = advertisement?.vehicle;
 
   return (
     <div className="min-h-screen text-white py-12 px-4 sm:px-6 lg:px-8">
@@ -114,53 +106,52 @@ const VehicleDetail = () => {
             <div className="bg-zinc-800 rounded-2xl p-8 border border-zinc-700 shadow-xl">
               <div className="flex justify-between items-start mb-4">
                 <span className="px-3 py-1 bg-red-700/20 text-red-500 rounded-full text-xs font-bold uppercase tracking-wider">
-                  {advertisement?.state?.name || "Estado"}
+                  {advertisement.state_name || "Estado"}
                 </span>
                 <span className="text-zinc-500 text-sm">
-                  Vistas: {advertisement?.views}
+                  Vistas: {advertisement.views}
                 </span>
               </div>
 
               <h1 className="text-4xl font-bold mb-2 uppercase tracking-tight">
-                {car?.model?.brand?.name} {car?.model?.name}
+                {advertisement.brand_name} {advertisement.model_name}
               </h1>
               <p className="text-zinc-400 text-lg mb-6 flex items-center">
                 <span className="mr-2">📍</span>{" "}
-                {advertisement?.province?.name || "Ubicación"}
+                {advertisement.province_name || "Ubicación"}
               </p>
 
               <div className="text-5xl font-extrabold text-white mb-8">
-                {Number(advertisement?.price).toLocaleString("es-ES")}{" "}
+                {Number(advertisement.price).toLocaleString("es-ES")}{" "}
                 <span className="text-red-700">€</span>
               </div>
 
-              {/* CUADROS TÉCNICOS CORREGIDOS CON ?. Y snake_case */}
               <div className="grid grid-cols-2 gap-4 mb-8">
                 <div className="bg-zinc-700/30 p-4 rounded-xl border border-zinc-600">
                   <p className="text-zinc-500 text-xs uppercase font-bold">
                     Kilómetros
                   </p>
                   <p className="text-xl">
-                    {car?.km?.toLocaleString("es-ES") || 0} km
+                    {advertisement.km?.toLocaleString("es-ES") || 0} km
                   </p>
                 </div>
                 <div className="bg-zinc-700/30 p-4 rounded-xl border border-zinc-600">
                   <p className="text-zinc-500 text-xs uppercase font-bold">
                     Año
                   </p>
-                  <p className="text-xl">{car?.year || "-"}</p>
+                  <p className="text-xl">{advertisement.year || "-"}</p>
                 </div>
                 <div className="bg-zinc-700/30 p-4 rounded-xl border border-zinc-600">
                   <p className="text-zinc-500 text-xs uppercase font-bold">
                     Combustible
                   </p>
-                  <p className="text-xl">{car?.fuel_type?.name || "N/A"}</p>
+                  <p className="text-xl">{advertisement.fuel_type_name || "N/A"}</p>
                 </div>
                 <div className="bg-zinc-700/30 p-4 rounded-xl border border-zinc-600">
                   <p className="text-zinc-500 text-xs uppercase font-bold">
                     Potencia
                   </p>
-                  <p className="text-xl">{car?.power_hp || 0} CV</p>
+                  <p className="text-xl">{advertisement.power_hp || 0} CV</p>
                 </div>
               </div>
 
@@ -177,7 +168,7 @@ const VehicleDetail = () => {
               Descripción
             </h2>
             <p className="text-zinc-300 leading-relaxed whitespace-pre-wrap text-lg">
-              {advertisement?.description}
+              {advertisement.description}
             </p>
           </div>
 
@@ -189,23 +180,23 @@ const VehicleDetail = () => {
               <li className="flex justify-between">
                 <span className="text-zinc-500">Transmisión</span>{" "}
                 <span className="font-semibold">
-                  {car?.transmission?.name || "N/A"}
+                  {advertisement.transmission_name || "N/A"}
                 </span>
               </li>
               <li className="flex justify-between">
                 <span className="text-zinc-500">Puertas</span>{" "}
-                <span className="font-semibold">{car?.doors || "-"}</span>
+                <span className="font-semibold">{advertisement.doors || "-"}</span>
               </li>
               <li className="flex justify-between">
                 <span className="text-zinc-500">Color</span>{" "}
                 <span className="font-semibold">
-                  {car?.tonality?.name || "N/A"}
+                  {advertisement.tonality_name || "N/A"}
                 </span>
               </li>
               <li className="flex justify-between">
                 <span className="text-zinc-500">Ubicación</span>{" "}
                 <span className="font-semibold">
-                  {advertisement?.province?.name || "N/A"}
+                  {advertisement.province_name || "N/A"}
                 </span>
               </li>
             </ul>
