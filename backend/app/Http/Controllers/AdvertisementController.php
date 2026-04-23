@@ -9,9 +9,6 @@ class AdvertisementController extends Controller
 {
     public function index()
     {
-        return response()->json([
-        ['brand_name' => 'PRUEBA', 'model_name' => 'FUNCIONA', 'price' => 999, 'id' => 1, 'images' => []]
-    ]);
         // Consulta plana a la vista: rapidísimo
         $advertisements = AdvertisementView::orderBy('created_at', 'desc')->get();
 
