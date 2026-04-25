@@ -55,7 +55,7 @@ class MyAdvertisements extends Controller
             'vehicle_model_id' => 'required',
             'vehicle_brand_id' => 'required', // Viene del frontend, lo necesitamos para la carpeta
             'province_id' => 'required',
-            'images' => 'nullable|array',
+            'images' => 'nullable|array|max:5', // Máximo 5 fotos por anuncio
             'images.*' => 'image|mimes:jpeg,png,jpg,webp|max:5120', // Reglas para cada foto individual
         ]);
 

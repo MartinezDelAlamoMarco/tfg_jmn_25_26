@@ -109,7 +109,7 @@ const AdvertisementsScreen = () => {
                     </h3>
                     
                     <p className="text-zinc-500 text-xs mb-4 flex items-center">
-                      <span className="mr-1">📍</span> {ad.province?.name || 'Ubicación no especificada'}
+                      <span className="mr-1"></span> {ad.province?.name || 'Ubicación no especificada'}
                     </p>
 
                     <p className="text-white font-black text-3xl mb-6">
