@@ -118,7 +118,6 @@ const EditAd = () => {
       await axios.put(`${API_BASE_URL}/my-advertisements/${id}`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      alert('¡Vehículo actualizado con éxito!');
       navigate('/mis-anuncios');
     } catch (error) {
       console.error(error);

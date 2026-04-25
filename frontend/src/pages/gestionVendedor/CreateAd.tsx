@@ -118,7 +118,6 @@ const CreateAd = () => {
           'Content-Type': 'multipart/form-data' 
         }
       });
-      alert('¡Vehículo publicado con éxito!');
       navigate('/mis-anuncios');
     } catch (error) {
       console.error(error);
