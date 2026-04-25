@@ -49,13 +49,14 @@ class MyAdvertisements extends Controller
 
     public function store(Request $request)
     {
-        // 1. Validamos los datos (Añadimos validación para la imagen)
+        // 1. Validamos los datos
         $request->validate([
             'price' => 'required|numeric',
             'vehicle_model_id' => 'required',
             'vehicle_brand_id' => 'required', // Viene del frontend, lo necesitamos para la carpeta
             'province_id' => 'required',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120', // Hasta 5MB
+            'images' => 'nullable|array',
+            'images.*' => 'image|mimes:jpeg,png,jpg,webp|max:5120', // Reglas para cada foto individual
         ]);
 
         try {
@@ -86,30 +87,30 @@ class MyAdvertisements extends Controller
             ]);
 
             // 4. Lógica de subida a Google Drive
-            if ($request->hasFile('image')) {
-                // Buscamos el nombre de la marca en la base de datos
-                $brand = VehicleBrand::find($request->vehicle_brand_id);
-                $brandName = $brand ? $brand->name : 'Sin_Marca';
+            if ($request->hasFile('images')) {
+    $brand = VehicleBrand::find($request->vehicle_brand_id);
+    $brandName = $brand ? $brand->name : 'Sin_Marca';
+    $driveService = new GoogleDriveService();
 
-                // Instanciamos nuestro servicio
-                $driveService = new GoogleDriveService();
-                $file = $request->file('image');
-                $fileName = time() . '_' . $file->getClientOriginalName();
+    // Recorremos cada imagen que nos manda React
+    foreach ($request->file('images') as $index => $file) {
+        // Añadimos uniqid() para que si subes 3 fotos con el mismo nombre no se pisen en Drive
+        $fileName = time() . '_' . uniqid() . '_' . $file->getClientOriginalName();
 
-                // Subimos a Drive ordenado por marca [cite: 3, 118]
-                $uploadData = $driveService->uploadImageByBrand(
-                    $file->getRealPath(),
-                    $fileName,
-                    $brandName
-                );
+        $uploadData = $driveService->uploadImageByBrand(
+            $file->getRealPath(),
+            $fileName,
+            $brandName
+        );
 
-                // Guardamos el registro en advertisement_images (Según tu diagrama)
-                AdvertisementImage::create([
-                    'advertisement_id' => $advertisement->id,
-                    'image_url'        => $uploadData['url'],
-                    'is_main' => true 
-                ]);
-            }
+        // Guardamos en BD. ¡Truco!: La primera imagen del array ($index == 0) será la principal
+        AdvertisementImage::create([
+            'advertisement_id' => $advertisement->id,
+            'image_url'        => $uploadData['url'],
+            'is_main'          => $index === 0 ? true : false
+        ]);
+    }
+}
 
             // Confirmamos los cambios en la Base de Datos
             DB::commit();

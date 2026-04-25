@@ -17,8 +17,9 @@ const CreateAd = () => {
   const [transmissions, setTransmissions] = useState([]);
   const [tonalities, setTonalities] = useState([]);
   
-  const [preview, setPreview] = useState<string | null>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  // --- CAMBIO 1: Arrays para manejar múltiples fotos ---
+  const [previews, setPreviews] = useState<string[]>([]);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -39,7 +40,7 @@ const CreateAd = () => {
   // CARGA DE DATOS INICIALES
   useEffect(() => {
     const fetchAllData = async () => {
-      setPageLoading(true); // Iniciamos carga
+      setPageLoading(true);
       try {
         const [resB, resP, resF, resT, resTon] = await Promise.all([
           axios.get(`${API_BASE_URL}/brands`),
@@ -57,23 +58,40 @@ const CreateAd = () => {
       } catch (error) {
         console.error("Error cargando catálogos", error);
       } finally {
-        setPageLoading(false); // Quitamos carga
+        setPageLoading(false);
       }
     };
     fetchAllData();
   }, []);
 
-  // --- RENDERIZADO DE CARGA ---
   if (pageLoading) {
     return <LoadingScreen message="Preparando el formulario de venta..." />;
   }
 
+  // --- CAMBIO 2: Lógica para múltiples archivos ---
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setSelectedFile(file);
-      setPreview(URL.createObjectURL(file));
+    if (e.target.files && e.target.files.length > 0) {
+      const newFiles = Array.from(e.target.files);
+      
+      // Límite opcional de 5 fotos
+      if (selectedFiles.length + newFiles.length > 5) {
+        alert("Puedes subir un máximo de 5 fotos.");
+        return;
+      }
+
+      // Añadimos las nuevas fotos a las que ya hubiera
+      setSelectedFiles(prev => [...prev, ...newFiles]);
+      
+      // Generamos las previsualizaciones
+      const newPreviews = newFiles.map(file => URL.createObjectURL(file));
+      setPreviews(prev => [...prev, ...newPreviews]);
     }
+  };
+
+  // Función para eliminar una foto específica de la selección
+  const removeImage = (indexToRemove: number) => {
+    setSelectedFiles(prev => prev.filter((_, index) => index !== indexToRemove));
+    setPreviews(prev => prev.filter((_, index) => index !== indexToRemove));
   };
 
   const handleBrandChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -108,7 +126,11 @@ const CreateAd = () => {
     
     const dataToSend = new FormData();
     Object.entries(formData).forEach(([key, value]) => dataToSend.append(key, value));
-    if (selectedFile) dataToSend.append('image', selectedFile);
+    
+    // --- CAMBIO 3: Bucle para enviar todas las fotos a Laravel ---
+    selectedFiles.forEach((file) => {
+      dataToSend.append('images[]', file);
+    });
 
     try {
       const token = localStorage.getItem('auth_token');
@@ -176,21 +198,50 @@ const CreateAd = () => {
             </div>
           </section>
 
+          {/* --- CAMBIO 4: UI de la Galería de Fotos --- */}
           <section className="space-y-6">
-            <h2 className="text-red-500 font-bold uppercase text-xs tracking-widest border-l-4 border-red-600 pl-3">Fotografía Principal</h2>
-            <div className="flex flex-col items-center justify-center border-2 border-dashed border-zinc-700 rounded-2xl p-6 bg-zinc-900/40">
-              {preview ? (
-                <div className="relative">
-                  <img src={preview} alt="Vista previa" className="rounded-xl max-h-52 shadow-2xl" />
-                  <button type="button" onClick={() => {setPreview(null); setSelectedFile(null);}} className="absolute -top-3 -right-3 bg-red-600 rounded-full w-8 h-8 font-bold border-2 border-zinc-800 flex items-center justify-center hover:bg-red-500 transition-colors">
-                    ✕
-                  </button>
+            <div className="flex items-center justify-between">
+              <h2 className="text-red-500 font-bold uppercase text-xs tracking-widest border-l-4 border-red-600 pl-3">Fotografías</h2>
+              <span className="text-xs text-zinc-400">{selectedFiles.length} / 5</span>
+            </div>
+            
+            <div className="border-2 border-dashed border-zinc-700 rounded-2xl p-6 bg-zinc-900/40 min-h-[200px] flex flex-col justify-center">
+              {previews.length > 0 ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                  {previews.map((preview, index) => (
+                    <div key={index} className="relative group">
+                      <img src={preview} alt={`Foto ${index + 1}`} className="rounded-xl object-cover w-full h-32 shadow-2xl border border-zinc-700" />
+                      
+                      {/* Botón de borrar foto */}
+                      <button type="button" onClick={() => removeImage(index)} className="absolute -top-2 -right-2 bg-red-600 rounded-full w-7 h-7 font-bold border-2 border-zinc-800 flex items-center justify-center hover:bg-red-500 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100 z-10">
+                        ✕
+                      </button>
+                      
+                      {/* Etiqueta de foto principal */}
+                      {index === 0 && (
+                        <div className="absolute bottom-2 left-2 bg-black/80 backdrop-blur-sm text-white text-[10px] uppercase tracking-wider px-2 py-1 rounded-md font-bold border border-zinc-700">
+                          Principal
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  
+                  {/* Botón para añadir más fotos si hay menos de 5 */}
+                  {selectedFiles.length < 5 && (
+                    <label className="cursor-pointer border-2 border-dashed border-zinc-600 rounded-xl flex flex-col items-center justify-center h-32 hover:bg-zinc-800 transition group">
+                      <span className="text-3xl text-zinc-500 group-hover:text-white transition-colors">+</span>
+                      <span className="text-xs text-zinc-500 group-hover:text-white transition-colors mt-1">Añadir más</span>
+                      <input type="file" className="hidden" accept="image/*" multiple onChange={handleFileChange} />
+                    </label>
+                  )}
                 </div>
               ) : (
-                <label className="cursor-pointer text-zinc-500 hover:text-white transition group flex flex-col items-center">
-                  <span className="text-4xl mb-2 group-hover:scale-110 transition-transform">📷</span>
-                  <span className="text-lg">Subir foto del coche</span>
-                  <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
+                <label className="cursor-pointer text-zinc-500 hover:text-white transition group flex flex-col items-center justify-center w-full h-full">
+                  <span className="text-4xl mb-3 group-hover:scale-110 transition-transform">📷</span>
+                  <span className="text-lg font-medium">Subir fotos del coche</span>
+                  <span className="text-sm mt-1 opacity-70">Puedes seleccionar hasta 5 imágenes (JPG, PNG)</span>
+                  {/* El atributo 'multiple' permite seleccionar varias a la vez */}
+                  <input type="file" className="hidden" accept="image/*" multiple onChange={handleFileChange} />
                 </label>
               )}
             </div>
@@ -212,8 +263,13 @@ const CreateAd = () => {
             <textarea name="description" rows={4} required value={formData.description} onChange={handleChange} placeholder="Describe el estado del vehículo, extras, mantenimientos..." className="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-3 outline-none resize-none focus:ring-2 focus:ring-red-600" />
           </section>
 
-          <button type="submit" disabled={loading} className="w-full bg-red-700 hover:bg-red-600 py-5 rounded-2xl font-black uppercase tracking-widest transition-all shadow-lg shadow-red-900/30 active:scale-95 disabled:opacity-50">
-            {loading ? 'Arrancando Motor...' : 'Publicar Anuncio'}
+          <button type="submit" disabled={loading} className="w-full bg-red-700 hover:bg-red-600 py-5 rounded-2xl font-black uppercase tracking-widest transition-all shadow-lg shadow-red-900/30 active:scale-95 disabled:opacity-50 flex justify-center items-center gap-3">
+            {loading ? (
+              <>
+                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                Arrancando Motor...
+              </>
+            ) : 'Publicar Anuncio'}
           </button>
         </form>
       </div>
