@@ -7,6 +7,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Models\Vehicle;
 use App\Models\Advertisement;
+use App\Models\VehicleBrand;          // Añadido para buscar la marca
+use App\Models\AdvertisementImage;    // Añadido para guardar la imagen
+use App\Services\GoogleDriveService;  // Añadido para conectar con Drive
 
 class MyAdvertisements extends Controller
 {
@@ -14,7 +17,6 @@ class MyAdvertisements extends Controller
     {
         $userId = Auth::id();
 
-        // ESTO ES PARA DIAGNÓSTICO: Si userId es null, devolverá un error 403
         if (!$userId) {
             return response()->json(['error' => 'No detecto tu usuario', 'auth_check' => Auth::check()], 403);
         }
@@ -32,7 +34,6 @@ class MyAdvertisements extends Controller
     {
         $userId = Auth::id();
 
-        // Buscamos el anuncio pero asegurándonos de que el vehículo sea del usuario
         $ad = Advertisement::where('id', $id)
             ->whereHas('vehicle', function ($query) use ($userId) {
                 $query->where('owner_id', $userId);
@@ -43,68 +44,98 @@ class MyAdvertisements extends Controller
         }
 
         $ad->delete();
-
         return response()->json(['message' => 'Anuncio eliminado correctamente'], 200);
     }
+
     public function store(Request $request)
     {
-        // 1. Validamos solo lo que realmente existe en la BD
+        // 1. Validamos los datos (Añadimos validación para la imagen)
         $request->validate([
             'price' => 'required|numeric',
             'vehicle_model_id' => 'required',
+            'vehicle_brand_id' => 'required', // Viene del frontend, lo necesitamos para la carpeta
             'province_id' => 'required',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120', // Hasta 5MB
         ]);
 
         try {
-            return DB::transaction(function () use ($request) {
+            // Iniciamos la transacción manualmente para mayor control
+            DB::beginTransaction();
 
-                // 2. Crear el Vehículo (Tabla: vehicles)
-                // Usamos los nombres exactos de tu CREATE TABLE
-                $vehicle = Vehicle::create([
-                    'owner_id'         => Auth::id(),
-                    'model_id'         => $request->vehicle_model_id,
-                    'fuel_type_id'     => $request->fuel_type_id,
-                    'transmission_id'  => $request->transmission_id,
-                    'tonality_id'      => $request->tonality_id,
-                    'year'             => $request->year,
-                    'km'               => $request->mileage, // Mapeamos mileage de React a km de SQL
-                    'power_hp'         => $request->hp,      // Mapeamos hp de React a power_hp de SQL
-                    'doors'            => $request->doors,
+            // 2. Crear el Vehículo (Tabla: vehicles)
+            $vehicle = Vehicle::create([
+                'owner_id'         => Auth::id(),
+                'model_id'         => $request->vehicle_model_id,
+                'fuel_type_id'     => $request->fuel_type_id,
+                'transmission_id'  => $request->transmission_id,
+                'tonality_id'      => $request->tonality_id,
+                'year'             => $request->year,
+                'km'               => $request->mileage, 
+                'power_hp'         => $request->hp,      
+                'doors'            => $request->doors,
+            ]);
+
+            // 3. Crear el Anuncio (Tabla: advertisements)
+            $advertisement = Advertisement::create([
+                'vehicle_id'   => $vehicle->id,
+                'province_id'  => $request->province_id,
+                'ad_state_id'  => 1,
+                'price'        => $request->price,
+                'description'  => $request->description,
+                'views'        => 0,
+            ]);
+
+            // 4. Lógica de subida a Google Drive
+            if ($request->hasFile('image')) {
+                // Buscamos el nombre de la marca en la base de datos
+                $brand = VehicleBrand::find($request->vehicle_brand_id);
+                $brandName = $brand ? $brand->name : 'Sin_Marca';
+
+                // Instanciamos nuestro servicio
+                $driveService = new GoogleDriveService();
+                $file = $request->file('image');
+                $fileName = time() . '_' . $file->getClientOriginalName();
+
+                // Subimos a Drive ordenado por marca [cite: 3, 118]
+                $uploadData = $driveService->uploadImageByBrand(
+                    $file->getRealPath(),
+                    $fileName,
+                    $brandName
+                );
+
+                // Guardamos el registro en advertisement_images (Según tu diagrama)
+                AdvertisementImage::create([
+                    'advertisement_id' => $advertisement->id,
+                    'image_url'        => $uploadData['url'],
+                    'drive_file_id'    => $uploadData['file_id'],
+                    // Si tu tabla al final tiene el campo 'is_main' como en el diagrama, descomenta esto:
+                    // 'is_main' => true 
                 ]);
+            }
 
-                // 3. Crear el Anuncio (Tabla: advertisements)
-                // IMPORTANTE: No enviamos 'title' porque tu tabla no lo tiene
-                $advertisement = Advertisement::create([
-                    'vehicle_id'   => $vehicle->id,
-                    'province_id'  => $request->province_id,
-                    'ad_state_id'  => 1,
-                    'price'        => $request->price,
-                    'description'  => $request->description,
-                    'views'        => 0,
-                ]);
+            // Confirmamos los cambios en la Base de Datos
+            DB::commit();
 
-                return response()->json(['message' => '¡Vehículo publicado con éxito!'], 201);
-            });
+            return response()->json(['message' => '¡Vehículo publicado con éxito!'], 201);
+            
         } catch (\Exception $e) {
-            // Esto te enviará el mensaje de error real a la consola de React
+            // Si algo falla (BD o Drive), deshacemos la inserción en BD
+            DB::rollBack();
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
-    // Para cargar los datos en el formulario de edición
     public function show($id)
-{
-    // Usamos load() o with() para traer el vehículo y su modelo
-    $ad = Advertisement::with(['vehicle.model'])->findOrFail($id);
+    {
+        $ad = Advertisement::with(['vehicle.model'])->findOrFail($id);
 
-    if ($ad->vehicle->owner_id !== Auth::id()) {
-        return response()->json(['error' => 'No autorizado'], 403);
+        if ($ad->vehicle->owner_id !== Auth::id()) {
+            return response()->json(['error' => 'No autorizado'], 403);
+        }
+
+        return response()->json($ad);
     }
 
-    return response()->json($ad);
-}
-
-    // Para guardar los cambios
     public function update(Request $request, $id)
     {
         $ad = Advertisement::with('vehicle')->findOrFail($id);
@@ -115,7 +146,6 @@ class MyAdvertisements extends Controller
 
         try {
             DB::transaction(function () use ($request, $ad) {
-                // Actualizar vehículo
                 $ad->vehicle->update([
                     'model_id'         => $request->vehicle_model_id,
                     'fuel_type_id'     => $request->fuel_type_id,
@@ -127,7 +157,6 @@ class MyAdvertisements extends Controller
                     'doors'            => $request->doors,
                 ]);
 
-                // Actualizar anuncio
                 $ad->update([
                     'province_id' => $request->province_id,
                     'price'       => $request->price,

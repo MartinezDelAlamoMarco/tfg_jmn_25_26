@@ -212,7 +212,7 @@ const EditAd = () => {
             <button 
               type="submit" 
               disabled={submitLoading} 
-              className="flex-[2] bg-red-700 hover:bg-red-600 py-5 rounded-2xl font-black uppercase tracking-widest transition shadow-lg shadow-red-900/30 active:scale-95 disabled:opacity-50"
+              className="flex-2 bg-red-700 hover:bg-red-600 py-5 rounded-2xl font-black uppercase tracking-widest transition shadow-lg shadow-red-900/30 active:scale-95 disabled:opacity-50"
             >
               {submitLoading ? 'Guardando...' : 'Guardar Cambios'}
             </button>
