@@ -30,6 +30,7 @@ const VehicleDetail = () => {
   const { id } = useParams<{ id: string }>();
   const [advertisement, setAdvertisement] = useState<Advertisement | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [mainImage, setMainImage] = useState("");
 
   useEffect(() => {
@@ -42,12 +43,21 @@ const VehicleDetail = () => {
         setMainImage(img);
       } catch (err) {
         console.error(err);
+        setError(true);
       } finally {
         setLoading(false);
       }
     };
     fetchVehicle();
   }, [id]);
+
+  if (error) return (
+    <div className="min-h-screen flex flex-col items-center justify-center text-white space-y-6">
+      <p className="text-2xl text-red-500 font-bold uppercase">¡Vaya! Error al cargar el vehículo</p>
+      <p className="text-zinc-400">Es posible que el anuncio ya no exista o haya un problema de conexión.</p>
+      <Link to="/" className="bg-red-700 hover:bg-red-600 px-6 py-3 rounded-xl font-bold transition shadow-lg shadow-red-900/20">Volver al catálogo</Link>
+    </div>
+  );
 
   if (loading || !advertisement) return <div className="min-h-screen flex items-center justify-center text-white">Cargando...</div>;
 
