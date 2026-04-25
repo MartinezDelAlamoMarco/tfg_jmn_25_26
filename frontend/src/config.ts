@@ -1,8 +1,8 @@
 // src/config.ts
 import axios from 'axios';
 
-export const API_BASE_URL: string = 'https://tfg-jmn-25-26.onrender.com/api';
-//export const API_BASE_URL = 'http://127.0.0.1:8000/api';
+//export const API_BASE_URL: string = 'https://tfg-jmn-25-26.onrender.com/api';
+export const API_BASE_URL = 'http://127.0.0.1:8000/api';
 
 export const APP_NAME: string = 'LosAutosDeJavibu';
 
