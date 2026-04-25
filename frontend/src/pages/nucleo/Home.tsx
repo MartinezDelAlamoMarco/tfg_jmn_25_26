@@ -8,13 +8,13 @@ interface Brand {
   name: string;
 }
 
-// Interfaz actualizada para coincidir con el modelo Eloquent de Laravel
+// Interfaz actualizada para el modelo de datos real de Laravel (anidado)
 interface Advertisement {
   id: number;
   price: number;
   description: string;
   views: number;
-  ad_state?: { name: string };
+  state?: { name: string };
   images: { image_url: string; is_main: boolean }[];
   vehicle?: {
     model?: {
@@ -74,7 +74,7 @@ const Home = () => {
         </div>
 
         {/* Filtros */}
-        <div className="bg-zinc-800 rounded-2xl p-8 mb-12 border border-zinc-700">
+        <div className="bg-zinc-800 rounded-2xl p-8 mb-12 border border-zinc-700 shadow-2xl">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-zinc-300 mb-2">Filtrar por marca</label>
@@ -84,7 +84,7 @@ const Home = () => {
                   setBrandId(e.target.value);
                   e.target.value ? handleGetAdvertisementsByBrand(e.target.value) : handleGetAdvertisements();
                 }}
-                className="w-full px-4 py-3 bg-zinc-700 border border-zinc-600 rounded-lg text-white outline-none focus:ring-2 focus:ring-red-500"
+                className="w-full px-4 py-3 bg-zinc-700 border border-zinc-600 rounded-lg text-white focus:ring-2 focus:ring-red-500 transition"
               >
                 <option value="">Todas las marcas</option>
                 {brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
@@ -98,27 +98,21 @@ const Home = () => {
           </div>
         </div>
 
-        {/* Mensaje de error */}
-        {errorMessage && (
-          <div className="mb-6 p-4 bg-red-900/20 border border-red-700 rounded-lg text-red-300">
-            {errorMessage}
-          </div>
-        )}
-
-        {/* Listado */}
-        {loading && (
-          <div className="flex justify-center items-center py-12">
-            <div className="text-zinc-400">Cargando vehículos...</div>
-          </div>
-        )}
+        {/* Listado de Vehículos */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {advertisements.map((v) => (
+          {loading ? (
+            <div className="col-span-full flex justify-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-700"></div>
+            </div>
+          ) : errorMessage ? (
+            <div className="col-span-full bg-red-900/20 border border-red-700 p-4 rounded-xl text-red-400 text-center">{errorMessage}</div>
+          ) : advertisements.map((v) => (
             <div key={v.id} className="bg-zinc-800 rounded-xl p-6 border border-zinc-700 flex flex-col hover:shadow-2xl transition">
               <div className="h-48 bg-zinc-900 rounded-lg mb-4 overflow-hidden border border-zinc-700">
                 {v.images && v.images.length > 0 ? (
                   <img
                     src={v.images.find(img => img.is_main)?.image_url || v.images[0].image_url}
-                    alt="Vehículo"
+                    alt="Coche"
                     className="w-full h-full object-cover"
                   />
                 ) : (
@@ -127,11 +121,11 @@ const Home = () => {
               </div>
 
               <div className="flex justify-between mb-4">
-                <h3 className="text-xl font-semibold">
+                <h3 className="text-xl font-bold">
                   {v.vehicle?.model?.brand?.name} {v.vehicle?.model?.name}
                 </h3>
                 <span className="px-2 py-1 text-[10px] bg-red-700/20 text-red-300 rounded-full font-bold uppercase">
-                  {v.ad_state?.name}
+                  {v.state?.name}
                 </span>
               </div>
 
@@ -140,7 +134,7 @@ const Home = () => {
                 <p className="text-xs text-zinc-500">Vistas: {v.views}</p>
               </div>
 
-              <Link to={`/advertisement/${v.id}`} className="mt-auto block w-full text-center py-3 bg-red-700 hover:bg-red-600 rounded-lg font-bold">
+              <Link to={`/advertisement/${v.id}`} className="mt-auto block w-full text-center py-3 bg-red-700 hover:bg-red-600 rounded-lg font-bold transition">
                 Ver detalles
               </Link>
             </div>

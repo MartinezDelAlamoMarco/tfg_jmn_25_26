@@ -4,16 +4,26 @@ namespace App\Http\Controllers;
 
 use App\Models\VehicleBrand;
 use App\Models\VehicleModel;
-use App\Models\Advertisement; // Cambiamos a Advertisement
+use App\Models\Advertisement; 
 use Illuminate\Http\Request;
 
 class VehicleController extends Controller
 {
-    // ... otros métodos (index, find, etc) se mantienen igual ...
+    public function index()
+    {
+        $vehicles = VehicleModel::orderBy('name')->with('brand')->get();
+        return response()->json($vehicles);
+    }
+
+    public function brands() 
+    {
+        $brands = VehicleBrand::orderBy('name')->get();
+        return response()->json($brands);
+    }
 
     public function show($id)
     {
-        // Cargamos el anuncio por ID incluyendo sus imágenes y datos técnicos
+        // Buscamos el anuncio incluyendo las fotos y los datos del vehículo vinculado
         $advertisement = Advertisement::with([
             'vehicle.model.brand', 
             'vehicle.fuelType', 
@@ -21,7 +31,7 @@ class VehicleController extends Controller
             'vehicle.tonality', 
             'images', 
             'province', 
-            'ad_state'
+            'state'
         ])->findOrFail($id);
 
         return response()->json($advertisement);
