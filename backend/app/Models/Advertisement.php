@@ -12,7 +12,8 @@ class Advertisement extends Model
         'price',
         'vehicle_id',
         'province_id',
-        'ad_state_id'
+        'ad_state_id',
+        'views'
     ];
 
     public function vehicle()

@@ -34,6 +34,9 @@ class VehicleController extends Controller
             'state'
         ])->findOrFail($id);
 
+        // Incrementamos el contador de visitas en la base de datos de forma atómica
+        $advertisement->increment('views');
+
         return response()->json($advertisement);
     }
 }
