@@ -205,7 +205,7 @@ const CreateAd = () => {
               <span className="text-xs text-zinc-400">{selectedFiles.length} / 5</span>
             </div>
             
-            <div className="border-2 border-dashed border-zinc-700 rounded-2xl p-6 bg-zinc-900/40 min-h-[200px] flex flex-col justify-center">
+            <div className="border-2 border-dashed border-zinc-700 rounded-2xl p-6 bg-zinc-900/40 min-h-200px flex flex-col justify-center">
               {previews.length > 0 ? (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                   {previews.map((preview, index) => (

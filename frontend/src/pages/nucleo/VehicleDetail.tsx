@@ -3,204 +3,130 @@ import { useParams, Link } from "react-router-dom";
 import axios from "axios";
 import { API_BASE_URL } from "../../config";
 
-// Nueva interfaz plana
 interface Advertisement {
   id: number;
   price: string;
   description: string;
   views: number;
-  state_name: string;
-  province_name: string;
+  ad_state?: { name: string };
+  province?: { name: string };
   images: { image_url: string; is_main: boolean }[];
-  km: number;
-  year: number;
-  power_hp: number;
-  doors: number;
-  fuel_type_name: string;
-  transmission_name: string;
-  tonality_name: string;
-  model_name: string;
-  brand_name: string;
+  vehicle?: {
+    km: number;
+    year: number;
+    power_hp: number;
+    doors: number;
+    fuel_type?: { name: string };
+    transmission?: { name: string };
+    tonality?: { name: string };
+    model?: {
+      name: string;
+      brand?: { name: string };
+    };
+  };
 }
 
 const VehicleDetail = () => {
   const { id } = useParams<{ id: string }>();
   const [advertisement, setAdvertisement] = useState<Advertisement | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [mainImage, setMainImage] = useState("");
 
   useEffect(() => {
     const fetchVehicle = async () => {
       try {
-        setLoading(true);
         const response = await axios.get(`${API_BASE_URL}/vehicles/${id}`);
         setAdvertisement(response.data);
+        // Establecer imagen principal por defecto
+        const img = response.data.images?.find((i:any) => i.is_main)?.image_url || response.data.images?.[0]?.image_url;
+        setMainImage(img);
       } catch (err) {
-        console.error("Error al cargar el vehículo:", err);
-        setError("No se pudo cargar la información del vehículo.");
+        console.error(err);
       } finally {
         setLoading(false);
       }
     };
-
     fetchVehicle();
   }, [id]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex justify-center items-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-700"></div>
-      </div>
-    );
-  }
-
-  if (error || !advertisement) {
-    return (
-      <div className="min-h-screen flex flex-col justify-center items-center text-white">
-        <p className="text-xl mb-4">{error || "Vehículo no encontrado"}</p>
-        <Link to="/" className="text-red-700 hover:underline">
-          Volver al inicio
-        </Link>
-      </div>
-    );
-  }
+  if (loading || !advertisement) return <div className="min-h-screen flex items-center justify-center text-white">Cargando...</div>;
 
   return (
-    <div className="min-h-screen text-white py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto">
-        <Link
-          to="/"
-          className="flex items-center text-zinc-400 hover:text-white mb-8 transition duration-200"
-        >
-          <span className="mr-2">←</span> Volver al catálogo
-        </Link>
+    <div className="min-h-screen text-white py-12 px-4 max-w-6xl mx-auto">
+      <Link to="/" className="text-zinc-400 hover:text-white mb-8 block">← Volver al catálogo</Link>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          <div className="space-y-4">
-            <div className="aspect-video bg-zinc-800 rounded-2xl border border-zinc-700 flex items-center justify-center shadow-2xl overflow-hidden">
-              {advertisement.images && advertisement.images.length > 0 ? (
-                <img
-                  src={advertisement.images[0].image_url}
-                  alt="Coche"
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <span className="text-zinc-500 italic text-lg">
-                  Imagen del vehículo
-                </span>
-              )}
-            </div>
-            <div className="grid grid-cols-4 gap-2">
-              {[1, 2, 3, 4].map((i) => (
-                <div
-                  key={i}
-                  className="aspect-square bg-zinc-800 rounded-lg border border-zinc-700 opacity-50 flex items-center justify-center"
-                >
-                  <span className="text-xs text-zinc-600">Foto {i + 1}</span>
-                </div>
-              ))}
-            </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        {/* GALERÍA DE IMÁGENES */}
+        <div className="space-y-4">
+          <div className="aspect-video bg-zinc-800 rounded-2xl overflow-hidden border border-zinc-700 shadow-2xl">
+            {mainImage ? (
+              <img src={mainImage} alt="Coche" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-zinc-500 italic">Sin imagen</div>
+            )}
           </div>
-
-          <div className="flex flex-col">
-            <div className="bg-zinc-800 rounded-2xl p-8 border border-zinc-700 shadow-xl">
-              <div className="flex justify-between items-start mb-4">
-                <span className="px-3 py-1 bg-red-700/20 text-red-500 rounded-full text-xs font-bold uppercase tracking-wider">
-                  {advertisement.state_name || "Estado"}
-                </span>
-                <span className="text-zinc-500 text-sm">
-                  Vistas: {advertisement.views}
-                </span>
-              </div>
-
-              <h1 className="text-4xl font-bold mb-2 uppercase tracking-tight">
-                {advertisement.brand_name} {advertisement.model_name}
-              </h1>
-              <p className="text-zinc-400 text-lg mb-6 flex items-center">
-                <span className="mr-2">📍</span>{" "}
-                {advertisement.province_name || "Ubicación"}
-              </p>
-
-              <div className="text-5xl font-extrabold text-white mb-8">
-                {Number(advertisement.price).toLocaleString("es-ES")}{" "}
-                <span className="text-red-700">€</span>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 mb-8">
-                <div className="bg-zinc-700/30 p-4 rounded-xl border border-zinc-600">
-                  <p className="text-zinc-500 text-xs uppercase font-bold">
-                    Kilómetros
-                  </p>
-                  <p className="text-xl">
-                    {advertisement.km?.toLocaleString("es-ES") || 0} km
-                  </p>
-                </div>
-                <div className="bg-zinc-700/30 p-4 rounded-xl border border-zinc-600">
-                  <p className="text-zinc-500 text-xs uppercase font-bold">
-                    Año
-                  </p>
-                  <p className="text-xl">{advertisement.year || "-"}</p>
-                </div>
-                <div className="bg-zinc-700/30 p-4 rounded-xl border border-zinc-600">
-                  <p className="text-zinc-500 text-xs uppercase font-bold">
-                    Combustible
-                  </p>
-                  <p className="text-xl">{advertisement.fuel_type_name || "N/A"}</p>
-                </div>
-                <div className="bg-zinc-700/30 p-4 rounded-xl border border-zinc-600">
-                  <p className="text-zinc-500 text-xs uppercase font-bold">
-                    Potencia
-                  </p>
-                  <p className="text-xl">{advertisement.power_hp || 0} CV</p>
-                </div>
-              </div>
-
-              <button className="w-full py-4 bg-red-700 hover:bg-red-600 text-white font-bold rounded-xl transition duration-300 shadow-lg shadow-red-900/20">
-                Contactar con el vendedor
+          <div className="grid grid-cols-5 gap-2">
+            {advertisement.images?.map((img, i) => (
+              <button 
+                key={i} 
+                onClick={() => setMainImage(img.image_url)}
+                className={`aspect-square rounded-lg border-2 overflow-hidden transition ${mainImage === img.image_url ? 'border-red-600' : 'border-zinc-700 opacity-60'}`}
+              >
+                <img src={img.image_url} className="w-full h-full object-cover" />
               </button>
-            </div>
+            ))}
           </div>
         </div>
 
-        <div className="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 bg-zinc-800 p-8 rounded-2xl border border-zinc-700 shadow-xl">
-            <h2 className="text-2xl font-bold mb-6 border-b border-zinc-700 pb-2">
-              Descripción
-            </h2>
-            <p className="text-zinc-300 leading-relaxed whitespace-pre-wrap text-lg">
-              {advertisement.description}
-            </p>
+        {/* INFORMACIÓN */}
+        <div className="bg-zinc-800 rounded-2xl p-8 border border-zinc-700">
+          <div className="flex justify-between mb-4">
+            <span className="px-3 py-1 bg-red-700/20 text-red-500 rounded-full text-xs font-bold uppercase">
+              {advertisement.ad_state?.name}
+            </span>
+            <span className="text-zinc-500 text-sm">Vistas: {advertisement.views}</span>
           </div>
 
-          <div className="bg-zinc-800 p-8 rounded-2xl border border-zinc-700 shadow-xl">
-            <h2 className="text-2xl font-bold mb-6 border-b border-zinc-700 pb-2">
-              Ficha Técnica
-            </h2>
-            <ul className="space-y-4">
-              <li className="flex justify-between">
-                <span className="text-zinc-500">Transmisión</span>{" "}
-                <span className="font-semibold">
-                  {advertisement.transmission_name || "N/A"}
-                </span>
-              </li>
-              <li className="flex justify-between">
-                <span className="text-zinc-500">Puertas</span>{" "}
-                <span className="font-semibold">{advertisement.doors || "-"}</span>
-              </li>
-              <li className="flex justify-between">
-                <span className="text-zinc-500">Color</span>{" "}
-                <span className="font-semibold">
-                  {advertisement.tonality_name || "N/A"}
-                </span>
-              </li>
-              <li className="flex justify-between">
-                <span className="text-zinc-500">Ubicación</span>{" "}
-                <span className="font-semibold">
-                  {advertisement.province_name || "N/A"}
-                </span>
-              </li>
-            </ul>
+          <h1 className="text-4xl font-black uppercase mb-2">
+            {advertisement.vehicle?.model?.brand?.name} {advertisement.vehicle?.model?.name}
+          </h1>
+          <p className="text-zinc-400 mb-6">📍 {advertisement.province?.name}</p>
+
+          <div className="text-5xl font-black mb-8">{Number(advertisement.price).toLocaleString("es-ES")} €</div>
+
+          <div className="grid grid-cols-2 gap-4 mb-8">
+            <div className="bg-zinc-700/30 p-4 rounded-xl border border-zinc-600">
+              <p className="text-zinc-500 text-[10px] uppercase font-bold">Kilómetros</p>
+              <p className="text-xl">{advertisement.vehicle?.km?.toLocaleString("es-ES")} km</p>
+            </div>
+            <div className="bg-zinc-700/30 p-4 rounded-xl border border-zinc-600">
+              <p className="text-zinc-500 text-[10px] uppercase font-bold">Año</p>
+              <p className="text-xl">{advertisement.vehicle?.year}</p>
+            </div>
+            <div className="bg-zinc-700/30 p-4 rounded-xl border border-zinc-600">
+              <p className="text-zinc-500 text-[10px] uppercase font-bold">Combustible</p>
+              <p className="text-xl">{advertisement.vehicle?.fuel_type?.name}</p>
+            </div>
+            <div className="bg-zinc-700/30 p-4 rounded-xl border border-zinc-600">
+              <p className="text-zinc-500 text-[10px] uppercase font-bold">Potencia</p>
+              <p className="text-xl">{advertisement.vehicle?.power_hp} CV</p>
+            </div>
           </div>
+        </div>
+      </div>
+
+      <div className="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 bg-zinc-800 p-8 rounded-2xl border border-zinc-700">
+          <h2 className="text-2xl font-bold mb-6 border-b border-zinc-700 pb-2">Descripción</h2>
+          <p className="text-zinc-300 whitespace-pre-wrap">{advertisement.description}</p>
+        </div>
+        <div className="bg-zinc-800 p-8 rounded-2xl border border-zinc-700">
+          <h2 className="text-2xl font-bold mb-6 border-b border-zinc-700 pb-2">Ficha Técnica</h2>
+          <ul className="space-y-4">
+            <li className="flex justify-between text-sm"><span className="text-zinc-500">Transmisión</span><b>{advertisement.vehicle?.transmission?.name}</b></li>
+            <li className="flex justify-between text-sm"><span className="text-zinc-500">Puertas</span><b>{advertisement.vehicle?.doors}</b></li>
+            <li className="flex justify-between text-sm"><span className="text-zinc-500">Color</span><b>{advertisement.vehicle?.tonality?.name}</b></li>
+          </ul>
         </div>
       </div>
     </div>
