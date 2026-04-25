@@ -98,7 +98,19 @@ const Home = () => {
           </div>
         </div>
 
+        {/* Mensaje de error */}
+        {errorMessage && (
+          <div className="mb-6 p-4 bg-red-900/20 border border-red-700 rounded-lg text-red-300">
+            {errorMessage}
+          </div>
+        )}
+
         {/* Listado */}
+        {loading && (
+          <div className="flex justify-center items-center py-12">
+            <div className="text-zinc-400">Cargando vehículos...</div>
+          </div>
+        )}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {advertisements.map((v) => (
             <div key={v.id} className="bg-zinc-800 rounded-xl p-6 border border-zinc-700 flex flex-col hover:shadow-2xl transition">
