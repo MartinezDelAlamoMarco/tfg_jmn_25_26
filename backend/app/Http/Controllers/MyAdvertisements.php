@@ -107,9 +107,7 @@ class MyAdvertisements extends Controller
                 AdvertisementImage::create([
                     'advertisement_id' => $advertisement->id,
                     'image_url'        => $uploadData['url'],
-                    'drive_file_id'    => $uploadData['file_id'],
-                    // Si tu tabla al final tiene el campo 'is_main' como en el diagrama, descomenta esto:
-                    // 'is_main' => true 
+                    'is_main' => true 
                 ]);
             }
 

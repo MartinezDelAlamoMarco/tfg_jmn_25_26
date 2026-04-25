@@ -10,7 +10,6 @@ class AdvertisementImage extends Model
     protected $fillable = [
         'advertisement_id', 
         'image_url', 
-        'drive_file_id',
         'is_main'
     ];
 
