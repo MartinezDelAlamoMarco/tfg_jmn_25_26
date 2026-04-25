@@ -42,7 +42,6 @@ class VehicleController extends Controller
         // Esto frena en seco las peticiones simultáneas del StrictMode de React.
         if (Cache::add($cacheKey, true, now()->addMinutes(5))) {
             $advertisement->increment('views');
-            $advertisement->refresh();
         }
 
         return response()->json($advertisement);
