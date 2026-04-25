@@ -5,8 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\VehicleBrand;
 use App\Models\VehicleModel;
 use App\Models\Advertisement; 
-use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Request;
 
 class VehicleController extends Controller
@@ -25,41 +24,26 @@ class VehicleController extends Controller
 
     public function show(Request $request, $id)
     {
-        try {
-            // Buscamos el anuncio incluyendo todas las relaciones
-            $advertisement = Advertisement::with([
-                'vehicle.model.brand', 
-                'vehicle.fuelType', 
-                'vehicle.transmission', 
-                'vehicle.tonality', 
-                'images', 
-                'province', 
-                'state' // Relación definida en Advertisement.php
-            ])->findOrFail($id);
+        // Buscamos el anuncio incluyendo las fotos y los datos del vehículo vinculado
+        $advertisement = Advertisement::with([
+            'vehicle.model.brand', 
+            'vehicle.fuelType', 
+            'vehicle.transmission', 
+            'vehicle.tonality', 
+            'images', 
+            'province', 
+            'state'
+        ])->findOrFail($id);
 
-            // Intentamos incrementar las visitas de forma segura
-            try {
-                $throttleKey = 'view_ad_' . $id . '_' . $request->ip();
-                
-                // Si el RateLimiter falla, no detiene la ejecución del resto
-                RateLimiter::attempt($throttleKey, 1, function() use ($advertisement) {
-                    $advertisement->increment('views');
-                }, 300);
-            } catch (\Exception $e) {
-                // Logueamos el error de visitas pero permitimos que el anuncio cargue
-                Log::warning("Error en contador de visitas: " . $e->getMessage());
-            }
+        // Creamos una clave única en caché usando la IP del cliente y la ID del anuncio
+        $cacheKey = 'viewed_ad_' . $id . '_' . $request->ip();
 
-            return response()->json($advertisement);
-
-        } catch (\Exception $e) {
-            // Si el error es la carga del anuncio, devolvemos el error real para debuggear
-            return response()->json([
-                'error' => 'Error interno en el servidor',
-                'message' => $e->getMessage(), // Esto te dirá qué columna o relación falla
-                'file' => $e->getFile(),
-                'line' => $e->getLine()
-            ], 500);
+        // Cache::add es una operación ATÓMICA. Devuelve true solo si la clave NO existía y la acaba de crear.
+        // Esto frena en seco las peticiones simultáneas del StrictMode de React.
+        if (Cache::add($cacheKey, true, now()->addMinutes(5))) {
+            $advertisement->increment('views');
         }
+
+        return response()->json($advertisement);
     }
 }
