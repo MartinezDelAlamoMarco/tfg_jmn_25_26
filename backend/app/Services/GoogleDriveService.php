@@ -17,8 +17,19 @@ class GoogleDriveService
         $this->client = new Client();
         $this->client->setClientId(env('GOOGLE_CLIENT_ID'));
         $this->client->setClientSecret(env('GOOGLE_CLIENT_SECRET'));
-        // Fuerza a la API a obtener un token de acceso fresco usando tu Refresh Token
-        $this->client->fetchAccessTokenWithRefreshToken(env('GOOGLE_REFRESH_TOKEN'));
+        
+        // 1. ESTO ES VITAL: Le dice a Google que vamos a usar un Refresh Token
+        $this->client->setAccessType('offline'); 
+        
+        $refreshToken = env('GOOGLE_REFRESH_TOKEN');
+
+        // 2. Comprobación de seguridad por si Laravel sigue sin leer el .env
+        if (empty($refreshToken)) {
+            throw new \Exception("¡Error! Laravel no está leyendo tu GOOGLE_REFRESH_TOKEN. El valor está vacío.");
+        }
+
+        // 3. Obtener el token fresco
+        $this->client->fetchAccessTokenWithRefreshToken($refreshToken);
         
         $this->drive = new Drive($this->client);
     }
