@@ -34,3 +34,11 @@ Route::get('/vehicles', [VehicleController::class, 'index']);
 Route::get('/vehicles/{id}', [VehicleController::class, 'show']);
 Route::get('/advertisements', [AdvertisementController::class, 'index']);
 Route::get('/advertisements/brand/{brand_id}', [AdvertisementController::class, 'byBrand']);
+
+// Ruta Ping para evitar el Cold Start en el hosting gratuito
+Route::get('/ping', function () {
+    return response()->json([
+        'status' => 'ok', 
+        'message' => '¡El servidor está despierto!'
+    ], 200);
+});
