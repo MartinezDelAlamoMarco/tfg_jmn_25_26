@@ -9,16 +9,13 @@ import Register from "../pages/nucleo/Register"
 import PasswordRecovery from "../pages/nucleo/PasswordRecovery"
 import CreateProfile from "../pages/nucleo/CreateProfile"
 import VehicleDetail from "../pages/nucleo/VehicleDetail" 
+// 1. IMPORTAMOS LA NUEVA PANTALLA DE ALQUILER
+import AlquilerScreen from "../pages/nucleo/AlquilerScreen" 
 
-// Páginas de Alquiler (Nuevas)
-import AlquilerScreen from "../pages/nucleo/AlquilerScreen"
-import AlquilerDetailScreen from "../pages/nucleo/AlquilerDetailScreen"
-
-// Páginas de Gestión (Privadas / Vendedor)
 import AdvertisementsScreen from "../pages/gestionVendedor/AdvertisementsScreen" 
-import CreateAd from "../pages/gestionVendedor/CreateAd"
-import EditAd from '../pages/gestionVendedor/EditAd'
-import CreateRent from "../pages/gestionVendedor/CreateAdRent" // <--- IMPORTANTE
+import CreateAd from "../pages/gestionVendedor/CreateAd";
+import EditAd from '../pages/gestionVendedor/EditAd';
+import AlquilerDetailScreen from "../pages/nucleo/AlquilerDetailScreen"
 
 export default function AppRouter() {
   return (
@@ -49,7 +46,7 @@ export default function AppRouter() {
           <Route path="/alquiler/:id" element={<AlquilerDetailScreen />} />
           
           {/* 3. Formulario para que el vendedor publique un coche para alquilar */}
-          <Route path="/create-rent" element={<CreateRent />} />
+          <Route path="/create-rent" element={<CreateAdRent />} />
 
         </Route>
 

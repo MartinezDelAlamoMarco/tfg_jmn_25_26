@@ -46,6 +46,7 @@ class MyAdvertisements extends Controller
 
         return response()->json(['message' => 'Anuncio eliminado correctamente'], 200);
     }
+    
     public function store(Request $request)
     {
         // 1. Validamos solo lo que realmente existe en la BD
@@ -59,7 +60,6 @@ class MyAdvertisements extends Controller
             return DB::transaction(function () use ($request) {
 
                 // 2. Crear el Vehículo (Tabla: vehicles)
-                // Usamos los nombres exactos de tu CREATE TABLE
                 $vehicle = Vehicle::create([
                     'owner_id'         => Auth::id(),
                     'model_id'         => $request->vehicle_model_id,
@@ -67,13 +67,12 @@ class MyAdvertisements extends Controller
                     'transmission_id'  => $request->transmission_id,
                     'tonality_id'      => $request->tonality_id,
                     'year'             => $request->year,
-                    'km'               => $request->mileage, // Mapeamos mileage de React a km de SQL
-                    'power_hp'         => $request->hp,      // Mapeamos hp de React a power_hp de SQL
+                    'km'               => $request->mileage, 
+                    'power_hp'         => $request->hp,      
                     'doors'            => $request->doors,
                 ]);
 
                 // 3. Crear el Anuncio (Tabla: advertisements)
-                // IMPORTANTE: No enviamos 'title' porque tu tabla no lo tiene
                 $advertisement = Advertisement::create([
                     'vehicle_id'   => $vehicle->id,
                     'province_id'  => $request->province_id,
@@ -81,28 +80,28 @@ class MyAdvertisements extends Controller
                     'price'        => $request->price,
                     'description'  => $request->description,
                     'views'        => 0,
+                    // ---> NUEVO: Capturamos si es de alquiler (por defecto será false si no se envía) <---
+                    'is_rent'      => $request->boolean('is_rent'), 
                 ]);
 
                 return response()->json(['message' => '¡Vehículo publicado con éxito!'], 201);
             });
         } catch (\Exception $e) {
-            // Esto te enviará el mensaje de error real a la consola de React
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
     // Para cargar los datos en el formulario de edición
     public function show($id)
-{
-    // Usamos load() o with() para traer el vehículo y su modelo
-    $ad = Advertisement::with(['vehicle.model'])->findOrFail($id);
+    {
+        $ad = Advertisement::with(['vehicle.model'])->findOrFail($id);
 
-    if ($ad->vehicle->owner_id !== Auth::id()) {
-        return response()->json(['error' => 'No autorizado'], 403);
+        if ($ad->vehicle->owner_id !== Auth::id()) {
+            return response()->json(['error' => 'No autorizado'], 403);
+        }
+
+        return response()->json($ad);
     }
-
-    return response()->json($ad);
-}
 
     // Para guardar los cambios
     public function update(Request $request, $id)
@@ -132,6 +131,8 @@ class MyAdvertisements extends Controller
                     'province_id' => $request->province_id,
                     'price'       => $request->price,
                     'description' => $request->description,
+                    // Nota: No actualizamos 'is_rent' aquí para evitar que un usuario 
+                    // cambie un coche de venta a alquiler por accidente al editarlo.
                 ]);
             });
 
