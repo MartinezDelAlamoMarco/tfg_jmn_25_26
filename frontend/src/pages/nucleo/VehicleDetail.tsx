@@ -33,6 +33,8 @@ const VehicleDetail = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [mainImage, setMainImage] = useState<string>("");
+  const [isFavorite, setIsFavorite] = useState<boolean>(false);
+  const token = localStorage.getItem('auth_token');
 
   useEffect(() => {
     const fetchVehicle = async () => {
@@ -45,6 +47,16 @@ const VehicleDetail = () => {
         const img = response.data.images?.find((i: any) => i.is_main)?.image_url 
                  || response.data.images?.[0]?.image_url;
         setMainImage(img || "");
+        // Si estamos autenticados, comprobamos si este anuncio está en favoritos
+        if (localStorage.getItem('auth_token')) {
+          try {
+            const favResp = await axios.get(`${API_BASE_URL}/favorites`);
+            const favIds = (favResp.data || []).map((a: any) => a.id);
+            setIsFavorite(favIds.includes(response.data.id));
+          } catch (e) {
+            // No bloqueamos la vista si falla
+          }
+        }
       } catch (err) {
         console.error("Error al cargar el vehículo:", err);
         setError("No se pudo cargar la información del vehículo.");
@@ -139,6 +151,34 @@ const VehicleDetail = () => {
                 {Number(advertisement.price).toLocaleString("es-ES")}{" "}
                 <span className="text-red-700">€</span>
               </div>
+
+              {token && (
+                <div className="mb-4">
+                  <button
+                    onClick={async () => {
+                      if (!localStorage.getItem('auth_token')) {
+                        alert('Inicia sesión para marcar favoritos');
+                        return;
+                      }
+                      try {
+                        if (isFavorite) {
+                          await axios.delete(`${API_BASE_URL}/favorites/${id}`);
+                          setIsFavorite(false);
+                        } else {
+                          await axios.post(`${API_BASE_URL}/favorites/${id}`);
+                          setIsFavorite(true);
+                        }
+                      } catch (err) {
+                        console.error('Error updating favorite:', err);
+                        alert('No se pudo actualizar favoritos');
+                      }
+                    }}
+                    className={`w-full py-3 mb-4 rounded-xl font-bold transition ${isFavorite ? 'bg-red-700 hover:bg-red-600 text-white' : 'bg-zinc-700 hover:bg-zinc-600 text-white'}`}
+                  >
+                    {isFavorite ? 'Quitar de favoritos' : 'Añadir a favoritos'}
+                  </button>
+                </div>
+              )}
 
               {/* Especificaciones rápidas */}
               <div className="grid grid-cols-2 gap-4 mb-8">

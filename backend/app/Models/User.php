@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use App\Models\Advertisement;
 
 class User extends Authenticatable
 {
@@ -56,9 +57,9 @@ class User extends Authenticatable
     /**
      * Un usuario puede guardar muchos anuncios en favoritos.
      */
-    public function favourites()
+    public function favorites()
     {
-        return $this->hasMany(Favourite::class);
+        return $this->belongsToMany(Advertisement::class, 'favourites', 'user_id', 'advertisement_id');
     }
 
     /**
