@@ -11,11 +11,11 @@ import CreateProfile from "../pages/nucleo/CreateProfile"
 import VehicleDetail from "../pages/nucleo/VehicleDetail" 
 // 1. IMPORTAMOS LA NUEVA PANTALLA DE ALQUILER
 import AlquilerScreen from "../pages/nucleo/AlquilerScreen" 
-
+import CreateAdRent from "../pages/gestionVendedor/CreateAdRent"
 import AdvertisementsScreen from "../pages/gestionVendedor/AdvertisementsScreen" 
 import CreateAd from "../pages/gestionVendedor/CreateAd";
 import EditAd from '../pages/gestionVendedor/EditAd';
-import AlquilerDetailScreen from "../pages/nucleo/AlquilerDetailScreen"
+import AlquilerDetailScreen from "../pages/gestionVendedor/AlquilerDetailScreen"
 
 export default function AppRouter() {
   return (
