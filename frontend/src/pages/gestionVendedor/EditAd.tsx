@@ -2,17 +2,15 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
 import { API_BASE_URL } from '../../config';
-import LoadingScreen from '../../components/LoadingScreen'; // <-- 1. Importa el componente
+import LoadingScreen from '../../components/LoadingScreen';
 
 const EditAd = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   
-  // 2. Añadimos estado para la carga de la página
   const [pageLoading, setPageLoading] = useState(true);
   const [submitLoading, setSubmitLoading] = useState(false);
   
-  // Estados para datos de la BD
   const [brands, setBrands] = useState([]);
   const [models, setModels] = useState([]);
   const [provinces, setProvinces] = useState([]);
@@ -20,8 +18,8 @@ const EditAd = () => {
   const [transmissions, setTransmissions] = useState([]);
   const [tonalities, setTonalities] = useState([]);
 
+  // ELIMINADO: 'title'
   const [formData, setFormData] = useState({
-    title: '',
     description: '',
     price: '',
     province_id: '',
@@ -40,11 +38,10 @@ const EditAd = () => {
 
   useEffect(() => {
     const fetchAllDataAndAd = async () => {
-      setPageLoading(true); // Iniciamos la carga
+      setPageLoading(true);
       try {
         const token = localStorage.getItem('auth_token');
 
-        // Cargamos catálogos y el anuncio al mismo tiempo para ganar velocidad
         const [resB, resP, resF, resT, resTon, resAd] = await Promise.all([
           axios.get(`${API_BASE_URL}/brands`),
           axios.get(`${API_BASE_URL}/provinces`),
@@ -66,7 +63,6 @@ const EditAd = () => {
         
         if (ad && ad.vehicle && ad.vehicle.model) {
           setFormData({
-            title: ad.title || '', 
             description: ad.description || '',
             price: ad.price || '',
             province_id: ad.province_id || '',
@@ -81,15 +77,13 @@ const EditAd = () => {
             doors: ad.vehicle.doors ? ad.vehicle.doors.toString() : '5'
           });
 
-          // Cargamos los modelos de la marca específica
           const resM = await axios.get(`${API_BASE_URL}/brands/${ad.vehicle.model.brand_id}/models`);
           setModels(resM.data || []);
         }
-
       } catch (error) {
         console.error("Error cargando datos", error);
       } finally {
-        setPageLoading(false); // 3. Finalizamos la carga
+        setPageLoading(false);
       }
     };
     fetchAllDataAndAd();
@@ -112,7 +106,7 @@ const EditAd = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitLoading(true); // Cargando solo el botón al enviar
+    setSubmitLoading(true);
     try {
       const token = localStorage.getItem('auth_token');
       await axios.put(`${API_BASE_URL}/my-advertisements/${id}`, formData, {
@@ -125,7 +119,6 @@ const EditAd = () => {
     } finally { setSubmitLoading(false); }
   };
 
-  // 4. Si está cargando la página, mostramos la pantalla completa de carga
   if (pageLoading) {
     return <LoadingScreen message="Obteniendo información del vehículo..." />;
   }
@@ -138,7 +131,6 @@ const EditAd = () => {
         </h1>
 
         <form onSubmit={handleSubmit} className="space-y-8 bg-zinc-800 p-6 md:p-10 rounded-3xl border border-zinc-700 shadow-2xl">
-          
           <section className="space-y-6">
             <h2 className="text-red-500 font-bold uppercase text-xs tracking-widest border-l-4 border-red-600 pl-3">Datos Técnicos</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -180,40 +172,29 @@ const EditAd = () => {
           </section>
 
           <section className="space-y-6">
-            <h2 className="text-red-500 font-bold uppercase text-xs tracking-widest border-l-4 border-red-600 pl-3">Detalles del Anuncio</h2>
+            <h2 className="text-red-500 font-bold uppercase text-xs tracking-widest border-l-4 border-red-600 pl-3">Detalles Comerciales</h2>
+            
+            {/* ELIMINADO EL CAMPO TÍTULO AQUÍ TAMBIÉN */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <input 
-                type="text" 
-                name="title" 
-                readOnly 
-                value={formData.title} 
-                className="md:col-span-2 bg-zinc-900/50 border border-zinc-800 text-zinc-500 rounded-xl p-3 outline-none cursor-not-allowed italic" 
-              />
-              <input type="number" name="price" value={formData.price} onChange={handleChange} placeholder="Precio (€)" className={`bg-zinc-900 border border-zinc-700 rounded-xl p-3 outline-none text-red-500 font-bold focus:ring-2 focus:ring-red-600 ${noArrowsClass}`} />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="relative">
+                <input type="number" name="price" value={formData.price} onChange={handleChange} placeholder="Precio" className={`w-full bg-zinc-900 border border-zinc-700 rounded-xl p-3 pl-8 outline-none text-red-500 font-bold focus:ring-2 focus:ring-red-600 ${noArrowsClass}`} />
+                <span className="absolute left-3 top-3 text-red-700 font-bold">€</span>
+              </div>
               <input type="number" name="mileage" value={formData.mileage} onChange={handleChange} placeholder="Kilometraje (Km)" className={`bg-zinc-900 border border-zinc-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-red-600 ${noArrowsClass}`} />
               <select name="province_id" required value={formData.province_id} onChange={handleChange} className="bg-zinc-900 border border-zinc-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-red-600">
                 <option value="">Provincia</option>
                 {provinces.map((p: any) => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
             </div>
+            
             <textarea name="description" rows={4} required value={formData.description} onChange={handleChange} placeholder="Descripción..." className="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-3 outline-none resize-none focus:ring-2 focus:ring-red-600" />
           </section>
 
           <div className="flex gap-4">
-            <button 
-              type="button" 
-              onClick={() => navigate('/mis-anuncios')} 
-              className="flex-1 bg-zinc-700 hover:bg-zinc-600 py-5 rounded-2xl font-black uppercase tracking-widest transition"
-            >
+            <button type="button" onClick={() => navigate('/mis-anuncios')} className="flex-1 bg-zinc-700 hover:bg-zinc-600 py-5 rounded-2xl font-black uppercase tracking-widest transition">
               Cancelar
             </button>
-            <button 
-              type="submit" 
-              disabled={submitLoading} 
-              className="flex-2 bg-red-700 hover:bg-red-600 py-5 rounded-2xl font-black uppercase tracking-widest transition shadow-lg shadow-red-900/30 active:scale-95 disabled:opacity-50"
-            >
+            <button type="submit" disabled={submitLoading} className="flex-2 bg-red-700 hover:bg-red-600 py-5 rounded-2xl font-black uppercase tracking-widest transition shadow-lg shadow-red-900/30 active:scale-95 disabled:opacity-50 px-8">
               {submitLoading ? 'Guardando...' : 'Guardar Cambios'}
             </button>
           </div>

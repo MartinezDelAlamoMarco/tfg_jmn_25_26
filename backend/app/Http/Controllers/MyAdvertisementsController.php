@@ -34,7 +34,8 @@ class MyAdvertisements extends Controller
     {
         $userId = Auth::id();
 
-        $ad = Advertisement::where('id', $id)
+        // 1. Buscamos el anuncio y CARGAMOS sus imágenes vinculadas
+        $ad = Advertisement::with('images')->where('id', $id)
             ->whereHas('vehicle', function ($query) use ($userId) {
                 $query->where('owner_id', $userId);
             })->first();
@@ -43,8 +44,30 @@ class MyAdvertisements extends Controller
             return response()->json(['message' => 'Anuncio no encontrado o no tienes permiso'], 404);
         }
 
-        $ad->delete();
-        return response()->json(['message' => 'Anuncio eliminado correctamente'], 200);
+        try {
+            // 2. Instanciamos el servicio de Google Drive
+            $driveService = new GoogleDriveService();
+
+            // 3. Recorremos las imágenes del anuncio para borrarlas de Drive
+            foreach ($ad->images as $image) {
+                // Extraemos el ID del archivo de la URL usando una expresión regular
+                // Busca lo que hay después de "?id=" y antes del "&"
+                if (preg_match('/id=([a-zA-Z0-9_-]+)/', $image->image_url, $matches)) {
+                    $fileId = $matches[1];
+                    $driveService->deleteFile($fileId);
+                }
+            }
+
+            // 4. Borramos el anuncio de la Base de Datos (las imágenes en BD se borrarán por cascada
+            // o puedes forzarlo aquí con $ad->images()->delete(); si no tienes cascada activada)
+            $ad->images()->delete(); 
+            $ad->delete();
+
+            return response()->json(['message' => 'Anuncio e imágenes eliminados correctamente'], 200);
+            
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error al eliminar el anuncio: ' . $e->getMessage()], 500);
+        }
     }
 
     public function store(Request $request)

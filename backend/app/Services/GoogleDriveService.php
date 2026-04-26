@@ -105,4 +105,17 @@ class GoogleDriveService
         $permission = new Permission(['type' => 'anyone', 'role' => 'reader']);
         $this->drive->permissions->create($fileId, $permission);
     }
+
+    //Elimina un archivo de Google Drive dado su ID.
+    public function deleteFile($fileId)
+    {
+        try {
+            $this->drive->files->delete($fileId);
+            return true;
+        } catch (\Exception $e) {
+            // Logueamos el error, pero no detenemos la aplicación si la foto ya no existía
+            \Illuminate\Support\Facades\Log::warning("No se pudo borrar la imagen de Drive ({$fileId}): " . $e->getMessage());
+            return false;
+        }
+    }
 }
