@@ -39,4 +39,10 @@ class Advertisement extends Model
     {
         return $this->hasOne(AdvertisementImage::class)->where('is_main', true);
     }
+
+    // Relación inversa: Un anuncio puede tener muchos alquileres
+    public function rents()
+    {
+        return $this->hasMany(Rent::class);
+    }
 }

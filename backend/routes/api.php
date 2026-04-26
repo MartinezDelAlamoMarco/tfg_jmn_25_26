@@ -34,3 +34,9 @@ Route::get('/vehicles', [VehicleController::class, 'index']);
 Route::get('/vehicles/{id}', [VehicleController::class, 'show']); // Solo una ruta para el ID
 Route::get('/advertisements', [AdvertisementController::class, 'index']);
 Route::get('/advertisements/brand/{brand_id}', [AdvertisementController::class, 'byBrand']);
+
+// --- GESTIÓN DE ALQUILERES (RENTS) ---
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/rents', [RentController::class, 'store']);
+    Route::get('/my-rents', [RentController::class, 'myRents']);
+});
