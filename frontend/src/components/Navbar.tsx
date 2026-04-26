@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { APP_NAME } from "../config";
 import logo from "../assets/Logotipo.png";
 
