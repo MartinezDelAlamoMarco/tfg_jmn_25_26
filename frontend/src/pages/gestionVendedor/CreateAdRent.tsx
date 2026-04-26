@@ -1,0 +1,229 @@
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from '../../config';
+import LoadingScreen from "../../components/LoadingScreen";
+
+const CreateAdRent = () => {
+  const navigate = useNavigate();
+  const [pageLoading, setPageLoading] = useState(true); 
+  const [loading, setLoading] = useState(false);
+  
+  // Estados para datos de la BD
+  const [brands, setBrands] = useState([]);
+  const [models, setModels] = useState([]);
+  const [provinces, setProvinces] = useState([]);
+  const [fuelTypes, setFuelTypes] = useState([]);
+  const [transmissions, setTransmissions] = useState([]);
+  const [tonalities, setTonalities] = useState([]);
+  
+  const [preview, setPreview] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    price: '',
+    province_id: '',
+    vehicle_brand_id: '',
+    vehicle_model_id: '',
+    fuel_type_id: '',
+    transmission_id: '',
+    tonality_id: '',
+    year: '',
+    mileage: '',
+    hp: '',
+    doors: '5'
+  });
+
+  // CARGA DE DATOS INICIALES
+  useEffect(() => {
+    const fetchAllData = async () => {
+      setPageLoading(true); // Iniciamos carga
+      try {
+        const [resB, resP, resF, resT, resTon] = await Promise.all([
+          axios.get(`${API_BASE_URL}/brands`),
+          axios.get(`${API_BASE_URL}/provinces`),
+          axios.get(`${API_BASE_URL}/fuel-types`),
+          axios.get(`${API_BASE_URL}/transmissions`),
+          axios.get(`${API_BASE_URL}/tonalities`)
+        ]);
+        
+        setBrands(resB.data || []);
+        setProvinces(resP.data || []);
+        setFuelTypes(resF.data || []);
+        setTransmissions(resT.data || []);
+        setTonalities(resTon.data || []);
+      } catch (error) {
+        console.error("Error cargando catálogos", error);
+      } finally {
+        setPageLoading(false); // Quitamos carga
+      }
+    };
+    fetchAllData();
+  }, []);
+
+  // --- RENDERIZADO DE CARGA ---
+  if (pageLoading) {
+    return <LoadingScreen message="Preparando formulario de alquiler..." />;
+  }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setSelectedFile(file);
+      setPreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleBrandChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const brandId = e.target.value;
+    setFormData({ ...formData, vehicle_brand_id: brandId, vehicle_model_id: '' });
+    
+    if (brandId) {
+      try {
+        const res = await axios.get(`${API_BASE_URL}/brands/${brandId}/models`);
+        setModels(res.data || []);
+      } catch (error) {
+        console.error("Error cargando modelos", error);
+      }
+    } else {
+      setModels([]);
+    }
+  };
+
+  const handleChange = (e: any) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleNumericChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    if (!/^[0-9]*$/.test(value)) return;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    const dataToSend = new FormData();
+    Object.entries(formData).forEach(([key, value]) => dataToSend.append(key, value));
+    
+    // IMPORTANTE: Le decimos al backend que este anuncio es de alquiler
+    dataToSend.append('is_rent', '1');
+
+    if (selectedFile) dataToSend.append('image', selectedFile);
+
+    try {
+      const token = localStorage.getItem('auth_token');
+      await axios.post(`${API_BASE_URL}/my-advertisements`, dataToSend, {
+        headers: { 
+          Authorization: `Bearer ${token}`, 
+          'Content-Type': 'multipart/form-data' 
+        }
+      });
+      alert('¡Vehículo publicado para alquiler con éxito!');
+      navigate('/mis-anuncios');
+    } catch (error) {
+      console.error(error);
+      alert('Error al publicar. Revisa los campos y tu conexión.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-zinc-900 text-white p-4 md:p-8">
+      <div className="max-w-5xl mx-auto">
+        <h1 className="text-3xl font-black mb-8 italic uppercase tracking-tighter">
+          Poner en <span className="text-red-600">Alquiler</span>
+        </h1>
+
+        <form onSubmit={handleSubmit} className="space-y-8 bg-zinc-800 p-6 md:p-10 rounded-3xl border border-zinc-700 shadow-2xl">
+          
+          <section className="space-y-6">
+            <h2 className="text-red-500 font-bold uppercase text-xs tracking-widest border-l-4 border-red-600 pl-3">Datos Técnicos</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <select name="vehicle_brand_id" required value={formData.vehicle_brand_id} onChange={handleBrandChange} className="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-red-600 transition">
+                <option value="">Marca</option>
+                {brands.map((b: any) => <option key={b.id} value={b.id}>{b.name}</option>)}
+              </select>
+              <select name="vehicle_model_id" required value={formData.vehicle_model_id} onChange={handleChange} disabled={!formData.vehicle_brand_id} className="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-3 outline-none disabled:opacity-30 focus:ring-2 focus:ring-red-600 transition">
+                <option value="">Modelo</option>
+                {models.map((m: any) => <option key={m.id} value={m.id}>{m.name}</option>)}
+              </select>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <select name="fuel_type_id" required value={formData.fuel_type_id} onChange={handleChange} className="bg-zinc-900 border border-zinc-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-red-600">
+                <option value="">Combustible</option>
+                {fuelTypes.map((f: any) => <option key={f.id} value={f.id}>{f.name}</option>)}
+              </select>
+              <select name="transmission_id" required value={formData.transmission_id} onChange={handleChange} className="bg-zinc-900 border border-zinc-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-red-600">
+                <option value="">Cambio</option>
+                {transmissions.map((t: any) => <option key={t.id} value={t.id}>{t.name}</option>)}
+              </select>
+              <input type="text" name="year" value={formData.year} onChange={handleNumericChange} placeholder="Año (Ej: 2021)" className="bg-zinc-900 border border-zinc-700 rounded-xl p-3 focus:ring-2 focus:ring-red-600 outline-none" />
+              <input type="text" name="hp" value={formData.hp} onChange={handleNumericChange} placeholder="Potencia (CV)" className="bg-zinc-900 border border-zinc-700 rounded-xl p-3 focus:ring-2 focus:ring-red-600 outline-none" />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <select name="tonality_id" required value={formData.tonality_id} onChange={handleChange} className="bg-zinc-900 border border-zinc-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-red-600">
+                <option value="">Color / Tonalidad</option>
+                {tonalities.map((ton: any) => <option key={ton.id} value={ton.id}>{ton.name}</option>)}
+              </select>
+              <select name="doors" value={formData.doors} onChange={handleChange} className="bg-zinc-900 border border-zinc-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-red-600">
+                <option value="2">2 Puertas</option>
+                <option value="3">3 Puertas</option>
+                <option value="4">4 Puertas</option>
+                <option value="5">5 Puertas</option>
+              </select>
+            </div>
+          </section>
+
+          <section className="space-y-6">
+            <h2 className="text-red-500 font-bold uppercase text-xs tracking-widest border-l-4 border-red-600 pl-3">Fotografía Principal</h2>
+            <div className="flex flex-col items-center justify-center border-2 border-dashed border-zinc-700 rounded-2xl p-6 bg-zinc-900/40">
+              {preview ? (
+                <div className="relative">
+                  <img src={preview} alt="Vista previa" className="rounded-xl max-h-52 shadow-2xl" />
+                  <button type="button" onClick={() => {setPreview(null); setSelectedFile(null);}} className="absolute -top-3 -right-3 bg-red-600 rounded-full w-8 h-8 font-bold border-2 border-zinc-800 flex items-center justify-center hover:bg-red-500 transition-colors">
+                    ✕
+                  </button>
+                </div>
+              ) : (
+                <label className="cursor-pointer text-zinc-500 hover:text-white transition group flex flex-col items-center">
+                  <span className="text-4xl mb-2 group-hover:scale-110 transition-transform">📷</span>
+                  <span className="text-lg">Subir foto del coche</span>
+                  <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
+                </label>
+              )}
+            </div>
+          </section>
+
+          <section className="space-y-6">
+            <h2 className="text-red-500 font-bold uppercase text-xs tracking-widest border-l-4 border-red-600 pl-3">Detalles del Alquiler</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <input type="text" name="title" required value={formData.title} onChange={handleChange} placeholder="Título (Ej: Alquiler BMW M4 Fin de semana)" className="md:col-span-2 bg-zinc-900 border border-zinc-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-red-600" />
+              <input type="text" name="price" value={formData.price} onChange={handleNumericChange} placeholder="Precio x Día (€)" className="bg-zinc-900 border border-zinc-700 rounded-xl p-3 outline-none text-red-500 font-bold focus:ring-2 focus:ring-red-600" />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <input type="text" name="mileage" value={formData.mileage} onChange={handleNumericChange} placeholder="Kilometraje actual (Km)" className="bg-zinc-900 border border-zinc-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-red-600" />
+              <select name="province_id" required value={formData.province_id} onChange={handleChange} className="bg-zinc-900 border border-zinc-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-red-600">
+                <option value="">Provincia</option>
+                {provinces.map((p: any) => <option key={p.id} value={p.id}>{p.name}</option>)}
+              </select>
+            </div>
+            <textarea name="description" rows={4} required value={formData.description} onChange={handleChange} placeholder="Describe las condiciones del alquiler, fianza requerida, límites de kilometraje..." className="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-3 outline-none resize-none focus:ring-2 focus:ring-red-600" />
+          </section>
+
+          <button type="submit" disabled={loading} className="w-full bg-red-700 hover:bg-red-600 py-5 rounded-2xl font-black uppercase tracking-widest transition-all shadow-lg shadow-red-900/30 active:scale-95 disabled:opacity-50">
+            {loading ? 'Procesando...' : 'Publicar Vehículo para Alquilar'}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default CreateAdRent;
