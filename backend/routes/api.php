@@ -3,7 +3,7 @@
 use App\Http\Controllers\AdvertisementController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\VehicleController;
-use App\Http\Controllers\MyAdvertisements;
+use App\Http\Controllers\MyAdvertisementsController;
 use App\Http\Controllers\MasterDataController;
 use Illuminate\Support\Facades\Route;
 
@@ -14,11 +14,11 @@ Route::middleware('auth:sanctum')->get('/user', [AuthController::class, 'user'])
 
 // --- GESTIÓN DE MIS ANUNCIOS (VENDEDOR) ---
 Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/my-advertisements', [MyAdvertisements::class, 'index']);
-    Route::post('/my-advertisements', [MyAdvertisements::class, 'store']);
-    Route::delete('/my-advertisements/{id}', [MyAdvertisements::class, 'destroy']);
-    Route::get('/my-advertisements/{id}', [MyAdvertisements::class, 'show']);
-    Route::put('/my-advertisements/{id}', [MyAdvertisements::class, 'update']);
+    Route::get('/my-advertisements', [MyAdvertisementsController::class, 'index']);
+    Route::post('/my-advertisements', [MyAdvertisementsController::class, 'store']);
+    Route::delete('/my-advertisements/{id}', [MyAdvertisementsController::class, 'destroy']);
+    Route::get('/my-advertisements/{id}', [MyAdvertisementsController::class, 'show']);
+    Route::put('/my-advertisements/{id}', [MyAdvertisementsController::class, 'update']);
 });
 
 // --- SELECTORES DINÁMICOS (CATÁLOGOS) ---

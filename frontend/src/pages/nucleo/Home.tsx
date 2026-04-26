@@ -30,13 +30,26 @@ const Home = () => {
 
   const [brands, setBrands] = useState<Brand[]>([]);
   const [advertisements, setAdvertisements] = useState<Advertisement[]>([]);
+  const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
   const [brandId, setBrandId] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const token = localStorage.getItem('auth_token');
 
   useEffect(() => {
     handleGetBrands();
     handleGetAdvertisements();
+    // Si estamos autenticados, cargamos los ids favoritos del usuario
+    if (localStorage.getItem('auth_token')) {
+      axios.get(`${API_BASE_URL}/favorites`)
+        .then((res) => {
+          const ids = (res.data || []).map((a: any) => a.id);
+          setFavoriteIds(ids);
+        })
+        .catch(() => {
+          // Ignoramos errores aquí; no bloquea la carga de anuncios
+        });
+    }
   }, []);
 
   const handleGetBrands = () => {
@@ -61,6 +74,26 @@ const Home = () => {
       .then((res) => setAdvertisements(res.data))
       .catch(() => setErrorMessage("Error al obtener vehículos"))
       .finally(() => setLoading(false));
+  };
+
+  const handleToggleFavorite = async (adId: number) => {
+    if (!localStorage.getItem('auth_token')) {
+      alert('Inicia sesión para marcar favoritos');
+      return;
+    }
+
+    try {
+      if (favoriteIds.includes(adId)) {
+        await axios.delete(`${API_BASE_URL}/favorites/${adId}`);
+        setFavoriteIds((prev) => prev.filter((id) => id !== adId));
+      } else {
+        await axios.post(`${API_BASE_URL}/favorites/${adId}`);
+        setFavoriteIds((prev) => [...prev, adId]);
+      }
+    } catch (err) {
+      console.error('Error updating favorite:', err);
+      alert('No se pudo actualizar favoritos');
+    }
   };
 
   return (
@@ -133,6 +166,17 @@ const Home = () => {
                 <p className="text-3xl font-black">{Number(v.price).toLocaleString("es-ES")} €</p>
                 <p className="text-xs text-zinc-500">Vistas: {v.views}</p>
               </div>
+
+              {token && (
+                <div className="mb-4">
+                  <button
+                    onClick={() => handleToggleFavorite(v.id)}
+                    className={`px-3 py-2 rounded-lg font-semibold transition ${favoriteIds.includes(v.id) ? 'bg-red-700 hover:bg-red-600 text-white' : 'bg-zinc-700 hover:bg-zinc-600 text-zinc-200'}`}
+                  >
+                    {favoriteIds.includes(v.id) ? 'Quitar favorito' : 'Añadir a favoritos'}
+                  </button>
+                </div>
+              )}
 
               <Link to={`/advertisement/${v.id}`} className="mt-auto block w-full text-center py-3 bg-red-700 hover:bg-red-600 rounded-lg font-bold transition">
                 Ver detalles
