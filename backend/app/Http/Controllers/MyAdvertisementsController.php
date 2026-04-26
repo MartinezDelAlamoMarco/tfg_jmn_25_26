@@ -11,7 +11,7 @@ use App\Models\VehicleBrand;          // Añadido para buscar la marca
 use App\Models\AdvertisementImage;    // Añadido para guardar la imagen
 use App\Services\GoogleDriveService;  // Añadido para conectar con Drive
 
-class MyAdvertisements extends Controller
+class MyAdvertisementsController extends Controller
 {
     public function index()
     {
