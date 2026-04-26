@@ -51,6 +51,11 @@ export default function Navbar() {
               Inicio
             </Link>
 
+            {/* --- ENLACE DE ALQUILERES --- */}
+            <Link to="/alquileres" className="text-white hover:text-red-700 transition-colors duration-300 font-medium">
+              Alquileres
+            </Link>
+
             {!token ? (
               <>
                 <Link to="/login" className="text-white hover:text-red-700 transition-colors duration-300 font-medium">
@@ -117,6 +122,11 @@ export default function Navbar() {
             <div className="flex flex-col space-y-1">
               <Link to="/" onClick={closeMenu} className="px-2 py-2 text-zinc-300 hover:text-white hover:bg-zinc-800 rounded-lg font-medium transition-colors">
                 Inicio
+              </Link>
+
+              {/* --- ENLACE DE ALQUILERES MÓVIL --- */}
+              <Link to="/alquileres" onClick={closeMenu} className="px-2 py-2 text-zinc-300 hover:text-white hover:bg-zinc-800 rounded-lg font-medium transition-colors">
+                Alquileres
               </Link>
               
               {token && (
