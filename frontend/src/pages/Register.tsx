@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { APP_NAME } from "../config"
 import axios from "axios";
+import LoadingScreen from "../components/LoadingScreen";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -11,6 +12,7 @@ const Register = () => {
     password: '',
     confirmPassword: ''
   })
+  const [isRegistering, setIsRegistering] = useState(false)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -21,6 +23,7 @@ const Register = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setIsRegistering(true)
     try {
       const response = await axios.post('/register', {
         name: `${formData.firstName} ${formData.lastName}`,
@@ -37,9 +40,14 @@ const Register = () => {
       // Redirigir a login o home
       alert('Registro exitoso, ahora inicia sesión')
     } catch (error) {
+      setIsRegistering(false)
       console.error('Error en registro:', error)
       alert('Error en registro')
     }
+  }
+
+  if (isRegistering) {
+    return <LoadingScreen message="Creando tu cuenta..." />;
   }
 
   return (

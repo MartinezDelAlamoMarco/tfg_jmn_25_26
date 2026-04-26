@@ -9,29 +9,26 @@ class AdvertisementController extends Controller
 {
     public function index()
     {
-        // Traemos el vehículo, la marca, el estado, la provincia y las fotos
+        // Traemos el anuncio con su vehículo, marca, modelo e IMÁGENES
         $advertisements = Advertisement::with([
             'vehicle.model.brand', 
-            'state', 
+            'images', 
             'province', 
-            'images'
-        ])
-        ->orderBy('created_at', 'desc')
-        ->get();
+            'state'
+        ])->orderBy('created_at', 'desc')->get();
 
         return response()->json($advertisements);
     }
 
     public function byBrand($brandId)
     {
-        // El filtro ahora busca DENTRO de la tabla vehicles -> models
         $advertisements = Advertisement::with([
             'vehicle.model.brand', 
-            'state', 
+            'images', 
             'province', 
-            'images'
+            'state'
         ])
-        ->whereHas('vehicle.model', function ($query) use ($brandId) {
+        ->whereHas('vehicle.model', function($query) use ($brandId) {
             $query->where('brand_id', $brandId);
         })
         ->orderBy('created_at', 'desc')

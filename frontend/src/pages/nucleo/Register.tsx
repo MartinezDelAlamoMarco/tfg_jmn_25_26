@@ -34,8 +34,11 @@ const Register = () => {
       localStorage.setItem('auth_token', token)
       localStorage.setItem('user', JSON.stringify(user))
 
-      // Redirigir a login o home
-      alert('Registro exitoso, ahora inicia sesión')
+      // Configurar el token por defecto para futuras peticiones
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+      // Redirigir al inicio silenciosamente (recargando para actualizar el Navbar)
+      window.location.href = '/'
     } catch (error) {
       console.error('Error en registro:', error)
       alert('Error en registro')

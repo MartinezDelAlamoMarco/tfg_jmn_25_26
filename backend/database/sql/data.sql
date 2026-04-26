@@ -1,9 +1,7 @@
 -- NIVEL 0: TABLAS INDEPENDIENTES Y USUARIOS
 -- Contraseña para todos: 'password'
 INSERT INTO users (id, name, email, password, telephone, role, created_at, updated_at) VALUES
-(1, 'Nuria Admin', 'admin@redlinemotors.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '600111222', 'admin', NOW(), NOW()),
-(2, 'Javier Vendedor', 'javi@redlinemotors.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '600333444', 'user', NOW(), NOW()),
-(3, 'Marco Comprador', 'marco@redlinemotors.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '600555666', 'user', NOW(), NOW());
+(1, 'Admin', 'admin@redlinemotors.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '600111222', 'admin', NOW(), NOW());
 
 INSERT INTO provinces (id, name, created_at, updated_at) VALUES
 (1, 'Madrid', NOW(), NOW()), (2, 'Barcelona', NOW(), NOW()), (3, 'Valencia', NOW(), NOW()), (4, 'Sevilla', NOW(), NOW());
@@ -74,9 +72,3 @@ INSERT INTO favourites (id, user_id, advertisement_id, created_at, updated_at) V
 -- 5. Alquileres: Nuria Admin (1) alquila el BMW (Anuncio 2) de Javi
 INSERT INTO rents (id, advertisement_id, renter_id, start_date, end_date, total_price, created_at, updated_at) VALUES
 (1, 2, 1, '2026-05-01', '2026-05-05', 300.00, NOW(), NOW());
-
-
--- SOLUCIONAR ERRORES DE LOS ID'S
-SELECT setval('users_id_seq', (SELECT MAX(id) FROM users));
-SELECT setval('vehicles_id_seq', (SELECT MAX(id) FROM vehicles));
-SELECT setval('advertisements_id_seq', (SELECT MAX(id) FROM advertisements));

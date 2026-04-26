@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom' 
+import { Link } from 'react-router-dom' 
 import axios from "axios";
 import { API_BASE_URL } from "../../config";
 import LoadingScreen from "../../components/LoadingScreen"; // Importamos tu nuevo componente
@@ -8,7 +8,6 @@ const Login = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isLoggingIn, setIsLoggingIn] = useState(false); // Estado para la ruletita
-  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,8 +22,7 @@ const Login = () => {
 
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
-        // Redirección inmediata sin alert
-        navigate('/'); 
+        window.location.href = '/'; 
     } catch (error) {
         setIsLoggingIn(false); // Paramos la carga si falla
         alert('Credenciales inválidas');

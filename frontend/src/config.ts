@@ -1,9 +1,8 @@
 // src/config.ts
 import axios from 'axios';
 
-//export const API_BASE_URL: string = 'https://tfg-backend-2fcr.onrender.com/api';
-export const API_BASE_URL = 'https://tfg-jmn-25-26.onrender.com/api';
-
+//export const API_BASE_URL: string = 'https://tfg-jmn-25-26.onrender.com/api';
+export const API_BASE_URL = 'http://127.0.0.1:8000/api';
 
 export const APP_NAME: string = 'LosAutosDeJavibu';
 
@@ -27,7 +26,6 @@ axios.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('auth_token');
       localStorage.removeItem('user');
-      // Opcional: redirigir a login
     }
     return Promise.reject(error);
   }
