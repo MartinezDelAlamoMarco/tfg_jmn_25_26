@@ -14,6 +14,7 @@ import AlquilerScreen from "../pages/nucleo/AlquilerScreen"
 import AdvertisementsScreen from "../pages/gestionVendedor/AdvertisementsScreen" 
 import CreateAd from "../pages/gestionVendedor/CreateAd";
 import EditAd from '../pages/gestionVendedor/EditAd';
+import AlquilerDetailScreen from "../pages/nucleo/AlquilerDetailScreen"
 
 export default function AppRouter() {
   return (
@@ -31,7 +32,8 @@ export default function AppRouter() {
           
           {/* 2. AÑADIMOS LA RUTA DE ALQUILER */}
           {/* Usamos :id para saber qué coche se quiere alquilar al entrar */}
-          <Route path="/alquiler/:id" element={<AlquilerScreen />} />
+          <Route path="/alquileres" element={<AlquilerScreen />} />
+          <Route path="/alquiler/:id" element={<AlquilerDetailScreen />} />
 
           <Route path="/mis-anuncios" element={<AdvertisementsScreen />} />
           <Route path="/create-ad" element={<CreateAd />} />

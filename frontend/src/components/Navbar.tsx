@@ -1,26 +1,22 @@
-import { useState } from "react"; // <-- 1. Añadimos useState
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { APP_NAME } from "../config";
 import logo from "../assets/Logotipo.png";
 
 export default function Navbar() {
   const navigate = useNavigate();
-  // 2. Creamos el estado para el menú móvil
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
-  // Comprobamos si hay sesión activa
   const token = localStorage.getItem('auth_token');
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
   const handleLogout = () => {
     localStorage.removeItem('auth_token');
     localStorage.removeItem('user');
-    setIsMobileMenuOpen(false); // Cerramos el menú por si acaso
-    // Redirigimos al inicio y forzamos refresco para limpiar estados
+    setIsMobileMenuOpen(false);
     window.location.href = '/';
   };
 
-  // Función para cerrar el menú al hacer click en un enlace
   const closeMenu = () => setIsMobileMenuOpen(false);
 
   return (
@@ -55,6 +51,11 @@ export default function Navbar() {
               Inicio
             </Link>
 
+            {/* --- ENLACE DE ALQUILERES --- */}
+            <Link to="/alquileres" className="text-white hover:text-red-700 transition-colors duration-300 font-medium">
+              Alquileres
+            </Link>
+
             {!token ? (
               <>
                 <Link to="/login" className="text-white hover:text-red-700 transition-colors duration-300 font-medium">
@@ -84,13 +85,11 @@ export default function Navbar() {
 
           {/* Mobile menu button */}
           <div className="md:hidden">
-            {/* 3. Añadimos el onClick para alternar el estado */}
             <button 
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="text-white hover:text-red-700 focus:outline-none p-2"
             >
               <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                {/* Cambiamos el icono a una "X" si está abierto, o las rayas si está cerrado */}
                 {isMobileMenuOpen ? (
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 ) : (
@@ -102,12 +101,11 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* 4. Menú Desplegable para Móviles */}
+      {/* Menú Desplegable para Móviles */}
       {isMobileMenuOpen && (
         <div className="md:hidden bg-zinc-900 border-t border-zinc-800 shadow-xl pb-4">
           <div className="px-4 pt-4 space-y-5">
             
-            {/* Barra de búsqueda móvil */}
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <svg className="h-5 w-5 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -121,10 +119,14 @@ export default function Navbar() {
               />
             </div>
 
-            {/* Enlaces de navegación principal */}
             <div className="flex flex-col space-y-1">
               <Link to="/" onClick={closeMenu} className="px-2 py-2 text-zinc-300 hover:text-white hover:bg-zinc-800 rounded-lg font-medium transition-colors">
                 Inicio
+              </Link>
+
+              {/* --- ENLACE DE ALQUILERES MÓVIL --- */}
+              <Link to="/alquileres" onClick={closeMenu} className="px-2 py-2 text-zinc-300 hover:text-white hover:bg-zinc-800 rounded-lg font-medium transition-colors">
+                Alquileres
               </Link>
               
               {token && (
@@ -134,7 +136,6 @@ export default function Navbar() {
               )}
             </div>
 
-            {/* Zona de Usuario / Autenticación */}
             <div className="pt-4 border-t border-zinc-800/80">
               {!token ? (
                 <div className="flex flex-col gap-3">
@@ -164,7 +165,6 @@ export default function Navbar() {
                 </div>
               )}
             </div>
-
           </div>
         </div>
       )}
