@@ -50,7 +50,7 @@ const AdvertisementsScreen = () => {
     <div className="min-h-screen bg-zinc-900 p-8 text-white relative">
       {/* OVERLAY DE BLOQUEO DURANTE ELIMINACIÓN */}
       {actionLoading && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] flex items-center justify-center">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-9999 flex items-center justify-center">
           <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-red-600"></div>
         </div>
       )}
