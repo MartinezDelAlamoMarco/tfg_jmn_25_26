@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { API_BASE_URL } from "../../config";
 
@@ -132,7 +132,7 @@ const RentDetail = () => {
   return (
     <div className="min-h-screen bg-zinc-900 text-white py-12 px-4 sm:px-6 lg:px-8 relative pt-24">
       {actionLoading && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9999] flex items-center justify-center">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-9999 flex items-center justify-center">
           <div className="flex flex-col items-center">
             <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-red-600 mb-4"></div>
             <p className="text-red-500 font-bold uppercase tracking-widest animate-pulse">Procesando reserva...</p>
