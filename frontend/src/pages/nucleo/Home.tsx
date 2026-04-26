@@ -17,26 +17,10 @@ const Home = () => {
   const marketPart = APP_NAME.slice(4);
   const [brands, setBrands] = useState<Brand[]>([]);
   const [advertisements, setAdvertisements] = useState<Advertisement[]>([]);
-  const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
   const [brandId, setBrandId] = useState("");
   const [loading, setLoading] = useState(false);
-  const token = localStorage.getItem('auth_token');
 
-  useEffect(() => {
-    handleGetBrands();
-    handleGetAdvertisements();
-    // Si estamos autenticados, cargamos los ids favoritos del usuario
-    if (localStorage.getItem('auth_token')) {
-      axios.get(`${API_BASE_URL}/favorites`)
-        .then((res) => {
-          const ids = (res.data || []).map((a: any) => a.id);
-          setFavoriteIds(ids);
-        })
-        .catch(() => {
-          // Ignoramos errores aquí; no bloquea la carga de anuncios
-        });
-    }
-  }, []);
+  useEffect(() => { handleGetBrands(); handleGetAdvertisements(); }, []);
 
   const handleGetBrands = () => {
     axios.get(`${API_BASE_URL}/brands`).then((res) => setBrands(res.data)).catch(() => setBrands([]));
@@ -61,6 +45,14 @@ const Home = () => {
       })
       .finally(() => setLoading(false));
   };
+
+  if (loading && advertisements.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-zinc-950">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-700"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen text-white">
@@ -129,12 +121,8 @@ const Home = () => {
                 </div>
                 <Link to={`/advertisement/${v.id}`} className="block w-full text-center py-3 bg-red-700 hover:bg-red-600 rounded-lg font-bold transition uppercase tracking-widest text-sm">Ver detalles</Link>
               </div>
-
-              <Link to={`/advertisement/${v.id}`} className="mt-auto block w-full text-center py-3 bg-red-700 hover:bg-red-600 rounded-lg font-bold transition">
-                Ver detalles
-              </Link>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>
