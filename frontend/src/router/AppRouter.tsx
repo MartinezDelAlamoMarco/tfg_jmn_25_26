@@ -11,6 +11,7 @@ import VehicleDetail from "../pages/nucleo/VehicleDetail"
 import AdvertisementsScreen from "../pages/gestionVendedor/AdvertisementsScreen" 
 import CreateAd from "../pages/gestionVendedor/CreateAd";
 import EditAd from '../pages/gestionVendedor/EditAd';
+import FavoritesScreen from "../pages/areaPersonal/FavoritesScreen"
 
 export default function AppRouter() {
   return (
@@ -28,6 +29,7 @@ export default function AppRouter() {
           <Route path="/mis-anuncios" element={<AdvertisementsScreen />} />
           <Route path="/create-ad" element={<CreateAd />} />
           <Route path="/editar-anuncio/:id" element={<EditAd />} />
+          <Route path="/favoritos" element={<FavoritesScreen />} />
 
         </Route>
 

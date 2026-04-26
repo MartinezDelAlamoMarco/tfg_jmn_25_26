@@ -35,6 +35,13 @@ Route::get('/vehicles/{id}', [VehicleController::class, 'show']);
 Route::get('/advertisements', [AdvertisementController::class, 'index']);
 Route::get('/advertisements/brand/{brand_id}', [AdvertisementController::class, 'byBrand']);
 
+// --- FAVORITOS (ÁREA PERSONAL) ---
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/favorites', [AdvertisementController::class, 'favorites']);
+    Route::post('/favorites/{id}', [AdvertisementController::class, 'addFavorite']);
+    Route::delete('/favorites/{id}', [AdvertisementController::class, 'removeFavorite']);
+});
+
 // Ruta Ping para evitar el Cold Start en el hosting gratuito
 Route::get('/ping', function () {
     return response()->json([
