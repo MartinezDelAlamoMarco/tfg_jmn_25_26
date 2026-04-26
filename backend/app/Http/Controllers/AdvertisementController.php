@@ -2,37 +2,25 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Advertisement;
+use App\Models\AdvertisementView; // IMPORTAMOS EL MODELO DE LA VISTA
 use Illuminate\Http\Request;
 
 class AdvertisementController extends Controller
 {
     public function index()
     {
-        // Traemos el anuncio con su vehículo, marca, modelo e IMÁGENES
-        $advertisements = Advertisement::with([
-            'vehicle.model.brand', 
-            'images', 
-            'province', 
-            'state'
-        ])->orderBy('created_at', 'desc')->get();
+        // Consultamos directamente a la vista. ¡Mucho más rápido!
+        $advertisements = AdvertisementView::orderBy('created_at', 'desc')->get();
 
         return response()->json($advertisements);
     }
 
     public function byBrand($brandId)
     {
-        $advertisements = Advertisement::with([
-            'vehicle.model.brand', 
-            'images', 
-            'province', 
-            'state'
-        ])
-        ->whereHas('vehicle.model', function($query) use ($brandId) {
-            $query->where('brand_id', $brandId);
-        })
-        ->orderBy('created_at', 'desc')
-        ->get();
+        // En la vista, ya tenemos el brand_id en la misma "tabla virtual"
+        $advertisements = AdvertisementView::where('brand_id', $brandId)
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         return response()->json($advertisements);
     }

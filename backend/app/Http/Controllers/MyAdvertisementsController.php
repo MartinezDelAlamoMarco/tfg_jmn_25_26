@@ -60,11 +60,10 @@ class MyAdvertisementsController extends Controller
 
             // 4. Borramos el anuncio de la Base de Datos (las imágenes en BD se borrarán por cascada
             // o puedes forzarlo aquí con $ad->images()->delete(); si no tienes cascada activada)
-            $ad->images()->delete(); 
+            $ad->images()->delete();
             $ad->delete();
 
             return response()->json(['message' => 'Anuncio e imágenes eliminados correctamente'], 200);
-            
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error al eliminar el anuncio: ' . $e->getMessage()], 500);
         }
@@ -94,8 +93,8 @@ class MyAdvertisementsController extends Controller
                 'transmission_id'  => $request->transmission_id,
                 'tonality_id'      => $request->tonality_id,
                 'year'             => $request->year,
-                'km'               => $request->mileage, 
-                'power_hp'         => $request->hp,      
+                'km'               => $request->mileage,
+                'power_hp'         => $request->hp,
                 'doors'            => $request->doors,
             ]);
 
@@ -107,39 +106,39 @@ class MyAdvertisementsController extends Controller
                 'price'        => $request->price,
                 'description'  => $request->description,
                 'views'        => 0,
+                'is_rent'      => $request->boolean('is_rent'),
             ]);
 
             // 4. Lógica de subida a Google Drive
             if ($request->hasFile('images')) {
-    $brand = VehicleBrand::find($request->vehicle_brand_id);
-    $brandName = $brand ? $brand->name : 'Sin_Marca';
-    $driveService = new GoogleDriveService();
+                $brand = VehicleBrand::find($request->vehicle_brand_id);
+                $brandName = $brand ? $brand->name : 'Sin_Marca';
+                $driveService = new GoogleDriveService();
 
-    // Recorremos cada imagen que nos manda React
-    foreach ($request->file('images') as $index => $file) {
-        // Añadimos uniqid() para que si subes 3 fotos con el mismo nombre no se pisen en Drive
-        $fileName = time() . '_' . uniqid() . '_' . $file->getClientOriginalName();
+                // Recorremos cada imagen que nos manda React
+                foreach ($request->file('images') as $index => $file) {
+                    // Añadimos uniqid() para que si subes 3 fotos con el mismo nombre no se pisen en Drive
+                    $fileName = time() . '_' . uniqid() . '_' . $file->getClientOriginalName();
 
-        $uploadData = $driveService->uploadImageByBrand(
-            $file->getRealPath(),
-            $fileName,
-            $brandName
-        );
+                    $uploadData = $driveService->uploadImageByBrand(
+                        $file->getRealPath(),
+                        $fileName,
+                        $brandName
+                    );
 
-        // Guardamos en BD. ¡Truco!: La primera imagen del array ($index == 0) será la principal
-        AdvertisementImage::create([
-            'advertisement_id' => $advertisement->id,
-            'image_url'        => $uploadData['url'],
-            'is_main'          => $index === 0 ? true : false
-        ]);
-    }
-}
+                    // Guardamos en BD: La primera imagen del array ($index == 0) será la principal
+                    AdvertisementImage::create([
+                        'advertisement_id' => $advertisement->id,
+                        'image_url'        => $uploadData['url'],
+                        'is_main'          => $index === 0 ? true : false
+                    ]);
+                }
+            }
 
             // Confirmamos los cambios en la Base de Datos
             DB::commit();
 
             return response()->json(['message' => '¡Vehículo publicado con éxito!'], 201);
-            
         } catch (\Exception $e) {
             // Si algo falla (BD o Drive), deshacemos la inserción en BD
             DB::rollBack();

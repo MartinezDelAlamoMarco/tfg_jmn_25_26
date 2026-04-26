@@ -72,33 +72,36 @@ class GoogleDriveService
      * Sube la imagen y devuelve la URL del thumbnail.
      */
     public function uploadImageByBrand($filePath, $fileName, $brandName)
-    {
-        try {
-            $brandFolderId = $this->getOrCreateBrandFolder($brandName);
+{
+    try {
+        $brandFolderId = $this->getOrCreateBrandFolder($brandName);
 
-            $fileMetadata = new DriveFile([
-                'name' => $fileName,
-                'parents' => [$brandFolderId]
-            ]);
+        $fileMetadata = new \Google\Service\Drive\DriveFile([
+            'name' => $fileName,
+            'parents' => [$brandFolderId]
+        ]);
 
-            $content = file_get_contents($filePath);
+        $content = file_get_contents($filePath);
 
-            $file = $this->drive->files->create($fileMetadata, [
-                'data' => $content,
-                'mimeType' => mime_content_type($filePath),
-                'uploadType' => 'multipart',
-                'fields' => 'id'
-            ]);
+        $file = $this->drive->files->create($fileMetadata, [
+            'data' => $content,
+            'mimeType' => mime_content_type($filePath),
+            'uploadType' => 'multipart',
+            'fields' => 'id'
+        ]);
 
-            return [
-                'file_id' => $file->id,
-                'url' => "https://drive.google.com/thumbnail?id={$file->id}&sz=w1000"
-            ];
-        } catch (\Exception $e) {
-            // Capturamos el error exacto de Google Drive para poder leerlo
-            throw new \Exception("Error en Google Drive: " . $e->getMessage());
-        }
+        // 1. HACER EL ARCHIVO PÚBLICO (VITAL para evitar el error 403)
+        $this->makeFilePublic($file->id);
+
+        // 2. USAR EL FORMATO DE MINIATURA SOLICITADO
+        return [
+            'file_id' => $file->id,
+            'url' => "https://drive.google.com/thumbnail?id={$file->id}&sz=w1000"
+        ];
+    } catch (\Exception $e) {
+        throw new \Exception("Error en Google Drive: " . $e->getMessage());
     }
+}
 
     private function makeFilePublic($fileId)
     {

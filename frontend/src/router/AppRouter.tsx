@@ -9,9 +9,12 @@ import PasswordRecovery from "../pages/nucleo/PasswordRecovery"
 import CreateProfile from "../pages/nucleo/CreateProfile"
 import VehicleDetail from "../pages/nucleo/VehicleDetail" 
 import AdvertisementsScreen from "../pages/gestionVendedor/AdvertisementsScreen" 
-import CreateAd from "../pages/gestionVendedor/CreateAd";
-import EditAd from '../pages/gestionVendedor/EditAd';
+import CreateAd from "../pages/gestionVendedor/CreateAd"
+import EditAd from '../pages/gestionVendedor/EditAd'
 import FavoritesScreen from "../pages/areaPersonal/FavoritesScreen"
+import CreateAdRent from "../pages/gestionVendedor/CreateAdRent"
+import RentScreen from "../pages/nucleo/RentScreen"
+import RentDetail from "../pages/nucleo/RentDetail"
 
 export default function AppRouter() {
   return (
@@ -30,6 +33,10 @@ export default function AppRouter() {
           <Route path="/create-ad" element={<CreateAd />} />
           <Route path="/editar-anuncio/:id" element={<EditAd />} />
           <Route path="/favoritos" element={<FavoritesScreen />} />
+          <Route path="/alquileres" element={<RentScreen />} />
+          <Route path="/create-ad-rent" element={<CreateAdRent />} />
+          <Route path="/alquiler/:id" element={<RentDetail />} />
+
 
         </Route>
 
