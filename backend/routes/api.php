@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\MyAdvertisements;
 use App\Http\Controllers\MasterDataController;
+use App\Http\Controllers\RentController;
 use Illuminate\Support\Facades\Route;
 
 // --- AUTENTICACIÓN ---
