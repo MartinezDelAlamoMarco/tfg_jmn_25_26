@@ -1,12 +1,8 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { API_BASE_URL, APP_NAME } from "../../config";
+import { API_BASE_URL } from "../../config";
 import { Link } from "react-router-dom";
 
-interface Brand {
-  id: string;
-  name: string;
-}
 
 // Interfaz actualizada para el modelo de datos real de Laravel (anidado)
 interface Advertisement {
