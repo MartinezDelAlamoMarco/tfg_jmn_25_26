@@ -72,3 +72,11 @@ INSERT INTO favourites (id, user_id, advertisement_id, created_at, updated_at) V
 -- 5. Alquileres: Nuria Admin (1) alquila el BMW (Anuncio 2) de Javi
 INSERT INTO rents (id, advertisement_id, renter_id, start_date, end_date, total_price, created_at, updated_at) VALUES
 (1, 2, 1, '2026-05-01', '2026-05-05', 300.00, NOW(), NOW());
+
+INSERT INTO public.report_types (name, created_at, updated_at) VALUES 
+('Imagen inapropiada o sexual', NOW(), NOW()),
+('Información falsa o engañosa', NOW(), NOW()),
+('Estafa / Fraude', NOW(), NOW()),
+('Vehículo ya vendido', NOW(), NOW()),
+('Comentario ofensivo', NOW(), NOW()),
+('Otro', NOW(), NOW());

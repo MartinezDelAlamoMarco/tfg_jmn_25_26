@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\MyAdvertisementsController;
 use App\Http\Controllers\MasterDataController;
+use App\Http\Controllers\ReportController; // <-- NUEVA: Importamos el controlador de reportes
 use Illuminate\Support\Facades\Route;
 
 // --- AUTENTICACIÓN Y PERFIL ---
@@ -46,6 +47,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/favorites', [AdvertisementController::class, 'favorites']);
     Route::post('/favorites/{id}', [AdvertisementController::class, 'addFavorite']);
     Route::delete('/favorites/{id}', [AdvertisementController::class, 'removeFavorite']);
+});
+
+// --- REPORTES (DENUNCIAS) ---
+// Ruta pública para cargar los motivos en el formulario
+Route::get('/report-types', [ReportController::class, 'getTypes']);
+
+// Ruta protegida para enviar el reporte (solo usuarios logueados)
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/reports', [ReportController::class, 'store']);
 });
 
 // Ruta Ping para evitar el Cold Start en el hosting gratuito

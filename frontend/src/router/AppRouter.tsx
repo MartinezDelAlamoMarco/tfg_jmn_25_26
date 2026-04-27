@@ -16,6 +16,7 @@ import CreateAdRent from "../pages/gestionVendedor/CreateAdRent"
 import RentScreen from "../pages/nucleo/RentScreen"
 import RentDetail from "../pages/nucleo/RentDetail"
 import Profile from "../pages/areaPersonal/GestionarPerfil"
+import ReportAdvertisement from "../components/ReportAdvertisement"
 
 export default function AppRouter() {
   return (
@@ -38,6 +39,7 @@ export default function AppRouter() {
           <Route path="/create-ad-rent" element={<CreateAdRent />} />
           <Route path="/alquiler/:id" element={<RentDetail />} />
           <Route path="/perfil" element={<Profile />} />
+          <Route path="/anuncios/:id/reportar" element={<ReportAdvertisement />} />
 
         </Route>
 

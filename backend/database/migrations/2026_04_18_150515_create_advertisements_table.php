@@ -19,6 +19,7 @@ return new class extends Migration
             $table->decimal('price', 12, 2);
             $table->text('description')->nullable();
             $table->integer('views')->default(0);
+            $table->boolean('is_rented')->default(false);
             $table->timestamps();
         });
     }
