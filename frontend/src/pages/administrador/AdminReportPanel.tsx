@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { API_BASE_URL } from "../../config";
 import { ShieldAlert, Eye, AlertTriangle } from "lucide-react";
+import LoadingScreen from "../../components/LoadingScreen"; // <-- IMPORTACIÓN AÑADIDA
 
 interface PriorityReport {
   advertisement_id: number;
@@ -10,7 +11,7 @@ interface PriorityReport {
   total_reports: number;
   last_report_at: string;
   advertisement: {
-    is_rent: boolean; // Para saber si redirigir a /advertisement/ o /alquiler/
+    is_rent: boolean;
     vehicle?: {
       model?: {
         name: string;
@@ -42,7 +43,10 @@ const AdminReportsPanel = () => {
     fetchReports();
   }, []);
 
-  if (loading) return <div className="text-white text-center mt-20">Cargando incidencias...</div>;
+  // --- CAMBIO AQUÍ: Ahora usamos el componente LoadingScreen ---
+  if (loading) {
+    return <LoadingScreen message="Cargando incidencias..." />;
+  }
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white p-6 pt-24">
