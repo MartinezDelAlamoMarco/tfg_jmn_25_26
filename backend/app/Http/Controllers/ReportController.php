@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\Report;
@@ -51,5 +52,14 @@ class ReportController extends Controller
             'message' => 'Reporte enviado correctamente.',
             'report' => $report
         ], 201);
+    }
+
+    public function getPriorityReports()
+    {
+        // Usamos el modelo vinculado a la Vista SQL
+        // Cargamos también la relación con el anuncio y el vehículo para mostrar nombres en la tabla
+        $reports = \App\Models\ReportPriority::with(['advertisement.vehicle.model.brand'])->get();
+
+        return response()->json($reports);
     }
 }

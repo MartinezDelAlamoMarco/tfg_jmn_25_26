@@ -76,7 +76,7 @@ class GoogleDriveService
     try {
         $brandFolderId = $this->getOrCreateBrandFolder($brandName);
 
-        $fileMetadata = new \Google\Service\Drive\DriveFile([
+        $fileMetadata = new DriveFile([
             'name' => $fileName,
             'parents' => [$brandFolderId]
         ]);

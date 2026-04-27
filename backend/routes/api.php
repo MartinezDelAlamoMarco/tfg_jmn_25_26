@@ -5,7 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\MyAdvertisementsController;
 use App\Http\Controllers\MasterDataController;
-use App\Http\Controllers\ReportController; // <-- NUEVA: Importamos el controlador de reportes
+use App\Http\Controllers\ReportController; 
 use Illuminate\Support\Facades\Route;
 
 // --- AUTENTICACIÓN Y PERFIL ---
@@ -15,8 +15,8 @@ Route::post('/register', [AuthController::class, 'register']);
 // Agrupamos todas las rutas que gestionan al usuario logueado
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [AuthController::class, 'user']);
-    Route::put('/user/profile', [AuthController::class, 'updateProfile']);   // <-- NUEVA: Actualizar datos
-    Route::put('/user/password', [AuthController::class, 'updatePassword']); // <-- NUEVA: Actualizar contraseña
+    Route::put('/user/profile', [AuthController::class, 'updateProfile']);
+    Route::put('/user/password', [AuthController::class, 'updatePassword']);
 });
 
 // --- GESTIÓN DE MIS ANUNCIOS (VENDEDOR) ---
@@ -50,12 +50,20 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 // --- REPORTES (DENUNCIAS) ---
-// Ruta pública para cargar los motivos en el formulario
 Route::get('/report-types', [ReportController::class, 'getTypes']);
 
-// Ruta protegida para enviar el reporte (solo usuarios logueados)
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/reports', [ReportController::class, 'store']);
+});
+
+// --- PANEL DE ADMINISTRACIÓN (MODERACIÓN) ---
+// Estas rutas solo deberían ser accesibles por administradores
+Route::middleware('auth:sanctum')->group(function () {
+    // Obtener la lista de la vista SQL view_reports_priority
+    Route::get('/admin/reports-priority', [ReportController::class, 'getPriorityReports']);
+
+    // Eliminar anuncio como moderador (Acción definitiva)
+    Route::delete('/advertisements/{id}', [AdvertisementController::class, 'destroy']);
 });
 
 // Ruta Ping para evitar el Cold Start en el hosting gratuito
