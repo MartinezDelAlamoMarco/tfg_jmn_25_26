@@ -41,7 +41,7 @@ const RentDetail = () => {
   const [totalPrice, setTotalPrice] = useState<number>(0);
 
   const today = new Date().toISOString().split("T")[0];
-  const userRole = localStorage.getItem('user_role'); // <-- Obtenemos el rol
+  const userRole = localStorage.getItem('user_role');
   const token = localStorage.getItem("auth_token");
 
   useEffect(() => {
@@ -85,6 +85,12 @@ const RentDetail = () => {
   }, [dates, advertisement]);
 
   const handleRent = async () => {
+    if (!token) {
+        alert("Debes iniciar sesión para realizar una reserva.");
+        navigate("/login");
+        return;
+    }
+
     if (!dates.start || !dates.end) {
       setError("Por favor, selecciona las fechas de inicio y fin.");
       return;
@@ -111,7 +117,6 @@ const RentDetail = () => {
     }
   };
 
-  // <-- NUEVA FUNCIÓN: ELIMINAR ANUNCIO (Solo Admin) -->
   const handleDeleteAd = async () => {
     if (window.confirm("⚠️ ¿Estás seguro de que quieres ELIMINAR este anuncio definitivamente por incumplir las normas?")) {
       try {
@@ -147,7 +152,7 @@ const RentDetail = () => {
   return (
     <div className="min-h-screen bg-zinc-900 text-white py-12 px-4 sm:px-6 lg:px-8 relative pt-24">
       {actionLoading && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-9999 flex items-center justify-center">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9999] flex items-center justify-center">
           <div className="flex flex-col items-center">
             <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-red-600 mb-4"></div>
             <p className="text-red-500 font-bold uppercase tracking-widest animate-pulse">Procesando reserva...</p>
@@ -221,7 +226,6 @@ const RentDetail = () => {
                 <span className="text-zinc-500 font-bold uppercase italic pb-1">/ día</span>
               </div>
 
-              {/* <-- RENDERIZADO CONDICIONAL PARA ADMINISTRADOR --> */}
               {userRole === 'admin' ? (
                 <div className="mt-8 bg-red-950/30 p-6 rounded-xl border border-red-900 mb-8 text-center">
                   <h3 className="text-red-500 font-bold uppercase text-sm tracking-widest mb-4">🛠️ Herramientas de Moderador</h3>
@@ -234,7 +238,6 @@ const RentDetail = () => {
                 </div>
               ) : (
                 <>
-                  {/* Flujo normal de usuario (Reserva y Reporte) */}
                   {success ? (
                     <div className="bg-green-900/20 border border-green-700 p-8 rounded-2xl text-center mb-8 animate-fade-in">
                       <div className="w-16 h-16 bg-green-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">✓</div>
@@ -279,25 +282,38 @@ const RentDetail = () => {
 
                   {!success && (
                     <div className="mb-6">
-                      <button 
-                        onClick={handleRent}
-                        className="w-full py-4 bg-red-700 hover:bg-red-600 text-white font-black uppercase tracking-widest rounded-xl transition duration-300 shadow-lg shadow-red-900/20 active:scale-95 mb-4"
-                      >
-                        Confirmar Reserva
-                      </button>
+                      {token ? (
+                        <button 
+                          onClick={handleRent}
+                          className="w-full py-4 bg-red-700 hover:bg-red-600 text-white font-black uppercase tracking-widest rounded-xl transition duration-300 shadow-lg shadow-red-900/20 active:scale-95 mb-4"
+                        >
+                          Confirmar Reserva
+                        </button>
+                      ) : (
+                        <Link 
+                          to="/login"
+                          className="block w-full py-4 bg-zinc-700 hover:bg-zinc-600 text-white text-center font-black uppercase tracking-widest rounded-xl transition duration-300 mb-4"
+                        >
+                          Inicia sesión para reservar
+                        </Link>
+                      )}
                     </div>
                   )}
 
                   <div className="pt-4 border-t border-zinc-700/50 flex justify-end">
-                    <Link
-                      to={`/anuncios/${advertisement.id}/reportar`}
-                      className="text-zinc-500 hover:text-red-500 text-xs font-bold uppercase flex items-center gap-2 transition-colors"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                      </svg>
-                      Denunciar este anuncio
-                    </Link>
+                    {token ? (
+                        <Link
+                            to={`/anuncios/${advertisement.id}/reportar`}
+                            className="text-zinc-500 hover:text-red-500 text-xs font-bold uppercase flex items-center gap-2 transition-colors"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                            Denunciar este anuncio
+                        </Link>
+                    ) : (
+                        <span className="text-zinc-600 text-[10px] uppercase font-black italic">Inicia sesión para denunciar</span>
+                    )}
                   </div>
                 </>
               )}

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom"; // <-- Añadido useNavigate
+import { useParams, Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { API_BASE_URL } from "../../config";
 
@@ -28,7 +28,7 @@ interface Advertisement {
 
 const VehicleDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate(); // <-- Inicializado useNavigate
+  const navigate = useNavigate();
   const [advertisement, setAdvertisement] = useState<Advertisement | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,7 +36,7 @@ const VehicleDetail = () => {
   const [isFavorite, setIsFavorite] = useState<boolean>(false);
   
   const token = localStorage.getItem('auth_token');
-  const userRole = localStorage.getItem('user_role'); // <-- Obtenemos el rol del usuario
+  const userRole = localStorage.getItem('user_role');
 
   useEffect(() => {
     const fetchVehicle = async () => {
@@ -71,7 +71,6 @@ const VehicleDetail = () => {
     fetchVehicle();
   }, [id, token]);
 
-  // <-- NUEVA FUNCIÓN: ELIMINAR ANUNCIO (Solo Admin) -->
   const handleDeleteAd = async () => {
     if (window.confirm("⚠️ ¿Estás seguro de que quieres ELIMINAR este anuncio definitivamente por incumplir las normas?")) {
       try {
@@ -79,7 +78,7 @@ const VehicleDetail = () => {
           headers: { Authorization: `Bearer ${token}` }
         });
         alert("Anuncio eliminado correctamente.");
-        navigate('/admin/panel'); // O donde quieras redirigir al admin tras borrar
+        navigate('/admin/panel');
       } catch (error) {
         console.error("Error eliminando el anuncio", error);
         alert("Hubo un error al eliminar el anuncio.");
@@ -117,7 +116,6 @@ const VehicleDetail = () => {
         </Link>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* SECCIÓN DE IMÁGENES */}
           <div className="space-y-4">
             <div className="aspect-video bg-zinc-800 rounded-2xl border border-zinc-700 flex items-center justify-center shadow-2xl overflow-hidden">
               {mainImage ? (
@@ -146,7 +144,6 @@ const VehicleDetail = () => {
             </div>
           </div>
 
-          {/* INFORMACIÓN DEL ANUNCIO */}
           <div className="flex flex-col">
             <div className="bg-zinc-800 rounded-2xl p-8 border border-zinc-700 shadow-xl">
               <div className="flex justify-between items-start mb-4">
@@ -198,7 +195,6 @@ const VehicleDetail = () => {
                 </div>
               )}
 
-              {/* Especificaciones rápidas */}
               <div className="grid grid-cols-2 gap-4 mb-8">
                 <div className="bg-zinc-700/30 p-4 rounded-xl border border-zinc-600">
                   <p className="text-zinc-500 text-[10px] uppercase font-black tracking-widest mb-1">Kilómetros</p>
@@ -218,7 +214,6 @@ const VehicleDetail = () => {
                 </div>
               </div>
 
-              {/* <-- RENDERIZADO CONDICIONAL DE BOTONES --> */}
               {userRole === 'admin' ? (
                 <div className="mt-6 bg-red-950/30 p-6 rounded-xl border border-red-900 text-center">
                   <h3 className="text-red-500 font-bold uppercase text-sm tracking-widest mb-4">🛠️ Herramientas de Moderador</h3>
@@ -231,20 +226,33 @@ const VehicleDetail = () => {
                 </div>
               ) : (
                 <>
-                  <button className="w-full py-4 bg-red-700 hover:bg-red-600 text-white font-black uppercase tracking-widest rounded-xl transition duration-300 shadow-lg shadow-red-900/20 active:scale-95 mb-6">
-                    Contactar con el vendedor
-                  </button>
+                  {token ? (
+                    <button className="w-full py-4 bg-red-700 hover:bg-red-600 text-white font-black uppercase tracking-widest rounded-xl transition duration-300 shadow-lg shadow-red-900/20 active:scale-95 mb-6">
+                        Contactar con el vendedor
+                    </button>
+                  ) : (
+                    <Link 
+                        to="/login"
+                        className="block w-full py-4 bg-zinc-700 hover:bg-zinc-600 text-white text-center font-black uppercase tracking-widest rounded-xl transition duration-300 mb-6"
+                    >
+                        Inicia sesión para contactar
+                    </Link>
+                  )}
 
                   <div className="pt-4 border-t border-zinc-700/50 flex justify-end">
-                    <Link
-                      to={`/anuncios/${advertisement.id}/reportar`}
-                      className="text-zinc-500 hover:text-red-500 text-xs font-bold uppercase flex items-center gap-2 transition-colors"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                      </svg>
-                      Denunciar este anuncio
-                    </Link>
+                    {token ? (
+                        <Link
+                            to={`/anuncios/${advertisement.id}/reportar`}
+                            className="text-zinc-500 hover:text-red-500 text-xs font-bold uppercase flex items-center gap-2 transition-colors"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                            Denunciar este anuncio
+                        </Link>
+                    ) : (
+                        <span className="text-zinc-600 text-[10px] uppercase font-black italic">Inicia sesión para denunciar</span>
+                    )}
                   </div>
                 </>
               )}
@@ -253,7 +261,6 @@ const VehicleDetail = () => {
           </div>
         </div>
 
-        {/* DESCRIPCIÓN Y FICHA TÉCNICA */}
         <div className="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 bg-zinc-800 p-8 rounded-2xl border border-zinc-700 shadow-xl">
             <h2 className="text-2xl font-black mb-6 border-b border-zinc-700 pb-2 uppercase italic">
