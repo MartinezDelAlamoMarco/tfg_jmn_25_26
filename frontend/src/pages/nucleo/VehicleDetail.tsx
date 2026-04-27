@@ -33,7 +33,8 @@ const VehicleDetail = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [mainImage, setMainImage] = useState<string>("");
-  const [isFavorite, setIsFavorite] = useState<boolean>(false);
+  const [isFavorite, setIsFavorite] = useState<boolean | null>(null);
+  const [favoriteLoading, setFavoriteLoading] = useState<boolean>(false);
   
   const token = localStorage.getItem('auth_token');
   const userRole = localStorage.getItem('user_role');
@@ -57,8 +58,11 @@ const VehicleDetail = () => {
             const favIds = (favResp.data || []).map((a: any) => a.id);
             setIsFavorite(favIds.includes(response.data.id));
           } catch (e) {
-            // Error silencioso para favoritos
+            // Si falla la comprobación, asumimos que no es favorito
+            setIsFavorite(false);
           }
+        } else {
+          setIsFavorite(false);
         }
       } catch (err) {
         console.error("Error al cargar el vehículo:", err);
@@ -69,6 +73,17 @@ const VehicleDetail = () => {
     };
 
     fetchVehicle();
+
+    const onFavsUpdated = (e: any) => {
+      const detail = e?.detail || {};
+      if (!detail || !detail.adId) return;
+      if (String(detail.adId) === String(id)) {
+        setIsFavorite(detail.action === 'added');
+      }
+    };
+    window.addEventListener('favorites:updated', onFavsUpdated as EventListener);
+
+    return () => window.removeEventListener('favorites:updated', onFavsUpdated as EventListener);
   }, [id, token]);
 
   const handleDeleteAd = async () => {
@@ -83,6 +98,31 @@ const VehicleDetail = () => {
         console.error("Error eliminando el anuncio", error);
         alert("Hubo un error al eliminar el anuncio.");
       }
+    }
+  };
+
+  const handleToggleFavorite = async () => {
+    if (!token || !advertisement) return;
+    setFavoriteLoading(true);
+    try {
+      if (isFavorite) {
+        await axios.delete(`${API_BASE_URL}/favorites/${id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setIsFavorite(false);
+        window.dispatchEvent(new CustomEvent('favorites:updated', { detail: { adId: advertisement.id, action: 'removed' } }));
+      } else {
+        await axios.post(`${API_BASE_URL}/favorites/${id}`, {}, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setIsFavorite(true);
+        window.dispatchEvent(new CustomEvent('favorites:updated', { detail: { adId: advertisement.id, action: 'added' } }));
+      }
+    } catch (err) {
+      console.error('Error updating favorite:', err);
+      alert('No se pudo actualizar favoritos');
+    } finally {
+      setFavoriteLoading(false);
     }
   };
 
@@ -170,27 +210,15 @@ const VehicleDetail = () => {
               {token && userRole !== 'admin' && (
                 <div className="mb-4">
                   <button
-                    onClick={async () => {
-                      try {
-                        if (isFavorite) {
-                          await axios.delete(`${API_BASE_URL}/favorites/${id}`, {
-                            headers: { Authorization: `Bearer ${token}` }
-                          });
-                          setIsFavorite(false);
-                        } else {
-                          await axios.post(`${API_BASE_URL}/favorites/${id}`, {}, {
-                            headers: { Authorization: `Bearer ${token}` }
-                          });
-                          setIsFavorite(true);
-                        }
-                      } catch (err) {
-                        console.error('Error updating favorite:', err);
-                        alert('No se pudo actualizar favoritos');
-                      }
-                    }}
-                    className={`w-full py-3 mb-4 rounded-xl font-bold transition ${isFavorite ? 'bg-red-700 hover:bg-red-600 text-white' : 'bg-zinc-700 hover:bg-zinc-600 text-white'}`}
+                    onClick={handleToggleFavorite}
+                    disabled={isFavorite === null || favoriteLoading}
+                    className={`w-full py-3 mb-4 rounded-xl font-bold transition ${isFavorite ? 'bg-red-700 hover:bg-red-600 text-white' : 'bg-zinc-700 hover:bg-zinc-600 text-white'} ${isFavorite === null || favoriteLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
                   >
-                    {isFavorite ? 'Quitar de favoritos' : 'Añadir a favoritos'}
+                    {isFavorite === null || favoriteLoading ? (
+                      <span className="inline-flex items-center justify-center">
+                        <span className="animate-spin inline-block h-4 w-4 border-b-2 border-white rounded-full"></span>
+                      </span>
+                    ) : isFavorite ? 'Quitar de favoritos' : 'Añadir a favoritos'}
                   </button>
                 </div>
               )}

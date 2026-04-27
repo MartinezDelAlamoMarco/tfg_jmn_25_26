@@ -24,64 +24,95 @@ const FavoritesScreen = () => {
   const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [loadingFavs, setLoadingFavs] = useState<Record<number, boolean>>({});
+  const [favoritesLoaded, setFavoritesLoaded] = useState(false);
   const token = localStorage.getItem("auth_token");
 
   useEffect(() => {
+    // Cargamos los anuncios favoritos y los ids
     handleGetAdvertisements();
-    // Si estamos autenticados, cargamos los ids favoritos del usuario
-    if (localStorage.getItem("auth_token")) {
-      axios
-        .get(`${API_BASE_URL}/favorites`)
-        .then((res) => {
-          const ids = (res.data || []).map((a: any) => a.id);
-          setFavoriteIds(ids);
-        })
-        .catch(() => {
-          // Ignoramos errores aquí; no bloquea la carga de anuncios
-        });
-    }
+
+    // Re-escuchar cambios en favoritos desde otras páginas
+    const onFavsUpdated = (_e: any) => {
+      handleGetAdvertisements();
+    };
+    window.addEventListener("favorites:updated", onFavsUpdated as EventListener);
+    return () => window.removeEventListener("favorites:updated", onFavsUpdated as EventListener);
   }, []);
 
   const handleGetAdvertisements = () => {
     setErrorMessage(null);
     setLoading(true);
+    const tokenLocal = localStorage.getItem("auth_token");
     // If not authenticated, skip calling the API
-    if (!localStorage.getItem("auth_token")) {
+    if (!tokenLocal) {
       setAdvertisements([]);
+      setFavoriteIds([]);
+      setFavoritesLoaded(true);
       setLoading(false);
       return;
     }
 
     axios
-      .get(`${API_BASE_URL}/favorites`)
+      .get(`${API_BASE_URL}/favorites`, {
+        headers: { Authorization: `Bearer ${tokenLocal}` },
+      })
       .then((res) => {
         setAdvertisements(res.data);
+        const ids = (res.data || []).map((a: any) => a.id);
+        setFavoriteIds(ids);
         console.debug("Favorites response:", res);
       })
       .catch((err) => {
         console.error("Error fetching favorites:", err);
         setErrorMessage("Error al obtener vehículos favoritos");
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        setLoading(false);
+        setFavoritesLoaded(true);
+      });
   };
 
   const handleToggleFavorite = async (adId: number) => {
-    if (!localStorage.getItem("auth_token")) {
+    const tokenLocal = localStorage.getItem("auth_token");
+    if (!tokenLocal) {
       alert("Inicia sesión para marcar favoritos");
       return;
     }
 
     try {
+      setLoadingFavs((prev) => ({ ...prev, [adId]: true }));
+
       if (favoriteIds.includes(adId)) {
-        await axios.delete(`${API_BASE_URL}/favorites/${adId}`);
+        await axios.delete(`${API_BASE_URL}/favorites/${adId}`, {
+          headers: { Authorization: `Bearer ${tokenLocal}` },
+        });
         setFavoriteIds((prev) => prev.filter((id) => id !== adId));
+        // Si estamos en la pantalla de favoritos, remover del listado
+        setAdvertisements((prev) => prev.filter((a) => a.id !== adId));
+        window.dispatchEvent(
+          new CustomEvent("favorites:updated", { detail: { adId, action: "removed" } })
+        );
       } else {
-        await axios.post(`${API_BASE_URL}/favorites/${adId}`);
+        await axios.post(
+          `${API_BASE_URL}/favorites/${adId}`,
+          {},
+          { headers: { Authorization: `Bearer ${tokenLocal}` } }
+        );
         setFavoriteIds((prev) => [...prev, adId]);
+        window.dispatchEvent(
+          new CustomEvent("favorites:updated", { detail: { adId, action: "added" } })
+        );
       }
     } catch (err) {
       console.error("Error updating favorite:", err);
       alert("No se pudo actualizar favoritos");
+    } finally {
+      setLoadingFavs((prev) => {
+        const out = { ...prev };
+        delete out[adId];
+        return out;
+      });
     }
   };
 
@@ -156,11 +187,18 @@ const FavoritesScreen = () => {
                   <div className="mb-4">
                     <button
                       onClick={() => handleToggleFavorite(v.id)}
-                      className={`px-3 py-2 rounded-lg font-semibold transition ${favoriteIds.includes(v.id) ? "bg-red-700 hover:bg-red-600 text-white" : "bg-zinc-700 hover:bg-zinc-600 text-zinc-200"}`}
+                      disabled={!favoritesLoaded || !!loadingFavs[v.id]}
+                      className={`px-3 py-2 rounded-lg font-semibold transition ${favoriteIds.includes(v.id) ? "bg-red-700 hover:bg-red-600 text-white" : "bg-zinc-700 hover:bg-zinc-600 text-zinc-200"} ${(!favoritesLoaded || loadingFavs[v.id]) ? 'opacity-70 cursor-not-allowed' : ''}`}
                     >
-                      {favoriteIds.includes(v.id)
-                        ? "Quitar favorito"
-                        : "Añadir a favoritos"}
+                      {(!favoritesLoaded || loadingFavs[v.id]) ? (
+                        <span className="inline-flex items-center justify-center">
+                          <span className="animate-spin inline-block h-4 w-4 border-b-2 border-white rounded-full"></span>
+                        </span>
+                      ) : favoriteIds.includes(v.id) ? (
+                        "Quitar favorito"
+                      ) : (
+                        "Añadir a favoritos"
+                      )}
                     </button>
                   </div>
                 )}
