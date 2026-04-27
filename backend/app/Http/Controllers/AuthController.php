@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 use App\Models\User;
 
 class AuthController extends Controller
@@ -40,26 +41,35 @@ class AuthController extends Controller
     }
 
     public function register(Request $request)
-    {
-        $request->validate([
-            'name' => 'required',
-            'email' => 'required|email|unique:users',
-            'password' => 'required|min:8|confirmed',
-        ]);
+{
+    $request->validate([
+        'name' => 'required',
+        'email' => 'required|email|unique:users',
+        'password' => [
+            'required',
+            'confirmed',
+            Password::min(8)
+                ->mixedCase() // Al menos una mayúscula y una minúscula
+                ->numbers()   // Al menos un número
+                ->symbols()   // Al menos un carácter especial (!, @, #, etc.)
+                // ->uncompromised() // Opcional: Verifica que la contraseña no haya sido filtrada en hackeos conocidos
+        ],
+    ]);
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
+    // El resto del código se mantiene igual
+    $user = User::create([
+        'name' => $request->name,
+        'email' => $request->email,
+        'password' => Hash::make($request->password),
+    ]);
 
-        $token = $user->createToken('API Token')->plainTextToken;
+    $token = $user->createToken('API Token')->plainTextToken;
 
-        return response()->json([
-            'user' => $user,
-            'token' => $token,
-        ], 201);
-    }
+    return response()->json([
+        'user' => $user,
+        'token' => $token,
+    ], 201);
+}
 
     public function user(Request $request)
     {

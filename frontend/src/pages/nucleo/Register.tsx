@@ -2,6 +2,8 @@ import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { APP_NAME } from "../../config"
 import axios from "axios";
+// Importamos los iconos de ojo y ojo-tachado
+import { Eye, EyeOff } from 'lucide-react'
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -11,6 +13,10 @@ const Register = () => {
     password: '',
     confirmPassword: ''
   })
+
+  // Nuevos estados para controlar la visibilidad de las contraseñas
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -44,6 +50,21 @@ const Register = () => {
       alert('Error en registro')
     }
   }
+
+  // Objeto con las validaciones de la contraseña
+  const passwordValidations = {
+    length: formData.password.length >= 8,
+    upper: /[A-Z]/.test(formData.password),
+    lower: /[a-z]/.test(formData.password),
+    number: /[0-9]/.test(formData.password),
+    special: /[^A-Za-z0-9]/.test(formData.password)
+  };
+
+  // Comprobamos si la contraseña cumple TODOS los requisitos
+  const isPasswordValid = Object.values(passwordValidations).every(Boolean);
+  
+  // Comprobamos si ambas contraseñas coinciden
+  const passwordsMatch = formData.password === formData.confirmPassword && formData.confirmPassword.length > 0;
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12">
@@ -104,41 +125,97 @@ const Register = () => {
               />
             </div>
 
+            {/* CAMPO DE CONTRASEÑA CON LA VALIDACIÓN VISUAL Y EL BOTÓN DE OJITO */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-zinc-300 mb-2">
                 Contraseña
               </label>
-              <input
-                type="password"
-                id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                className="w-full px-4 py-3 bg-zinc-700 border border-zinc-600 rounded-lg text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition duration-200"
-                placeholder="••••••••"
-                required
-              />
+              <div className="relative">
+                <input
+                  // El tipo cambia entre 'password' y 'text' según el estado
+                  type={showPassword ? 'text' : 'password'}
+                  id="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 bg-zinc-700 border border-zinc-600 rounded-lg text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition duration-200"
+                  placeholder="••••••••"
+                  required
+                />
+                {/* Botón del ojito posicionado absolutamente a la derecha */}
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition duration-150"
+                  aria-label={showPassword ? 'Ocultar contraseña' : 'Ver contraseña'}
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+              
+              {/* Feedback visual de validación (se mantiene igual) */}
+              <div className="mt-3 text-sm space-y-1">
+                <p className={`${passwordValidations.length ? 'text-green-500' : 'text-zinc-500'} transition-colors duration-200 flex items-center gap-2`}>
+                  {passwordValidations.length ? '✓' : '○'} Mínimo 8 caracteres
+                </p>
+                <p className={`${passwordValidations.upper ? 'text-green-500' : 'text-zinc-500'} transition-colors duration-200 flex items-center gap-2`}>
+                  {passwordValidations.upper ? '✓' : '○'} Al menos una mayúscula
+                </p>
+                <p className={`${passwordValidations.lower ? 'text-green-500' : 'text-zinc-500'} transition-colors duration-200 flex items-center gap-2`}>
+                  {passwordValidations.lower ? '✓' : '○'} Al menos una minúscula
+                </p>
+                <p className={`${passwordValidations.number ? 'text-green-500' : 'text-zinc-500'} transition-colors duration-200 flex items-center gap-2`}>
+                  {passwordValidations.number ? '✓' : '○'} Al menos un número
+                </p>
+                <p className={`${passwordValidations.special ? 'text-green-500' : 'text-zinc-500'} transition-colors duration-200 flex items-center gap-2`}>
+                  {passwordValidations.special ? '✓' : '○'} Al menos un carácter especial
+                </p>
+              </div>
             </div>
 
+            {/* CONFIRMAR CONTRASEÑA CON EL BOTÓN DE OJITO */}
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-zinc-300 mb-2">
                 Confirmar contraseña
               </label>
-              <input
-                type="password"
-                id="confirmPassword"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                className="w-full px-4 py-3 bg-zinc-700 border border-zinc-600 rounded-lg text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition duration-200"
-                placeholder="••••••••"
-                required
-              />
+              <div className="relative">
+                <input
+                  // El tipo cambia entre 'password' y 'text' según el estado
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  // Si hay texto escrito y no coinciden, mostramos el borde en rojo
+                  className={`w-full px-4 py-3 bg-zinc-700 border ${formData.confirmPassword.length > 0 && !passwordsMatch ? 'border-red-500' : 'border-zinc-600'} rounded-lg text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition duration-200`}
+                  placeholder="••••••••"
+                  required
+                />
+                {/* Botón del ojito para confirmación */}
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition duration-150"
+                  aria-label={showConfirmPassword ? 'Ocultar contraseña' : 'Ver contraseña'}
+                >
+                  {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+              {/* Mensaje de error si no coinciden las contraseñas */}
+              {formData.confirmPassword.length > 0 && !passwordsMatch && (
+                <p className="text-red-500 text-sm mt-2">Las contraseñas no coinciden</p>
+              )}
             </div>
 
+            {/* BOTÓN DESHABILITADO SI FALLAN REQUISITOS */}
             <button
               type="submit"
-              className="w-full bg-red-700 hover:bg-red-600 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-zinc-800"
+              disabled={!isPasswordValid || !passwordsMatch}
+              className={`w-full font-semibold py-3 px-4 rounded-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-zinc-800 ${
+                !isPasswordValid || !passwordsMatch
+                  ? 'bg-zinc-600 text-zinc-400 cursor-not-allowed'
+                  : 'bg-red-700 hover:bg-red-600 text-white'
+              }`}
             >
               Crear cuenta
             </button>
