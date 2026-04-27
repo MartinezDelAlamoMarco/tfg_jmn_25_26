@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom"; // <-- Añadido useNavigate
 import axios from "axios";
 import { API_BASE_URL } from "../../config";
 
-// Interfaz actualizada para el modelo de datos real de Laravel
 interface Advertisement {
   id: number;
   price: string;
@@ -29,12 +28,15 @@ interface Advertisement {
 
 const VehicleDetail = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate(); // <-- Inicializado useNavigate
   const [advertisement, setAdvertisement] = useState<Advertisement | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [mainImage, setMainImage] = useState<string>("");
   const [isFavorite, setIsFavorite] = useState<boolean>(false);
+  
   const token = localStorage.getItem('auth_token');
+  const userRole = localStorage.getItem('user_role'); // <-- Obtenemos el rol del usuario
 
   useEffect(() => {
     const fetchVehicle = async () => {
@@ -43,18 +45,19 @@ const VehicleDetail = () => {
         const response = await axios.get(`${API_BASE_URL}/vehicles/${id}`);
         setAdvertisement(response.data);
         
-        // Seleccionamos la imagen principal o la primera disponible
         const img = response.data.images?.find((i: any) => i.is_main)?.image_url 
                  || response.data.images?.[0]?.image_url;
         setMainImage(img || "");
-        // Si estamos autenticados, comprobamos si este anuncio está en favoritos
-        if (localStorage.getItem('auth_token')) {
+
+        if (token) {
           try {
-            const favResp = await axios.get(`${API_BASE_URL}/favorites`);
+            const favResp = await axios.get(`${API_BASE_URL}/favorites`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
             const favIds = (favResp.data || []).map((a: any) => a.id);
             setIsFavorite(favIds.includes(response.data.id));
           } catch (e) {
-            // No bloqueamos la vista si falla
+            // Error silencioso para favoritos
           }
         }
       } catch (err) {
@@ -66,7 +69,23 @@ const VehicleDetail = () => {
     };
 
     fetchVehicle();
-  }, [id]);
+  }, [id, token]);
+
+  // <-- NUEVA FUNCIÓN: ELIMINAR ANUNCIO (Solo Admin) -->
+  const handleDeleteAd = async () => {
+    if (window.confirm("⚠️ ¿Estás seguro de que quieres ELIMINAR este anuncio definitivamente por incumplir las normas?")) {
+      try {
+        await axios.delete(`${API_BASE_URL}/advertisements/${id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        alert("Anuncio eliminado correctamente.");
+        navigate('/admin/panel'); // O donde quieras redirigir al admin tras borrar
+      } catch (error) {
+        console.error("Error eliminando el anuncio", error);
+        alert("Hubo un error al eliminar el anuncio.");
+      }
+    }
+  };
 
   if (loading) {
     return (
@@ -112,7 +131,6 @@ const VehicleDetail = () => {
               )}
             </div>
             
-            {/* Galería de miniaturas */}
             <div className="grid grid-cols-5 gap-2">
               {advertisement.images?.map((img, i) => (
                 <button
@@ -152,20 +170,20 @@ const VehicleDetail = () => {
                 <span className="text-red-700">€</span>
               </div>
 
-              {token && (
+              {token && userRole !== 'admin' && (
                 <div className="mb-4">
                   <button
                     onClick={async () => {
-                      if (!localStorage.getItem('auth_token')) {
-                        alert('Inicia sesión para marcar favoritos');
-                        return;
-                      }
                       try {
                         if (isFavorite) {
-                          await axios.delete(`${API_BASE_URL}/favorites/${id}`);
+                          await axios.delete(`${API_BASE_URL}/favorites/${id}`, {
+                            headers: { Authorization: `Bearer ${token}` }
+                          });
                           setIsFavorite(false);
                         } else {
-                          await axios.post(`${API_BASE_URL}/favorites/${id}`);
+                          await axios.post(`${API_BASE_URL}/favorites/${id}`, {}, {
+                            headers: { Authorization: `Bearer ${token}` }
+                          });
                           setIsFavorite(true);
                         }
                       } catch (err) {
@@ -200,22 +218,36 @@ const VehicleDetail = () => {
                 </div>
               </div>
 
-              <button className="w-full py-4 bg-red-700 hover:bg-red-600 text-white font-black uppercase tracking-widest rounded-xl transition duration-300 shadow-lg shadow-red-900/20 active:scale-95 mb-6">
-                Contactar con el vendedor
-              </button>
+              {/* <-- RENDERIZADO CONDICIONAL DE BOTONES --> */}
+              {userRole === 'admin' ? (
+                <div className="mt-6 bg-red-950/30 p-6 rounded-xl border border-red-900 text-center">
+                  <h3 className="text-red-500 font-bold uppercase text-sm tracking-widest mb-4">🛠️ Herramientas de Moderador</h3>
+                  <button 
+                    onClick={handleDeleteAd}
+                    className="w-full py-4 bg-red-700 hover:bg-red-600 text-white font-black uppercase tracking-widest rounded-xl transition duration-300 shadow-lg shadow-red-900/20"
+                  >
+                    Eliminar Anuncio
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <button className="w-full py-4 bg-red-700 hover:bg-red-600 text-white font-black uppercase tracking-widest rounded-xl transition duration-300 shadow-lg shadow-red-900/20 active:scale-95 mb-6">
+                    Contactar con el vendedor
+                  </button>
 
-              {/* BOTÓN DE REPORTE */}
-              <div className="pt-4 border-t border-zinc-700/50 flex justify-end">
-                <Link
-                  to={`/anuncios/${advertisement.id}/reportar`}
-                  className="text-zinc-500 hover:text-red-500 text-xs font-bold uppercase flex items-center gap-2 transition-colors"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                  </svg>
-                  Denunciar este anuncio
-                </Link>
-              </div>
+                  <div className="pt-4 border-t border-zinc-700/50 flex justify-end">
+                    <Link
+                      to={`/anuncios/${advertisement.id}/reportar`}
+                      className="text-zinc-500 hover:text-red-500 text-xs font-bold uppercase flex items-center gap-2 transition-colors"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      </svg>
+                      Denunciar este anuncio
+                    </Link>
+                  </div>
+                </>
+              )}
 
             </div>
           </div>

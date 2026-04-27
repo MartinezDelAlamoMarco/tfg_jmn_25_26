@@ -119,7 +119,7 @@ const ReportAdvertisement = () => {
               <div className="animate-fade-in">
                 <label className="block text-sm uppercase font-bold text-zinc-500 mb-2">Por favor, especifica el motivo</label>
                 <textarea
-                  className="w-full bg-zinc-950 border border-zinc-700 rounded p-3 text-white focus:outline-none focus:border-red-500 min-h-[100px]"
+                  className="w-full bg-zinc-950 border border-zinc-700 rounded p-3 text-white focus:outline-none focus:border-red-500 min-h-100px"
                   placeholder="Escribe los detalles aquí..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}

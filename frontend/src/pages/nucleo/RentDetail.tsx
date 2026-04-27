@@ -3,7 +3,6 @@ import { Link, useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { API_BASE_URL } from "../../config";
 
-// Usamos EXACTAMENTE la misma interfaz que en VehicleDetail.tsx
 interface Advertisement {
   id: number;
   price: string;
@@ -42,6 +41,8 @@ const RentDetail = () => {
   const [totalPrice, setTotalPrice] = useState<number>(0);
 
   const today = new Date().toISOString().split("T")[0];
+  const userRole = localStorage.getItem('user_role'); // <-- Obtenemos el rol
+  const token = localStorage.getItem("auth_token");
 
   useEffect(() => {
     const fetchVehicle = async () => {
@@ -50,7 +51,6 @@ const RentDetail = () => {
         const response = await axios.get(`${API_BASE_URL}/vehicles/${id}`);
         setAdvertisement(response.data);
         
-        // Usamos EXACTAMENTE la misma forma de buscar la imagen principal que en VehicleDetail
         const img = response.data.images?.find((i: any) => i.is_main)?.image_url 
                  || response.data.images?.[0]?.image_url;
         setMainImage(img || "");
@@ -94,7 +94,6 @@ const RentDetail = () => {
     setActionLoading(true);
 
     try {
-      const token = localStorage.getItem("auth_token");
       await axios.post(`${API_BASE_URL}/rents`, {
         advertisement_id: advertisement?.id,
         start_date: dates.start,
@@ -109,6 +108,22 @@ const RentDetail = () => {
       setError(err.response?.data?.message || "Error al procesar la reserva. Verifica tu sesión.");
     } finally {
       setActionLoading(false);
+    }
+  };
+
+  // <-- NUEVA FUNCIÓN: ELIMINAR ANUNCIO (Solo Admin) -->
+  const handleDeleteAd = async () => {
+    if (window.confirm("⚠️ ¿Estás seguro de que quieres ELIMINAR este anuncio definitivamente por incumplir las normas?")) {
+      try {
+        await axios.delete(`${API_BASE_URL}/advertisements/${id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        alert("Anuncio de alquiler eliminado correctamente.");
+        navigate('/admin/panel');
+      } catch (error) {
+        console.error("Error eliminando el anuncio", error);
+        alert("Hubo un error al eliminar el anuncio.");
+      }
     }
   };
 
@@ -149,7 +164,6 @@ const RentDetail = () => {
         </button>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* SECCIÓN DE IMÁGENES CLONADA AL 100% DE VEHICLEDETAIL */}
           <div className="space-y-4">
             <div className="aspect-video bg-zinc-800 rounded-2xl border border-zinc-700 flex items-center justify-center shadow-2xl overflow-hidden relative">
               <div className="absolute top-4 left-4 z-10 bg-red-700 text-white text-[10px] font-bold px-3 py-1 rounded shadow-lg uppercase tracking-widest">
@@ -166,7 +180,6 @@ const RentDetail = () => {
               )}
             </div>
             
-            {/* Galería de miniaturas */}
             <div className="grid grid-cols-5 gap-2">
               {advertisement.images?.map((img, i) => (
                 <button
@@ -208,71 +221,86 @@ const RentDetail = () => {
                 <span className="text-zinc-500 font-bold uppercase italic pb-1">/ día</span>
               </div>
 
-              {success ? (
-                <div className="bg-green-900/20 border border-green-700 p-8 rounded-2xl text-center mb-8 animate-fade-in">
-                  <div className="w-16 h-16 bg-green-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">✓</div>
-                  <h3 className="text-xl font-bold text-green-500 mb-2">¡Reserva Confirmada!</h3>
-                  <p className="text-zinc-400 text-sm">El propietario se pondrá en contacto contigo pronto.</p>
-                  <button onClick={() => navigate('/mis-reservas')} className="mt-6 px-6 py-2 bg-zinc-900 hover:bg-zinc-700 border border-zinc-600 rounded-lg text-sm font-bold uppercase transition">Ver mis reservas</button>
-                </div>
-              ) : (
-                <div className="bg-zinc-900/50 p-6 rounded-2xl border border-zinc-700 mb-8">
-                  <h3 className="text-lg font-bold uppercase italic border-b border-zinc-700 pb-3 mb-4">Fechas de reserva</h3>
-                  <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div>
-                      <label className="block text-zinc-400 text-[10px] font-black uppercase tracking-widest mb-2">Recogida</label>
-                      <input 
-                        type="date" 
-                        min={today}
-                        value={dates.start} 
-                        onChange={(e) => setDates({...dates, start: e.target.value})}
-                        className="w-full bg-zinc-800 border border-zinc-600 rounded-xl p-3 text-white outline-none focus:border-red-600 focus:ring-1 focus:ring-red-600 transition" 
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-zinc-400 text-[10px] font-black uppercase tracking-widest mb-2">Devolución</label>
-                      <input 
-                        type="date" 
-                        min={dates.start || today}
-                        value={dates.end} 
-                        onChange={(e) => setDates({...dates, end: e.target.value})}
-                        className="w-full bg-zinc-800 border border-zinc-600 rounded-xl p-3 text-white outline-none focus:border-red-600 focus:ring-1 focus:ring-red-600 transition" 
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex justify-between items-center bg-black/40 p-4 rounded-xl border border-zinc-800">
-                    <span className="text-zinc-400 font-bold uppercase text-xs tracking-widest">Total Estimado</span>
-                    <span className="text-2xl font-black text-red-500">{totalPrice.toLocaleString("es-ES")} €</span>
-                  </div>
-
-                  {error && <p className="text-red-500 text-sm font-bold mt-4 text-center">{error}</p>}
-                </div>
-              )}
-
-              {!success && (
-                <div className="mb-6">
+              {/* <-- RENDERIZADO CONDICIONAL PARA ADMINISTRADOR --> */}
+              {userRole === 'admin' ? (
+                <div className="mt-8 bg-red-950/30 p-6 rounded-xl border border-red-900 mb-8 text-center">
+                  <h3 className="text-red-500 font-bold uppercase text-sm tracking-widest mb-4">🛠️ Herramientas de Moderador</h3>
                   <button 
-                    onClick={handleRent}
-                    className="w-full py-4 bg-red-700 hover:bg-red-600 text-white font-black uppercase tracking-widest rounded-xl transition duration-300 shadow-lg shadow-red-900/20 active:scale-95 mb-4"
+                    onClick={handleDeleteAd}
+                    className="w-full py-4 bg-red-700 hover:bg-red-600 text-white font-black uppercase tracking-widest rounded-xl transition duration-300 shadow-lg shadow-red-900/20"
                   >
-                    Confirmar Reserva
+                    Eliminar Anuncio
                   </button>
                 </div>
-              )}
+              ) : (
+                <>
+                  {/* Flujo normal de usuario (Reserva y Reporte) */}
+                  {success ? (
+                    <div className="bg-green-900/20 border border-green-700 p-8 rounded-2xl text-center mb-8 animate-fade-in">
+                      <div className="w-16 h-16 bg-green-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">✓</div>
+                      <h3 className="text-xl font-bold text-green-500 mb-2">¡Reserva Confirmada!</h3>
+                      <p className="text-zinc-400 text-sm">El propietario se pondrá en contacto contigo pronto.</p>
+                      <button onClick={() => navigate('/mis-reservas')} className="mt-6 px-6 py-2 bg-zinc-900 hover:bg-zinc-700 border border-zinc-600 rounded-lg text-sm font-bold uppercase transition">Ver mis reservas</button>
+                    </div>
+                  ) : (
+                    <div className="bg-zinc-900/50 p-6 rounded-2xl border border-zinc-700 mb-8">
+                      <h3 className="text-lg font-bold uppercase italic border-b border-zinc-700 pb-3 mb-4">Fechas de reserva</h3>
+                      <div className="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                          <label className="block text-zinc-400 text-[10px] font-black uppercase tracking-widest mb-2">Recogida</label>
+                          <input 
+                            type="date" 
+                            min={today}
+                            value={dates.start} 
+                            onChange={(e) => setDates({...dates, start: e.target.value})}
+                            className="w-full bg-zinc-800 border border-zinc-600 rounded-xl p-3 text-white outline-none focus:border-red-600 focus:ring-1 focus:ring-red-600 transition" 
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-zinc-400 text-[10px] font-black uppercase tracking-widest mb-2">Devolución</label>
+                          <input 
+                            type="date" 
+                            min={dates.start || today}
+                            value={dates.end} 
+                            onChange={(e) => setDates({...dates, end: e.target.value})}
+                            className="w-full bg-zinc-800 border border-zinc-600 rounded-xl p-3 text-white outline-none focus:border-red-600 focus:ring-1 focus:ring-red-600 transition" 
+                          />
+                        </div>
+                      </div>
 
-              {/* BOTÓN DE REPORTE */}
-              <div className="pt-4 border-t border-zinc-700/50 flex justify-end">
-                <Link
-                  to={`/anuncios/${advertisement.id}/reportar`}
-                  className="text-zinc-500 hover:text-red-500 text-xs font-bold uppercase flex items-center gap-2 transition-colors"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                  </svg>
-                  Denunciar este anuncio
-                </Link>
-              </div>
+                      <div className="flex justify-between items-center bg-black/40 p-4 rounded-xl border border-zinc-800">
+                        <span className="text-zinc-400 font-bold uppercase text-xs tracking-widest">Total Estimado</span>
+                        <span className="text-2xl font-black text-red-500">{totalPrice.toLocaleString("es-ES")} €</span>
+                      </div>
+
+                      {error && <p className="text-red-500 text-sm font-bold mt-4 text-center">{error}</p>}
+                    </div>
+                  )}
+
+                  {!success && (
+                    <div className="mb-6">
+                      <button 
+                        onClick={handleRent}
+                        className="w-full py-4 bg-red-700 hover:bg-red-600 text-white font-black uppercase tracking-widest rounded-xl transition duration-300 shadow-lg shadow-red-900/20 active:scale-95 mb-4"
+                      >
+                        Confirmar Reserva
+                      </button>
+                    </div>
+                  )}
+
+                  <div className="pt-4 border-t border-zinc-700/50 flex justify-end">
+                    <Link
+                      to={`/anuncios/${advertisement.id}/reportar`}
+                      className="text-zinc-500 hover:text-red-500 text-xs font-bold uppercase flex items-center gap-2 transition-colors"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      </svg>
+                      Denunciar este anuncio
+                    </Link>
+                  </div>
+                </>
+              )}
 
             </div>
           </div>

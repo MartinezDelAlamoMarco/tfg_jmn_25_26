@@ -17,8 +17,12 @@ const Login = () => {
         const response = await axios.post(`${API_BASE_URL}/login`, { email, password });
         const { token, user } = response.data;
 
+        // Guardamos los datos de sesión
         localStorage.setItem('auth_token', token);
         localStorage.setItem('user', JSON.stringify(user));
+        
+        // <-- NUEVO: Guardamos el rol específicamente para que lo lean los detalles del anuncio -->
+        localStorage.setItem('user_role', user.role); 
 
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
