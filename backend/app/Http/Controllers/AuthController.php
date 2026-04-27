@@ -41,35 +41,89 @@ class AuthController extends Controller
     }
 
     public function register(Request $request)
-{
-    $request->validate([
-        'name' => 'required',
-        'email' => 'required|email|unique:users',
-        'password' => [
-            'required',
-            'confirmed',
-            Password::min(8)
-                ->mixedCase() // Al menos una mayúscula y una minúscula
-                ->numbers()   // Al menos un número
-                ->symbols()   // Al menos un carácter especial (!, @, #, etc.)
+    {
+        $request->validate([
+            'name' => 'required',
+            'email' => 'required|email|unique:users',
+            'password' => [
+                'required',
+                'confirmed',
+                Password::min(8)
+                    ->mixedCase() // Al menos una mayúscula y una minúscula
+                    ->numbers()   // Al menos un número
+                    ->symbols()   // Al menos un carácter especial (!, @, #, etc.)
                 // ->uncompromised() // Opcional: Verifica que la contraseña no haya sido filtrada en hackeos conocidos
-        ],
-    ]);
+            ],
+        ]);
 
-    // El resto del código se mantiene igual
-    $user = User::create([
-        'name' => $request->name,
-        'email' => $request->email,
-        'password' => Hash::make($request->password),
-    ]);
+        // El resto del código se mantiene igual
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+        ]);
 
-    $token = $user->createToken('API Token')->plainTextToken;
+        $token = $user->createToken('API Token')->plainTextToken;
 
-    return response()->json([
-        'user' => $user,
-        'token' => $token,
-    ], 201);
-}
+        return response()->json([
+            'user' => $user,
+            'token' => $token,
+        ], 201);
+    }
+
+    // Actualizar datos básicos del perfil
+    public function updateProfile(Request $request)
+    {
+        $user = $request->user();
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            // El email debe ser único, excepto para el ID del usuario actual
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'telephone' => 'nullable|string|max:255',
+        ]);
+
+        $user->update($request->only('name', 'email', 'telephone'));
+
+        return response()->json([
+            'message' => 'Perfil actualizado correctamente',
+            'user' => $user
+        ], 200);
+    }
+
+    // Actualizar contraseña
+    public function updatePassword(Request $request)
+    {
+        $user = $request->user();
+
+        $request->validate([
+            'current_password' => 'required',
+            'password' => [
+                'required',
+                'confirmed', // Requiere que el frontend envíe 'password_confirmation'
+                Password::min(8)
+                    ->mixedCase()
+                    ->numbers()
+                    ->symbols()
+            ],
+        ]);
+
+        // Verificar que la contraseña actual sea correcta
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json([
+                'error' => 'La contraseña actual es incorrecta'
+            ], 400);
+        }
+
+        // Actualizar la contraseña hasheada
+        $user->update([
+            'password' => Hash::make($request->password)
+        ]);
+
+        return response()->json([
+            'message' => 'Contraseña actualizada correctamente'
+        ], 200);
+    }
 
     public function user(Request $request)
     {

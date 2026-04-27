@@ -7,10 +7,16 @@ use App\Http\Controllers\MyAdvertisementsController;
 use App\Http\Controllers\MasterDataController;
 use Illuminate\Support\Facades\Route;
 
-// --- AUTENTICACIÓN ---
+// --- AUTENTICACIÓN Y PERFIL ---
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
-Route::middleware('auth:sanctum')->get('/user', [AuthController::class, 'user']);
+
+// Agrupamos todas las rutas que gestionan al usuario logueado
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/user', [AuthController::class, 'user']);
+    Route::put('/user/profile', [AuthController::class, 'updateProfile']);   // <-- NUEVA: Actualizar datos
+    Route::put('/user/password', [AuthController::class, 'updatePassword']); // <-- NUEVA: Actualizar contraseña
+});
 
 // --- GESTIÓN DE MIS ANUNCIOS (VENDEDOR) ---
 Route::middleware('auth:sanctum')->group(function () {
