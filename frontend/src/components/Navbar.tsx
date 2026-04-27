@@ -149,7 +149,7 @@ export default function Navbar() {
             <Link to="/alquileres" onClick={closeMenus} className="block px-2 py-2 text-zinc-300 font-medium">Alquileres</Link>
             
             {token && userRole === 'admin' && (
-              <Link to="/admin/panel" onClick={closeMenus} className="block px-2 py-2 text-red-500 font-bold flex items-center gap-2">
+              <Link to="/admin/panel" onClick={closeMenus} className="flex items-center gap-2 px-2 py-2 text-red-500 font-bold">
                  <ShieldAlert size={18} /> Panel Moderación
               </Link>
             )}
