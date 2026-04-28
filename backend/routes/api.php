@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Route;
 // --- AUTENTICACIÓN Y PERFIL ---
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
+Route::post('/auth/google', [AuthController::class, 'googleLogin']);
 
 // Agrupamos todas las rutas que gestionan al usuario logueado
 Route::middleware('auth:sanctum')->group(function () {

@@ -7,6 +7,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 use App\Models\User;
+// 👇 NUEVOS IMPORTS AÑADIDOS PARA GOOGLE 👇
+use Google_Client;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -128,5 +131,58 @@ class AuthController extends Controller
     public function user(Request $request)
     {
         return response()->json($request->user());
+    }
+
+    // 👇 NUEVO MÉTODO PARA EL LOGIN CON GOOGLE 👇
+    public function googleLogin(Request $request)
+    {
+        try {
+            $request->validate([
+                'credential' => 'required|string',
+            ]);
+
+            // 1. Verificar el token de Google
+            $client = new Google_Client(['client_id' => env('GOOGLE_CLIENT_ID')]);
+            $payload = $client->verifyIdToken($request->credential);
+
+            if (!$payload) {
+                return response()->json(['error' => 'Token de Google inválido'], 401);
+            }
+
+            // 2. Extraer datos del usuario que nos da Google
+            $googleEmail = $payload['email'];
+            $googleName = $payload['name'];
+
+            // 3. Buscar si el usuario ya existe en nuestra base de datos
+            $user = User::where('email', $googleEmail)->first();
+
+            // Si no existe, lo registramos automáticamente
+            if (!$user) {
+                $user = User::create([
+                    'name' => $googleName,
+                    'email' => $googleEmail,
+                    // Generamos una contraseña súper segura de 24 caracteres aleatorios
+                    // ya que el usuario siempre entrará con Google y no la necesita
+                    'password' => Hash::make(Str::random(24)),
+                    // Si tienes un campo 'role' en la BD con un valor por defecto, 
+                    // Laravel lo asignará automáticamente.
+                ]);
+            }
+
+            // 4. Generamos nuestro token de Sanctum (igual que en login/register)
+            $token = $user->createToken('API Token')->plainTextToken;
+
+            // 5. Devolvemos exactamente la misma estructura que espera tu Frontend
+            return response()->json([
+                'user' => $user,
+                'token' => $token,
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Error validando con Google',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 }
