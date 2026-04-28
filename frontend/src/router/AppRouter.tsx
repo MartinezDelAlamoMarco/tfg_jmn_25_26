@@ -17,7 +17,7 @@ import RentScreen from "../pages/nucleo/RentScreen"
 import RentDetail from "../pages/nucleo/RentDetail"
 import Profile from "../pages/areaPersonal/GestionarPerfil"
 import ReportAdvertisement from "../components/ReportAdvertisement"
-import AdminReportsPanel from "../pages/administrador/AdminReportPanel"
+import AdminDashboard from "../components/AdminDashboard" 
 
 export default function AppRouter() {
   return (
@@ -41,7 +41,7 @@ export default function AppRouter() {
           <Route path="/alquiler/:id" element={<RentDetail />} />
           <Route path="/perfil" element={<Profile />} />
           <Route path="/anuncios/:id/reportar" element={<ReportAdvertisement />} />
-          <Route path="/admin/panel" element={<AdminReportsPanel />} />
+          <Route path="/admin/panel" element={<AdminDashboard />} />
 
         </Route>
 

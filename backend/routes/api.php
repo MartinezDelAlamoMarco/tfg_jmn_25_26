@@ -6,6 +6,8 @@ use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\MyAdvertisementsController;
 use App\Http\Controllers\MasterDataController;
 use App\Http\Controllers\ReportController; 
+use App\Http\Controllers\AdminUserController;
+use App\Http\Controllers\AdminAdController;
 use Illuminate\Support\Facades\Route;
 
 // --- AUTENTICACIÓN Y PERFIL ---
@@ -50,24 +52,32 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/favorites/{id}', [AdvertisementController::class, 'removeFavorite']);
 });
 
-// --- REPORTES (DENUNCIAS) ---
+// --- REPORTES (DENUNCIAS PÚBLICAS) ---
 Route::get('/report-types', [ReportController::class, 'getTypes']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/reports', [ReportController::class, 'store']);
 });
 
-// --- PANEL DE ADMINISTRACIÓN (MODERACIÓN) ---
-// Estas rutas solo deberían ser accesibles por administradores
+// --- PANEL DE ADMINISTRACIÓN (FUNCIONALIDAD AVANZADA) ---
+// Estas rutas solo son accesibles para usuarios autenticados (Admin)
 Route::middleware('auth:sanctum')->group(function () {
-    // Obtener la lista de la vista SQL view_reports_priority
+    
+    // 1. Gestión de Reportes
     Route::get('/admin/reports-priority', [ReportController::class, 'getPriorityReports']);
 
-    // Eliminar anuncio como moderador (Acción definitiva)
-    Route::delete('/advertisements/{id}', [AdvertisementController::class, 'destroy']);
+    // 2. Gestión de Usuarios (Moderación)
+    Route::get('/admin/users', [AdminUserController::class, 'index']); // Listar y buscar
+    Route::patch('/admin/users/{id}/role', [AdminUserController::class, 'updateRole']); // Modificar rol
+    Route::delete('/admin/users/{id}', [AdminUserController::class, 'destroy']); // Eliminar usuario
+
+    // 3. Gestión de Anuncios (Moderación)
+    Route::get('/admin/ads', [AdminAdController::class, 'index']); // Listar anuncios con la Vista SQL
+    Route::patch('/admin/ads/{id}/state', [AdminAdController::class, 'updateState']); // Cambiar estado del anuncio
+    Route::delete('/advertisements/{id}', [AdvertisementController::class, 'destroy']); // Borrado físico (ya la tenías)
 });
 
-// Ruta Ping para evitar el Cold Start en el hosting gratuito
+// Ruta Ping para evitar el Cold Start
 Route::get('/ping', function () {
     return response()->json([
         'status' => 'ok', 

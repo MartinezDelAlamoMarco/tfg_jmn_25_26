@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Auth; // <-- VITAL para que Auth::user() funcione
 
 class AdvertisementController extends Controller
 {
-    protected $googleDriveService;
+    protected GoogleDriveService $googleDriveService;
 
     /**
      * Constructor para inyectar el servicio de Google Drive
@@ -32,7 +32,7 @@ class AdvertisementController extends Controller
     /**
      * Filtro por marca
      */
-    public function byBrand($brandId)
+    public function byBrand(int $brandId)
     {
         $advertisements = AdvertisementView::where('brand_id', $brandId)
             ->orderBy('created_at', 'desc')
@@ -60,7 +60,7 @@ class AdvertisementController extends Controller
     /**
      * Añadir a favoritos
      */
-    public function addFavorite(Request $request, $id)
+    public function addFavorite(Request $request, int $id)
     {
         $user = $request->user();
         $advertisement = Advertisement::findOrFail($id);
@@ -71,7 +71,7 @@ class AdvertisementController extends Controller
     /**
      * Quitar de favoritos
      */
-    public function removeFavorite(Request $request, $id)
+    public function removeFavorite(Request $request, int $id)
     {
         $user = $request->user();
         $advertisement = Advertisement::findOrFail($id);
@@ -82,7 +82,7 @@ class AdvertisementController extends Controller
     /**
      * ELIMINACIÓN DE ANUNCIO (Moderación)
      */
-    public function destroy($id)
+    public function destroy(int $id)
     {
         // 1. Verificamos si el usuario está logueado y es admin
         if (!Auth::check() || Auth::user()->role !== 'admin') {

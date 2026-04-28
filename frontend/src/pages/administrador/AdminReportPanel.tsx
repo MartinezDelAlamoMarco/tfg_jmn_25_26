@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { API_BASE_URL } from "../../config";
 import { ShieldAlert, Eye, AlertTriangle } from "lucide-react";
-import LoadingScreen from "../../components/LoadingScreen"; // <-- IMPORTACIÓN AÑADIDA
 
 interface PriorityReport {
   advertisement_id: number;
@@ -28,6 +27,7 @@ const AdminReportsPanel = () => {
 
   useEffect(() => {
     const fetchReports = async () => {
+      setLoading(true); // Aseguramos que se active al recargar
       try {
         const token = localStorage.getItem("auth_token");
         const response = await axios.get(`${API_BASE_URL}/admin/reports-priority`, {
@@ -43,80 +43,81 @@ const AdminReportsPanel = () => {
     fetchReports();
   }, []);
 
-  // --- CAMBIO AQUÍ: Ahora usamos el componente LoadingScreen ---
-  if (loading) {
-    return <LoadingScreen message="Cargando incidencias..." />;
-  }
-
   return (
-    <div className="min-h-screen bg-zinc-950 text-white p-6 pt-24">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex items-center gap-4 mb-8 border-b border-zinc-800 pb-6">
-          <div className="p-3 bg-red-600/20 rounded-xl">
-            <ShieldAlert className="text-red-500" size={32} />
-          </div>
-          <div>
-            <h1 className="text-3xl font-black uppercase italic tracking-tighter">Panel de Moderación</h1>
-            <p className="text-zinc-500 text-sm font-medium uppercase tracking-widest">Gestión de denuncias y seguridad</p>
-          </div>
+    <div className="space-y-6">
+      {/* Cabecera interna del panel */}
+      <div className="flex items-center gap-4 mb-4">
+        <div className="p-2 bg-red-600/20 rounded-lg">
+          <ShieldAlert className="text-red-500" size={20} />
         </div>
+        <h2 className="text-xl font-bold uppercase tracking-tight">Incidencias Prioritarias</h2>
+      </div>
 
-        <div className="bg-zinc-900 rounded-2xl border border-zinc-800 overflow-hidden shadow-2xl">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-zinc-800/50 text-zinc-400 text-xs uppercase font-bold tracking-widest border-b border-zinc-800">
-                <th className="p-5">Urgencia</th>
-                <th className="p-5">Vehículo / Anuncio</th>
-                <th className="p-5">Motivo Principal</th>
-                <th className="p-5">Última Denuncia</th>
-                <th className="p-5 text-center">Acción</th>
+      <div className="bg-zinc-900/50 rounded-2xl border border-zinc-800 overflow-hidden shadow-2xl">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="bg-zinc-900/80 text-zinc-500 text-xs uppercase font-black tracking-widest border-b border-zinc-800">
+              <th className="p-5">Urgencia</th>
+              <th className="p-5">Vehículo / Anuncio</th>
+              <th className="p-5">Motivo</th>
+              <th className="p-5">Fecha</th>
+              <th className="p-5 text-right">Acción</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-zinc-800/50">
+            {loading ? (
+              /* SPINNER INTEGRADO */
+              <tr>
+                <td colSpan={5} className="p-20 text-center">
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="w-8 h-8 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
+                    <span className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-500">Analizando Reportes...</span>
+                  </div>
+                </td>
               </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-800">
-              {reports.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="p-10 text-center text-zinc-500 italic">No hay reportes pendientes. ¡Plataforma limpia!</td>
+            ) : reports.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="p-10 text-center text-zinc-500 italic">No hay reportes pendientes. ¡Plataforma limpia!</td>
+              </tr>
+            ) : (
+              reports.map((report) => (
+                <tr key={report.advertisement_id} className="hover:bg-white/5 transition-colors group">
+                  <td className="p-5">
+                    <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase ${
+                      report.total_reports >= 5 ? 'bg-red-600 text-white animate-pulse' : 
+                      report.total_reports >= 3 ? 'bg-orange-600/20 text-orange-500 border border-orange-600/50' : 
+                      'bg-zinc-800 text-zinc-400'
+                    }`}>
+                      <AlertTriangle size={10} />
+                      {report.total_reports} {report.total_reports === 1 ? 'Reporte' : 'Reportes'}
+                    </div>
+                  </td>
+                  <td className="p-5">
+                    <p className="font-bold text-white uppercase tracking-tight">
+                      {report.advertisement.vehicle?.model?.brand?.name} {report.advertisement.vehicle?.model?.name}
+                    </p>
+                    <p className="text-zinc-500 text-[10px] font-mono">ID: #{report.advertisement_id}</p>
+                  </td>
+                  <td className="p-5">
+                    <span className="text-zinc-300 font-medium text-sm">{report.report_type_name}</span>
+                  </td>
+                  <td className="p-5 text-zinc-500 text-sm">
+                    {new Date(report.last_report_at).toLocaleDateString()}
+                  </td>
+                  <td className="p-5 text-right">
+                    <button 
+                      onClick={() => navigate(report.advertisement.is_rent ? `/alquiler/${report.advertisement_id}` : `/advertisement/${report.advertisement_id}`)}
+                      className="inline-flex items-center gap-2 bg-zinc-800 text-white hover:bg-white hover:text-black px-4 py-2 rounded-lg font-black uppercase text-[10px] transition-all active:scale-95"
+                    >
+                      <Eye size={14} />
+                      Revisar
+                    </button>
+                  </td>
                 </tr>
-              ) : (
-                reports.map((report) => (
-                  <tr key={report.advertisement_id} className="hover:bg-zinc-800/30 transition-colors group">
-                    <td className="p-5">
-                      <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-black uppercase ${
-                        report.total_reports >= 5 ? 'bg-red-600 text-white animate-pulse' : 
-                        report.total_reports >= 3 ? 'bg-orange-600/20 text-orange-500 border border-orange-600/50' : 
-                        'bg-zinc-800 text-zinc-400'
-                      }`}>
-                        <AlertTriangle size={12} />
-                        {report.total_reports} {report.total_reports === 1 ? 'Reporte' : 'Reportes'}
-                      </div>
-                    </td>
-                    <td className="p-5">
-                      <p className="font-bold text-white uppercase tracking-tight">
-                        {report.advertisement.vehicle?.model?.brand?.name} {report.advertisement.vehicle?.model?.name}
-                      </p>
-                      <p className="text-zinc-500 text-[10px] font-mono">ID: #{report.advertisement_id}</p>
-                    </td>
-                    <td className="p-5">
-                      <span className="text-zinc-300 font-medium">{report.report_type_name}</span>
-                    </td>
-                    <td className="p-5 text-zinc-500 text-sm">
-                      {new Date(report.last_report_at).toLocaleDateString()}
-                    </td>
-                    <td className="p-5 text-center">
-                      <button 
-                        onClick={() => navigate(report.advertisement.is_rent ? `/alquiler/${report.advertisement_id}` : `/advertisement/${report.advertisement_id}`)}
-                        className="inline-flex items-center gap-2 bg-white text-black hover:bg-red-600 hover:text-white px-4 py-2 rounded-lg font-black uppercase text-xs transition-all active:scale-95"
-                      >
-                        <Eye size={14} />
-                        Revisar
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );

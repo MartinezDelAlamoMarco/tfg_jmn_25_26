@@ -46,4 +46,9 @@ class Vehicle extends Model
     {
         return $this->hasMany(Advertisement::class);
     }
+    public function advertisement()
+    {
+        return $this->hasOne(Advertisement::class, 'vehicle_id');
+    }
+    
 }
