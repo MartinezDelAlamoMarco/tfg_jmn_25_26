@@ -141,12 +141,11 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Menú Móvil Expandido */}
       {isMobileMenuOpen && (
         <div className="md:hidden bg-zinc-900 border-t border-zinc-800 shadow-xl pb-6">
-          <div className="px-4 pt-4 space-y-4">
-            <Link to="/" onClick={closeMenus} className="block px-2 py-2 text-zinc-300 font-medium">Inicio</Link>
-            <Link to="/alquileres" onClick={closeMenus} className="block px-2 py-2 text-zinc-300 font-medium">Alquileres</Link>
+          <div className="px-4 pt-4 space-y-2">
+            <Link to="/" onClick={closeMenus} className="block px-2 py-2 text-zinc-300 font-medium hover:text-white">Inicio</Link>
+            <Link to="/alquileres" onClick={closeMenus} className="block px-2 py-2 text-zinc-300 font-medium hover:text-white">Alquileres</Link>
             
             {token && userRole === 'admin' && (
               <Link to="/admin/panel" onClick={closeMenus} className="flex items-center gap-2 px-2 py-2 text-red-500 font-bold">
@@ -154,7 +153,36 @@ export default function Navbar() {
               </Link>
             )}
             
-            {/* ... resto del menú móvil ... */}
+            {/* Lógica de usuario para móvil */}
+            <hr className="my-2 border-zinc-800" />
+            
+            {!token ? (
+              <div className="flex flex-col space-y-2 pt-2">
+                <Link to="/login" onClick={closeMenus} className="block px-2 py-2 text-white font-medium hover:text-red-500">Iniciar Sesión</Link>
+                <Link to="/register" onClick={closeMenus} className="block px-2 py-2 text-red-500 font-medium">Registrarse</Link>
+              </div>
+            ) : (
+              <div className="flex flex-col space-y-2 pt-2">
+                {/* Saludo al usuario en móvil */}
+                <div className="px-2 py-2 text-zinc-400 text-sm">
+                  Conectado como <span className="text-white font-semibold">{user.name}</span>
+                </div>
+                
+                <Link to="/favoritos" onClick={closeMenus} className="flex items-center gap-3 px-2 py-2 text-zinc-300 hover:text-white">
+                  <Heart size={18} /> Favoritos
+                </Link>
+                <Link to="/mis-anuncios" onClick={closeMenus} className="flex items-center gap-3 px-2 py-2 text-zinc-300 hover:text-white">
+                  <LayoutDashboard size={18} /> Mis Anuncios
+                </Link>
+                <Link to="/perfil" onClick={closeMenus} className="flex items-center gap-3 px-2 py-2 text-zinc-300 hover:text-white">
+                  <User size={18} /> Gestionar Perfil
+                </Link>
+                
+                <button onClick={handleLogout} className="w-full flex items-center gap-3 px-2 py-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors text-left mt-2">
+                  <LogOut size={18} /> Cerrar Sesión
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
