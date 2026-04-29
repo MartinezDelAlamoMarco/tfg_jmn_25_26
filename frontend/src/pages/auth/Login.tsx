@@ -49,38 +49,40 @@ const Login = () => {
         // 1. Ya sabemos que llega el token, ahora lo enviamos al backend
         setIsLoggingIn(true); // Activamos tu ruletita de carga
 
-        axios.post(`${API_BASE_URL}/auth/google`, {
-          credential: response.credential
-        })
-        .then((res) => {
-          // 2. Laravel nos devuelve el usuario y el token de Sanctum
-          const { token, user } = res.data;
+        axios
+          .post(`${API_BASE_URL}/auth/google`, {
+            credential: response.credential,
+          })
+          .then((res) => {
+            // 2. Laravel nos devuelve el usuario y el token de Sanctum
+            const { token, user } = res.data;
 
-          // 3. Guardamos todo exactamente igual que en tu login tradicional
-          localStorage.setItem("auth_token", token);
-          localStorage.setItem("user", JSON.stringify(user));
-          localStorage.setItem("user_role", user.role);
+            // 3. Guardamos todo exactamente igual que en tu login tradicional
+            localStorage.setItem("auth_token", token);
+            localStorage.setItem("user", JSON.stringify(user));
+            localStorage.setItem("user_role", user.role);
 
-          axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+            axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
-          // 4. Redirigimos al inicio
-          window.location.href = "/";
-        })
-        .catch((error) => {
-          setIsLoggingIn(false);
-          console.error("Error en el backend de Laravel:", error);
-          alert("Hubo un problema al validar el usuario con el servidor.");
-        });
+            // 4. Redirigimos al inicio
+            window.location.href = "/";
+          })
+          .catch((error) => {
+            setIsLoggingIn(false);
+            console.error("Error en el backend de Laravel:", error);
+            alert("Hubo un problema al validar el usuario con el servidor.");
+          });
       }
 
       (window as any).google.accounts.id.initialize({
-        client_id: "149796331998-vtk76a410khcd0qtb4d8ka88n02cgn8s.apps.googleusercontent.com",
+        client_id:
+          "149796331998-vtk76a410khcd0qtb4d8ka88n02cgn8s.apps.googleusercontent.com",
         callback: handleCredentialResponse,
       });
-      
+
       (window as any).google.accounts.id.renderButton(
         document.getElementById("buttonDiv"),
-        { theme: "outline", size: "large" }
+        { theme: "outline", size: "large" },
       );
     };
 
@@ -178,6 +180,14 @@ const Login = () => {
           <div id="buttonDiv" className="w-full flex justify-center"></div>
 
           <div className="mt-6 text-center">
+            <p className="text-zinc-400">
+              <Link
+                to="/recovery"
+                className="text-red-500 hover:text-red-400 font-bold transition duration-200"
+              >
+                ¿Olvidaste tu contraseña?
+              </Link>
+            </p>
             <p className="text-zinc-400">
               ¿No tienes cuenta?{" "}
               <Link

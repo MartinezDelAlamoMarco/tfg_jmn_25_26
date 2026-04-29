@@ -7,9 +7,12 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 use App\Models\User;
-// 👇 NUEVOS IMPORTS AÑADIDOS PARA GOOGLE 👇
 use Google_Client;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ResetPasswordMail;
 
 class AuthController extends Controller
 {
@@ -21,8 +24,8 @@ class AuthController extends Controller
                 'password' => 'required',
             ]);
 
-            if (Auth::attempt($request->only('email', 'password'))) {
-                /** @var \App\Models\User $user */ // <-- Esta línea le dice a VS Code quién es $user
+            if (Auth::attempt($request->only(['email', 'password']))) {
+                /** @var \App\Models\User $user */
                 $user = Auth::user();
 
                 // Generamos el token
@@ -52,14 +55,12 @@ class AuthController extends Controller
                 'required',
                 'confirmed',
                 Password::min(8)
-                    ->mixedCase() // Al menos una mayúscula y una minúscula
-                    ->numbers()   // Al menos un número
-                    ->symbols()   // Al menos un carácter especial (!, @, #, etc.)
-                // ->uncompromised() // Opcional: Verifica que la contraseña no haya sido filtrada en hackeos conocidos
+                    ->mixedCase()
+                    ->numbers()
+                    ->symbols()
             ],
         ]);
 
-        // El resto del código se mantiene igual
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
@@ -81,12 +82,11 @@ class AuthController extends Controller
 
         $request->validate([
             'name' => 'required|string|max:255',
-            // El email debe ser único, excepto para el ID del usuario actual
             'email' => 'required|email|unique:users,email,' . $user->id,
             'telephone' => 'nullable|string|max:255',
         ]);
 
-        $user->update($request->only('name', 'email', 'telephone'));
+        $user->update($request->only(['name', 'email', 'telephone']));
 
         return response()->json([
             'message' => 'Perfil actualizado correctamente',
@@ -103,7 +103,7 @@ class AuthController extends Controller
             'current_password' => 'required',
             'password' => [
                 'required',
-                'confirmed', // Requiere que el frontend envíe 'password_confirmation'
+                'confirmed',
                 Password::min(8)
                     ->mixedCase()
                     ->numbers()
@@ -111,14 +111,12 @@ class AuthController extends Controller
             ],
         ]);
 
-        // Verificar que la contraseña actual sea correcta
         if (!Hash::check($request->current_password, $user->password)) {
             return response()->json([
                 'error' => 'La contraseña actual es incorrecta'
             ], 400);
         }
 
-        // Actualizar la contraseña hasheada
         $user->update([
             'password' => Hash::make($request->password)
         ]);
@@ -133,7 +131,6 @@ class AuthController extends Controller
         return response()->json($request->user());
     }
 
-    // 👇 NUEVO MÉTODO PARA EL LOGIN CON GOOGLE 👇
     public function googleLogin(Request $request)
     {
         try {
@@ -141,7 +138,6 @@ class AuthController extends Controller
                 'credential' => 'required|string',
             ]);
 
-            // 1. Verificar el token de Google
             $client = new Google_Client(['client_id' => env('GOOGLE_CLIENT_ID')]);
             $payload = $client->verifyIdToken($request->credential);
 
@@ -149,30 +145,21 @@ class AuthController extends Controller
                 return response()->json(['error' => 'Token de Google inválido'], 401);
             }
 
-            // 2. Extraer datos del usuario que nos da Google
             $googleEmail = $payload['email'];
             $googleName = $payload['name'];
 
-            // 3. Buscar si el usuario ya existe en nuestra base de datos
             $user = User::where('email', $googleEmail)->first();
 
-            // Si no existe, lo registramos automáticamente
             if (!$user) {
                 $user = User::create([
                     'name' => $googleName,
                     'email' => $googleEmail,
-                    // Generamos una contraseña súper segura de 24 caracteres aleatorios
-                    // ya que el usuario siempre entrará con Google y no la necesita
                     'password' => Hash::make(Str::random(24)),
-                    // Si tienes un campo 'role' en la BD con un valor por defecto, 
-                    // Laravel lo asignará automáticamente.
                 ]);
             }
 
-            // 4. Generamos nuestro token de Sanctum (igual que en login/register)
             $token = $user->createToken('API Token')->plainTextToken;
 
-            // 5. Devolvemos exactamente la misma estructura que espera tu Frontend
             return response()->json([
                 'user' => $user,
                 'token' => $token,
@@ -184,5 +171,67 @@ class AuthController extends Controller
                 'message' => $e->getMessage()
             ], 500);
         }
+    }
+
+    // Método para solicitar el correo de recuperación
+    public function sendResetLink(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users,email'
+        ], [
+            'email.exists' => 'No encontramos ningún usuario con este correo electrónico.'
+        ]);
+
+        $token = Str::random(64);
+
+        DB::table('password_reset_tokens')->updateOrInsert(
+            ['email' => $request->email],
+            [
+                'token' => $token,
+                'created_at' => Carbon::now()
+            ]
+        );
+
+        $frontendUrl = env('FRONTEND_URL', 'http://localhost:5173');
+        $resetUrl = $frontendUrl . "/reset-password?token=" . $token . "&email=" . urlencode($request->email);
+
+        // 👇 AHORA SÍ: ESTA ES LA LÍNEA QUE ENVÍA EL CORREO A TRAVÉS DE GMAIL 👇
+        Mail::to($request->email)->send(new ResetPasswordMail($resetUrl));
+
+        return response()->json([
+            'message' => 'Te hemos enviado un correo con el enlace de recuperación.'
+        ], 200);
+    }
+
+    // Método para cambiar la contraseña usando el enlace
+    public function resetPasswordWithToken(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users,email',
+            'token' => 'required|string',
+            'password' => [
+                'required',
+                'confirmed',
+                Password::min(8)->mixedCase()->numbers()->symbols()
+            ],
+        ]);
+
+        $resetRequest = DB::table('password_reset_tokens')
+            ->where('email', $request->email)
+            ->first();
+
+        if (!$resetRequest || $resetRequest->token !== $request->token) {
+            return response()->json(['error' => 'El token es inválido o ha expirado.'], 400);
+        }
+
+        $user = User::where('email', $request->email)->first();
+        $user->update([
+            'password' => Hash::make($request->password)
+        ]);
+
+        // Borramos el token para que no se reutilice
+        DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+
+        return response()->json(['message' => 'Contraseña actualizada correctamente.'], 200);
     }
 }

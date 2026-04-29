@@ -3,9 +3,10 @@ import { BrowserRouter, Routes, Route } from "react-router-dom"
 import MainLayout from "../layouts/MainLayout"
 
 import Home from "../pages/nucleo/Home"
-import Login from "../pages/nucleo/Login"
-import Register from "../pages/nucleo/Register"
-import PasswordRecovery from "../pages/nucleo/PasswordRecovery"
+import Login from "../pages/auth/Login"
+import Register from "../pages/auth/Register"
+import PasswordRecovery from "../pages/auth/PasswordRecovery"
+import ResetPassword from "../pages/auth/ResetPassword"
 import CreateProfile from "../pages/nucleo/CreateProfile"
 import VehicleDetail from "../pages/nucleo/VehicleDetail" 
 import AdvertisementsScreen from "../pages/gestionVendedor/AdvertisementsScreen" 
@@ -29,7 +30,8 @@ export default function AppRouter() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/password-recovery" element={<PasswordRecovery />} />
+          <Route path="/recovery" element={<PasswordRecovery />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/create-profile" element={<CreateProfile />} />
           <Route path="/advertisement/:id" element={<VehicleDetail />} />
           <Route path="/mis-anuncios" element={<AdvertisementsScreen />} />
