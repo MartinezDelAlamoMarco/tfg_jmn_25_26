@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ResetPasswordMail;
+use Illuminate\Support\Facades\Http; // <-- Importante para llamar a Make.com
 
 class AuthController extends Controller
 {
@@ -195,8 +196,13 @@ class AuthController extends Controller
         $frontendUrl = env('FRONTEND_URL', 'http://localhost:5173');
         $resetUrl = $frontendUrl . "/reset-password?token=" . $token . "&email=" . urlencode($request->email);
 
-        // 👇 AHORA SÍ: ESTA ES LA LÍNEA QUE ENVÍA EL CORREO A TRAVÉS DE GMAIL 👇
-        Mail::to($request->email)->send(new ResetPasswordMail($resetUrl));
+        // Conectamos con el Webhook de Make.com para enviar el correo de recuperación
+        $makeWebhookUrl = env('MAKE_WEBHOOK_URL', 'https://hook.eu1.make.com/ft1torybdssigf2ott3uwf1kx6cnrlit');
+        
+        Http::post($makeWebhookUrl, [
+            'email' => $request->email,
+            'reset_url' => $resetUrl
+        ]);
 
         return response()->json([
             'message' => 'Te hemos enviado un correo con el enlace de recuperación.'
