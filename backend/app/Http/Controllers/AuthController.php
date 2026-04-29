@@ -193,7 +193,7 @@ class AuthController extends Controller
             ]
         );
 
-        $frontendUrl = env('FRONTEND_URL', 'http://localhost:5173');
+        $frontendUrl = $frontendUrl = env('FRONTEND_URL');
         $resetUrl = $frontendUrl . "/reset-password?token=" . $token . "&email=" . urlencode($request->email);
 
         // Conectamos con el Webhook de Make.com para enviar el correo de recuperación
