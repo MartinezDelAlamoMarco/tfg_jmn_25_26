@@ -1,6 +1,7 @@
-import { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { APP_NAME } from "../config";
+import { useState, useRef, useEffect, useMemo } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import axios from "axios";
+import { APP_NAME, API_BASE_URL } from "../config"; // Asegúrate de importar API_BASE_URL
 import logo from "../assets/Logotipo.png";
 import { ChevronDown, User, LayoutDashboard, LogOut, Heart, ShieldAlert } from "lucide-react";
 
@@ -8,10 +9,31 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
+  const [searchTerm, setSearchTerm] = useState("");
+  const navigate = useNavigate();
   const token = localStorage.getItem("auth_token");
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const userRole = localStorage.getItem("user_role");
+
+  // --- NUEVOS ESTADOS PARA LIVE SEARCH ---
+  const [allAds, setAllAds] = useState<any[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+  const location = useLocation();
+
+  // Cargar anuncios al montar
+  useEffect(() => {
+    axios.get(`${API_BASE_URL}/advertisements`)
+      .then(res => setAllAds(res.data))
+      .catch(err => console.error("Error cargando anuncios", err));
+  }, []);
+
+  // Limpiar buscador al cambiar de página
+  useEffect(() => {
+    setSearchTerm("");
+    setShowSuggestions(false);
+    closeMenus();
+  }, [location.pathname]);
 
   const handleLogout = () => {
     localStorage.removeItem("auth_token");
@@ -22,20 +44,45 @@ export default function Navbar() {
     window.location.href = "/";
   };
 
+  // Función para manejar la búsqueda al darle enter
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      navigate(`/buscar?q=${encodeURIComponent(searchTerm)}`);
+      setShowSuggestions(false);
+    }
+  };
+
   const closeMenus = () => {
     setIsMobileMenuOpen(false);
     setIsProfileDropdownOpen(false);
   };
 
+  // Clic fuera para cerrar menús y buscador
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsProfileDropdownOpen(false);
       }
+      // Añadido para cerrar el buscador
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // --- LÓGICA DE SUGERENCIAS ---
+  const suggestions = useMemo(() => {
+    if (!searchTerm.trim()) return [];
+    const query = searchTerm.toLowerCase();
+    
+    return allAds.filter(ad => {
+      const searchString = `${ad.brand_name} ${ad.model_name} ${ad.province_name} ${ad.year}`.toLowerCase();
+      return searchString.includes(query);
+    }).slice(0, 5); // Máximo 5 resultados
+  }, [searchTerm, allAds]);
 
   return (
     <nav className="w-full bg-zinc-900 text-white border-b border-zinc-800 sticky top-0 z-50">
@@ -49,16 +96,77 @@ export default function Navbar() {
             </Link>
           </div>
 
-          {/* Buscador */}
-          <div className="flex-1 max-w-lg mx-8 hidden md:block">
-            <div className="relative">
+          {/* Buscador - MODIFICADO CON REFERENCIA Y SUGERENCIAS */}
+          <div className="flex-1 max-w-lg mx-8 hidden md:block relative" ref={searchRef}>
+            <form onSubmit={handleSearch} className="relative"> 
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <svg className="h-5 w-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </div>
-              <input type="text" placeholder="Buscar vehículos..." className="w-full pl-10 pr-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-red-500 transition duration-200" />
-            </div>
+              <input 
+                type="text" 
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setShowSuggestions(true);
+                }}
+                onFocus={() => setShowSuggestions(true)}
+                placeholder="Buscar vehículos en venta o alquiler..." 
+                className="w-full pl-10 pr-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-red-500 transition duration-200" 
+              />
+            </form>
+
+            {/* CAJA DESPLEGABLE DE RESULTADOS (NUEVO) */}
+            {showSuggestions && searchTerm.trim() !== "" && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-zinc-800 border border-zinc-700 rounded-xl shadow-2xl overflow-hidden z-50">
+                {suggestions.length > 0 ? (
+                  <ul>
+                    {suggestions.map((v) => {
+                      let parsedImages = [];
+                      try { parsedImages = typeof v.images === 'string' ? JSON.parse(v.images) : (v.images || []); } catch(e) {}
+                      const imageUrl = parsedImages.length > 0 ? parsedImages[0].image_url : null;
+                      const isRent = v.is_rent === true || v.is_rent === 1 || v.is_rent === "1";
+
+                      return (
+                        <li key={v.id}>
+                          <Link 
+                            to={isRent ? `/alquiler/${v.id}` : `/advertisement/${v.id}`} 
+                            onClick={() => setShowSuggestions(false)}
+                            className="flex items-center gap-4 p-3 hover:bg-zinc-700 transition border-b border-zinc-700/50 last:border-0"
+                          >
+                            <div className="h-10 w-14 rounded overflow-hidden bg-zinc-900 shrink-0">
+                              {imageUrl ? (
+                                <img src={imageUrl} alt="Coche" className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="text-[8px] flex items-center justify-center h-full text-zinc-500 uppercase">Foto</div>
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-white font-bold truncate text-sm">{v.brand_name} {v.model_name}</p>
+                              <p className="text-zinc-400 text-xs truncate">{v.province_name} • {v.year}</p>
+                            </div>
+                            <div className="text-right shrink-0">
+                              <p className="text-red-500 font-bold text-sm">{Number(v.price).toLocaleString("es-ES")} €</p>
+                              <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase ${isRent ? 'bg-red-700 text-white' : 'bg-zinc-950 text-zinc-300'}`}>
+                                {isRent ? 'Alquiler' : 'Venta'}
+                              </span>
+                            </div>
+                          </Link>
+                        </li>
+                      );
+                    })}
+                    <li className="bg-zinc-900 p-2 text-center">
+                      <button onClick={handleSearch} className="text-sm font-bold text-zinc-300 hover:text-white transition">
+                        Ver todos los resultados
+                      </button>
+                    </li>
+                  </ul>
+                ) : (
+                  <div className="p-4 text-center text-zinc-400 text-sm">No hay coincidencias para "{searchTerm}"</div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Enlaces Desktop */}
@@ -72,14 +180,13 @@ export default function Navbar() {
                 <Link to="/register" className="bg-red-700 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">Register</Link>
               </div>
             ) : (
-              <div className="flex items-center gap-4"> {/* Contenedor de elementos de usuario logueado */}
+              <div className="flex items-center gap-4">
                 
                 <Link to="/favoritos" className="text-zinc-300 hover:text-red-500 transition-colors font-medium flex items-center gap-2 mr-2">
                   <Heart size={18} />
                   Favoritos
                 </Link>
 
-                {/* Dropdown de Usuario (Saludando) */}
                 <div className="relative" ref={dropdownRef}>
                   <button 
                     onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
@@ -112,7 +219,6 @@ export default function Navbar() {
                   )}
                 </div>
 
-                {/* AQUÍ ESTÁ EL CAMBIO: Panel de Moderación a la derecha del saludo */}
                 {userRole === 'admin' && (
                   <Link 
                     to="/admin/panel" 
@@ -153,7 +259,6 @@ export default function Navbar() {
               </Link>
             )}
             
-            {/* Lógica de usuario para móvil */}
             <hr className="my-2 border-zinc-800" />
             
             {!token ? (
@@ -163,7 +268,6 @@ export default function Navbar() {
               </div>
             ) : (
               <div className="flex flex-col space-y-2 pt-2">
-                {/* Saludo al usuario en móvil */}
                 <div className="px-2 py-2 text-zinc-400 text-sm">
                   Conectado como <span className="text-white font-semibold">{user.name}</span>
                 </div>

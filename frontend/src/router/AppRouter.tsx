@@ -16,6 +16,7 @@ import FavoritesScreen from "../pages/areaPersonal/FavoritesScreen"
 import CreateAdRent from "../pages/gestionVendedor/CreateAdRent"
 import RentScreen from "../pages/nucleo/RentScreen"
 import RentDetail from "../pages/nucleo/RentDetail"
+import SearchScreen from "../pages/nucleo/SearchScreen"
 import Profile from "../pages/areaPersonal/GestionarPerfil"
 import ReportAdvertisement from "../components/ReportAdvertisement"
 import AdminDashboard from "../components/AdminDashboard" 
@@ -44,6 +45,7 @@ export default function AppRouter() {
           <Route path="/perfil" element={<Profile />} />
           <Route path="/anuncios/:id/reportar" element={<ReportAdvertisement />} />
           <Route path="/admin/panel" element={<AdminDashboard />} />
+          <Route path="/buscar" element={<SearchScreen />} />
 
         </Route>
 
