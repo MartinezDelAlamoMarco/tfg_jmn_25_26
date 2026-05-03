@@ -3,11 +3,13 @@ import { useParams, Link, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import UserReviews from "../../components/UserReviews";
 import StarRating from "../../components/StarRating";
+import { useTranslation } from "react-i18next";
 
 export default function UserProfile() {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [user, setUser] = useState<any>(null);
   const [ads, setAds] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -73,8 +75,8 @@ export default function UserProfile() {
     return (
       <div className="min-h-screen flex items-center justify-center text-white bg-zinc-900">
         <div>
-          <p className="text-xl mb-4">Usuario no encontrado</p>
-          <Link to="/" className="text-red-500 hover:underline">Volver al inicio</Link>
+          <p className="text-xl mb-4">{t('user_profile.user_not_found', 'Usuario no encontrado')}</p>
+          <Link to="/" className="text-red-500 hover:underline">{t('user_profile.back_to_home', 'Volver al inicio')}</Link>
         </div>
       </div>
     );
@@ -90,7 +92,7 @@ export default function UserProfile() {
             return (
               <div className="lg:col-span-4">
                 <Link to={`/advertisement/${fromAd}`} className="flex items-center text-zinc-400 hover:text-white mb-4 transition duration-200">
-                  <span className="mr-2">←</span> Volver al anuncio
+                  <span className="mr-2">←</span> {t('user_profile.back_to_ad', 'Volver al anuncio')}
                 </Link>
               </div>
             );
@@ -98,7 +100,7 @@ export default function UserProfile() {
           return (
             <div className="lg:col-span-4">
               <button onClick={() => navigate(-1)} className="flex items-center text-zinc-400 hover:text-white mb-4 transition duration-200">
-                <span className="mr-2">←</span> Volver al anuncio
+                <span className="mr-2">←</span> {t('user_profile.back_to_ad', 'Volver al anuncio')}
               </button>
             </div>
           );
@@ -121,7 +123,7 @@ export default function UserProfile() {
                     <p className="text-zinc-400">{user.email}</p>
                   </div>
                   <div className="text-right">
-                    <div className="text-sm text-zinc-400">Anuncios publicados</div>
+                    <div className="text-sm text-zinc-400">{t('user_profile.ads_published', 'Anuncios publicados')}</div>
                     <div className="text-2xl font-black">{ads.length}</div>
                   </div>
                 </div>
@@ -146,13 +148,13 @@ export default function UserProfile() {
           </div>
 
           <section className="bg-zinc-800 p-4 rounded-2xl border border-zinc-700">
-            <h2 className="text-xl font-bold mb-3 flex items-center justify-between">
-              <span>Anuncios publicados</span>
-              <span className="text-sm text-zinc-400">{ads.length} encontrados</span>
-            </h2>
+              <h2 className="text-xl font-bold mb-3 flex items-center justify-between">
+                <span>{t('user_profile.ads_published', 'Anuncios publicados')}</span>
+                <span className="text-sm text-zinc-400">{t('user_profile.ads_found', { count: ads.length, defaultValue: `${ads.length} encontrados` })}</span>
+              </h2>
 
             {ads.length === 0 ? (
-              <div className="py-8 text-center text-zinc-400">Este usuario no tiene anuncios publicados.</div>
+              <div className="py-8 text-center text-zinc-400">{t('user_profile.no_ads', 'Este usuario no tiene anuncios publicados.')}</div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {ads.map((ad) => {
@@ -169,7 +171,7 @@ export default function UserProfile() {
                     <Link key={ad.id} to={`/advertisement/${ad.id}`} className="block bg-zinc-900 rounded-lg overflow-hidden border border-zinc-700 hover:shadow-lg transition">
                       <div className="relative">
                         <div className="w-full h-36 bg-zinc-800 overflow-hidden">
-                          {imageUrl ? <img src={imageUrl} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-zinc-500">SIN FOTO</div>}
+                          {imageUrl ? <img src={imageUrl} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-zinc-500">{t('user_profile.no_photo', 'SIN FOTO')}</div>}
                         </div>
                         <div className="absolute right-3 top-3 bg-red-700 text-white px-2 py-1 rounded text-sm font-bold">{Number(ad.price).toLocaleString('es-ES')} €</div>
                       </div>
@@ -178,7 +180,7 @@ export default function UserProfile() {
                         <div className="text-sm text-zinc-400 mt-1">{ad.province_name || ad.province?.name || ''}</div>
                         <div className="mt-2 text-sm text-zinc-400 flex items-center justify-between">
                           <span>{year ? `${year}` : ''}{km ? ` · ${Number(km).toLocaleString('es-ES')} km` : ''}</span>
-                          <span>Vistas: {ad.views || 0}</span>
+                          <span>{t('details.views', 'Vistas')} {ad.views || 0}</span>
                         </div>
                       </div>
                     </Link>
@@ -191,13 +193,13 @@ export default function UserProfile() {
 
         <aside className="lg:col-span-1">
           <div className="bg-zinc-800 p-4 rounded-2xl border border-zinc-700 sticky top-6">
-            <h3 className="font-bold mb-2">Resumen</h3>
+            <h3 className="font-bold mb-2">{t('user_profile.summary', 'Resumen')}</h3>
             <ul className="text-sm text-zinc-400 space-y-2">
-              <li><strong className="text-white">Anuncios:</strong> {ads.length}</li>
-              <li><strong className="text-white">Valoraciones:</strong> {user.reviews_count || 0}</li>
-              <li><strong className="text-white">Miembro desde:</strong> {user.created_at ? new Date(user.created_at).toLocaleDateString() : 'Desconocido'}</li>
-              <li><strong className="text-white">Ubicación:</strong> {user.province || 'No especificada'}</li>
-              {user.phone && <li><strong className="text-white">Teléfono:</strong> {user.phone}</li>}
+              <li><strong className="text-white">{t('user_profile.ads_label', 'Anuncios')}:</strong> {ads.length}</li>
+              <li><strong className="text-white">{t('user_profile.reviews_label', 'Valoraciones')}:</strong> {user.reviews_count || 0}</li>
+              <li><strong className="text-white">{t('user_profile.member_since', 'Miembro desde')}:</strong> {user.created_at ? new Date(user.created_at).toLocaleDateString() : t('user_profile.unspecified', 'Desconocido')}</li>
+              <li><strong className="text-white">{t('user_profile.location_label', 'Ubicación')}:</strong> {user.province || t('user_profile.unspecified', 'No especificada')}</li>
+              {user.phone && <li><strong className="text-white">{t('user_profile.phone_label', 'Teléfono')}:</strong> {user.phone}</li>}
             </ul>
             {user.bio && <p className="text-zinc-300 text-sm mt-4">{user.bio}</p>}
           </div>

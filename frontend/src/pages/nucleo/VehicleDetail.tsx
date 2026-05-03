@@ -4,6 +4,7 @@ import axios from "axios";
 import { API_BASE_URL } from "../../config";
 import { Heart } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import StarRating from "../../components/StarRating";
 
 interface Advertisement {
   id: number;
@@ -246,7 +247,7 @@ const VehicleDetail = () => {
                         <span>{Number(owner.average_rating).toFixed(1)} ({owner.reviews_count || 0})</span>
                       </div>
                     )}
-                    <div className="text-zinc-400 text-sm mt-1 italic">Haz clic aquí para ver el perfil del vendedor</div>
+                    <div className="text-zinc-400 text-sm mt-1 italic">{t('details.seller_details', 'Haz clic aquí para ver el perfil del vendedor')}</div>
                   </div>
                 </div>
               </Link>
@@ -257,10 +258,10 @@ const VehicleDetail = () => {
             <div className="bg-zinc-800 rounded-2xl p-8 border border-zinc-700 shadow-xl">
               <div className="flex justify-between items-start mb-4">
                 <span className="px-3 py-1 bg-red-700/20 text-red-500 rounded-full text-xs font-bold uppercase tracking-wider">
-                  {advertisement.state?.name || t('common.available', "Disponible")}
+                  {advertisement.state?.name || t('common.unknown_state', 'Estado desconocido')}
                 </span>
                 <span className="text-zinc-500 text-sm">
-                  Vistas: {advertisement.views || 0}
+                  {t('details.views', 'Vistas')}: {advertisement.views || 0}
                 </span>
               </div>
 
@@ -292,12 +293,12 @@ const VehicleDetail = () => {
                     ) : isFavorite ? (
                       <>
                         <Heart size={20} className="fill-current" />
-                        Quitar de favoritos
+                        {t('favorites.remove_favorite', 'Quitar favorito')}
                       </>
                     ) : (
                       <>
                         <Heart size={20} />
-                        {t('navbar.favorites', 'Añadir a favoritos')}
+                        {t('favorites.no_favorites', 'Añadir a favoritos')}
                       </>
                     )}
                   </button>
@@ -331,7 +332,7 @@ const VehicleDetail = () => {
                 </div>
                 <div className="bg-zinc-700/30 p-4 rounded-xl border border-zinc-600">
                   <p className="text-zinc-500 text-[10px] uppercase font-black tracking-widest mb-1">
-                    Potencia
+                    {t('common.power', 'Potencia (CV)')}
                   </p>
                   <p className="text-xl font-bold">
                     {advertisement.vehicle?.power_hp || 0} CV
@@ -355,7 +356,7 @@ const VehicleDetail = () => {
                 <>
                   {token ? (
                     <button className="w-full py-4 bg-red-700 hover:bg-red-600 text-white font-black uppercase tracking-widest rounded-xl transition duration-300 shadow-lg shadow-red-900/20 active:scale-95 mb-6">
-                      Contactar con el vendedor
+                      {t('details.contact_seller', 'Contactar con el vendedor')}
                     </button>
                   ) : (
                     <Link
@@ -386,11 +387,11 @@ const VehicleDetail = () => {
                             d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
                           />
                         </svg>
-                        Denunciar este anuncio
+                        {t('details.report_ad', 'Denunciar este anuncio')}
                       </Link>
                     ) : (
                       <span className="text-zinc-600 text-[10px] uppercase font-black italic">
-                        Inicia sesión para denunciar
+                        {t('details.login_to_report', 'Inicia sesión para denunciar')}
                       </span>
                     )}
                   </div>
