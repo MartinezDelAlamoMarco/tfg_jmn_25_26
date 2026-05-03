@@ -30,6 +30,7 @@ class VehicleController extends Controller
             'vehicle.fuelType', 
             'vehicle.transmission', 
             'vehicle.tonality', 
+            'vehicle.owner',
             'images', 
             'province', 
             'state'

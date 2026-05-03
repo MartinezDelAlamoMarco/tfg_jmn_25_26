@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { API_BASE_URL } from "../../config";
 import { Heart } from "lucide-react";
+import StarRating from "../../components/StarRating";
 
 interface Advertisement {
   id: number;
@@ -41,6 +42,7 @@ const VehicleDetail = () => {
 
   const token = localStorage.getItem("auth_token");
   const userRole = localStorage.getItem("user_role");
+  const owner = (advertisement as any)?.user || (advertisement as any)?.seller || (advertisement as any)?.owner || (advertisement as any)?.vehicle?.owner;
 
   useEffect(() => {
     const fetchVehicle = async () => {
@@ -216,6 +218,35 @@ const VehicleDetail = () => {
                 </button>
               ))}
             </div>
+
+            {owner ? (
+              <Link
+                to={`/usuario/${owner.id}`}
+                state={{ fromAd: (advertisement as any)?.id }}
+                className="mt-4 block bg-zinc-800 p-4 rounded-lg border border-zinc-700 hover:bg-zinc-700 transition-shadow shadow-sm"
+                aria-label={`Ver perfil de ${owner.name || owner.username || 'vendedor'}`}>
+                <div className="flex items-center gap-4">
+                  <div className="h-14 w-14 rounded-full bg-zinc-900 flex items-center justify-center text-xl font-bold uppercase overflow-hidden">
+                    {owner.avatar_url ? (
+                      <img src={owner.avatar_url} alt={owner.name || 'Perfil'} className="w-full h-full object-cover" />
+                    ) : (
+                      <span>{owner.name ? owner.name[0] : 'U'}</span>
+                    )}
+                  </div>
+
+                  <div className="flex-1">
+                    <div className="font-bold text-lg">{owner.name || owner.username || 'Vendedor'}</div>
+                    {owner.average_rating !== undefined && (
+                      <div className="flex items-center gap-2 text-sm text-zinc-400 mt-1">
+                        <StarRating value={Math.round(owner.average_rating)} size={14} />
+                        <span>{Number(owner.average_rating).toFixed(1)} ({owner.reviews_count || 0})</span>
+                      </div>
+                    )}
+                    <div className="text-zinc-400 text-sm mt-1 italic">Haz clic aquí para ver el perfil del vendedor</div>
+                  </div>
+                </div>
+              </Link>
+            ) : null}
           </div>
 
           <div className="flex flex-col">
@@ -364,6 +395,8 @@ const VehicleDetail = () => {
             </div>
           </div>
         </div>
+
+        
 
         <div className="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 bg-zinc-800 p-8 rounded-2xl border border-zinc-700 shadow-xl">

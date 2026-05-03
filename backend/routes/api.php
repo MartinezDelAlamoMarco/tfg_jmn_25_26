@@ -8,6 +8,8 @@ use App\Http\Controllers\MasterDataController;
 use App\Http\Controllers\ReportController; 
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AdminAdController;
+use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 // --- AUTENTICACIÓN Y PERFIL ---
@@ -85,4 +87,14 @@ Route::get('/ping', function () {
         'status' => 'ok', 
         'message' => '¡El servidor está despierto!'
     ], 200);
+});
+
+// Public user endpoints + reviews
+Route::get('/users/{id}', [UserController::class, 'show']);
+Route::get('/users/{id}/advertisements', [UserController::class, 'advertisements']);
+Route::get('/users/{id}/reviews', [ReviewController::class, 'index']);
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/users/{id}/can-review', [ReviewController::class, 'canReview']);
+    Route::post('/users/{id}/reviews', [ReviewController::class, 'store']);
 });
