@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
 import { API_BASE_URL } from '../../config';
+import { useTranslation } from 'react-i18next'; // <-- IMPRESCINDIBLE
 
 const EditAd = () => {
+  const { t } = useTranslation(); // <-- IMPRESCINDIBLE
   const { id } = useParams();
   const navigate = useNavigate();
   const [pageLoading, setPageLoading] = useState(true);
@@ -80,56 +82,56 @@ const EditAd = () => {
   return (
     <div className="min-h-screen bg-zinc-900 text-white p-4 md:p-8 relative">
       {submitLoading && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] flex items-center justify-center">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-9999 flex items-center justify-center">
           <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-red-600"></div>
         </div>
       )}
       <div className="max-w-5xl mx-auto">
-        <h1 className="text-3xl font-black mb-8 italic uppercase tracking-tighter">Editar <span className="text-red-600">Vehículo</span></h1>
+        <h1 className="text-3xl font-black mb-8 italic uppercase tracking-tighter">{t('edit_ad.edit', 'Editar')} <span className="text-red-600">{t('edit_ad.vehicle', 'Vehículo')}</span></h1>
         <form onSubmit={handleSubmit} className="space-y-8 bg-zinc-800 p-6 md:p-10 rounded-3xl border border-zinc-700 shadow-2xl">
           <section className="space-y-6">
-            <h2 className="text-red-500 font-bold uppercase text-xs tracking-widest border-l-4 border-red-600 pl-3">Datos Técnicos</h2>
+            <h2 className="text-red-500 font-bold uppercase text-xs tracking-widest border-l-4 border-red-600 pl-3">{t('edit_ad.technical_data', 'Datos Técnicos')}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <select name="vehicle_brand_id" required value={formData.vehicle_brand_id} onChange={handleBrandChange} className="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-red-600 transition">
-                <option value="">Marca</option>{brands.map((b: any) => <option key={b.id} value={b.id}>{b.name}</option>)}
+                <option value="">{t('filters.brand', 'Marca')}</option>{brands.map((b: any) => <option key={b.id} value={b.id}>{b.name}</option>)}
               </select>
               <select name="vehicle_model_id" required value={formData.vehicle_model_id} onChange={(e) => setFormData({...formData, vehicle_model_id: e.target.value})} disabled={!formData.vehicle_brand_id} className="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-3 outline-none disabled:opacity-30 focus:ring-2 focus:ring-red-600 transition">
-                <option value="">Modelo</option>{models.map((m: any) => <option key={m.id} value={m.id}>{m.name}</option>)}
+                <option value="">{t('filters.model', 'Modelo')}</option>{models.map((m: any) => <option key={m.id} value={m.id}>{m.name}</option>)}
               </select>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <select name="fuel_type_id" value={formData.fuel_type_id} onChange={(e) => setFormData({...formData, fuel_type_id: e.target.value})} className="bg-zinc-900 border border-zinc-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-red-600">
-                <option value="">Combustible</option>{fuelTypes.map((f: any) => <option key={f.id} value={f.id}>{f.name}</option>)}
+                <option value="">{t('common.fuel', 'Combustible')}</option>{fuelTypes.map((f: any) => <option key={f.id} value={f.id}>{f.name}</option>)}
               </select>
               <select name="transmission_id" value={formData.transmission_id} onChange={(e) => setFormData({...formData, transmission_id: e.target.value})} className="bg-zinc-900 border border-zinc-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-red-600">
-                <option value="">Cambio</option>{transmissions.map((t: any) => <option key={t.id} value={t.id}>{t.name}</option>)}
+                <option value="">{t('common.transmission', 'Cambio')}</option>{transmissions.map((t: any) => <option key={t.id} value={t.id}>{t.name}</option>)}
               </select>
-              <input type="number" name="year" value={formData.year} onChange={(e) => setFormData({...formData, year: e.target.value})} placeholder="Año" className={`bg-zinc-900 border border-zinc-700 rounded-xl p-3 focus:ring-2 focus:ring-red-600 outline-none ${noArrowsClass}`} />
-              <input type="number" name="hp" value={formData.hp} onChange={(e) => setFormData({...formData, hp: e.target.value})} placeholder="CV" className={`bg-zinc-900 border border-zinc-700 rounded-xl p-3 focus:ring-2 focus:ring-red-600 outline-none ${noArrowsClass}`} />
+              <input type="number" name="year" value={formData.year} onChange={(e) => setFormData({...formData, year: e.target.value})} placeholder={t('common.year', 'Año')} className={`bg-zinc-900 border border-zinc-700 rounded-xl p-3 focus:ring-2 focus:ring-red-600 outline-none ${noArrowsClass}`} />
+              <input type="number" name="hp" value={formData.hp} onChange={(e) => setFormData({...formData, hp: e.target.value})} placeholder={t('edit_ad.hp', 'CV')} className={`bg-zinc-900 border border-zinc-700 rounded-xl p-3 focus:ring-2 focus:ring-red-600 outline-none ${noArrowsClass}`} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <select name="tonality_id" value={formData.tonality_id} onChange={(e) => setFormData({...formData, tonality_id: e.target.value})} className="bg-zinc-900 border border-zinc-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-red-600">
-                <option value="">Color</option>{tonalities.map((ton: any) => <option key={ton.id} value={ton.id}>{ton.name}</option>)}
+                <option value="">{t('common.color', 'Color')}</option>{tonalities.map((ton: any) => <option key={ton.id} value={ton.id}>{ton.name}</option>)}
               </select>
               <select name="doors" value={formData.doors} onChange={(e) => setFormData({...formData, doors: e.target.value})} className="bg-zinc-900 border border-zinc-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-red-600">
-                <option value="2">2 Puertas</option><option value="3">3 Puertas</option><option value="4">4 Puertas</option><option value="5">5 Puertas</option>
+                <option value="2">{t('filters.doors_2', '2 Puertas')}</option><option value="3">{t('filters.doors_3', '3 Puertas')}</option><option value="4">{t('filters.doors_4', '4 Puertas')}</option><option value="5">{t('filters.doors_5', '5 Puertas')}</option>
               </select>
             </div>
           </section>
           <section className="space-y-6">
-            <h2 className="text-red-500 font-bold uppercase text-xs tracking-widest border-l-4 border-red-600 pl-3">Detalles Comerciales</h2>
+            <h2 className="text-red-500 font-bold uppercase text-xs tracking-widest border-l-4 border-red-600 pl-3">{t('edit_ad.commercial_details', 'Detalles Comerciales')}</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="relative"><input type="number" name="price" value={formData.price} onChange={(e) => setFormData({...formData, price: e.target.value})} placeholder="Precio" className={`w-full bg-zinc-900 border border-zinc-700 rounded-xl p-3 pl-8 outline-none text-red-500 font-bold focus:ring-2 focus:ring-red-600 ${noArrowsClass}`} /><span className="absolute left-3 top-3 text-red-700 font-bold">€</span></div>
-              <input type="number" name="mileage" value={formData.mileage} onChange={(e) => setFormData({...formData, mileage: e.target.value})} placeholder="Km" className={`bg-zinc-900 border border-zinc-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-red-600 ${noArrowsClass}`} />
+              <div className="relative"><input type="number" name="price" value={formData.price} onChange={(e) => setFormData({...formData, price: e.target.value})} placeholder={t('common.price', 'Precio')} className={`w-full bg-zinc-900 border border-zinc-700 rounded-xl p-3 pl-8 outline-none text-red-500 font-bold focus:ring-2 focus:ring-red-600 ${noArrowsClass}`} /><span className="absolute left-3 top-3 text-red-700 font-bold">€</span></div>
+              <input type="number" name="mileage" value={formData.mileage} onChange={(e) => setFormData({...formData, mileage: e.target.value})} placeholder={t('common.km', 'Km')} className={`bg-zinc-900 border border-zinc-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-red-600 ${noArrowsClass}`} />
               <select name="province_id" value={formData.province_id} onChange={(e) => setFormData({...formData, province_id: e.target.value})} className="bg-zinc-900 border border-zinc-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-red-600">
-                <option value="">Provincia</option>{provinces.map((p: any) => <option key={p.id} value={p.id}>{p.name}</option>)}
+                <option value="">{t('filters.province', 'Provincia')}</option>{provinces.map((p: any) => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
             </div>
             <textarea name="description" rows={4} value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} className="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-3 outline-none resize-none focus:ring-2 focus:ring-red-600" />
           </section>
           <div className="flex gap-4">
-            <button type="button" onClick={() => navigate('/mis-anuncios')} className="flex-1 bg-zinc-700 hover:bg-zinc-600 py-5 rounded-2xl font-black uppercase tracking-widest transition">Cancelar</button>
-            <button type="submit" disabled={submitLoading} className="flex-2 bg-red-700 hover:bg-red-600 py-5 rounded-2xl font-black uppercase tracking-widest transition shadow-lg shadow-red-900/30 active:scale-95 disabled:opacity-50 px-8">Guardar Cambios</button>
+            <button type="button" onClick={() => navigate('/mis-anuncios')} className="flex-1 bg-zinc-700 hover:bg-zinc-600 py-5 rounded-2xl font-black uppercase tracking-widest transition">{t('common.cancel', 'Cancelar')}</button>
+            <button type="submit" disabled={submitLoading} className="flex-2 bg-red-700 hover:bg-red-600 py-5 rounded-2xl font-black uppercase tracking-widest transition shadow-lg shadow-red-900/30 active:scale-95 disabled:opacity-50 px-8">{t('common.save', 'Guardar Cambios')}</button>
           </div>
         </form>
       </div>

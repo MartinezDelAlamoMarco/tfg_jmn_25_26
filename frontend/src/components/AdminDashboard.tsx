@@ -3,14 +3,16 @@ import { Users, ShieldAlert, Car } from "lucide-react";
 import AdminReportsPanel from "../pages/administrador/AdminReportPanel"; 
 import AdminUsersPanel from "../pages/administrador/AdminUsersPanel";    
 import AdminAdsPanel from "../pages/administrador/AdminAdsPanel";
+import { useTranslation } from "react-i18next"; // <-- IMPRESCINDIBLE
 
 export default function AdminDashboard() {
+  const { t } = useTranslation(); // <-- IMPRESCINDIBLE
   const [activeTab, setActiveTab] = useState<"reports" | "users" | "ads">("reports");
 
   const tabs = [
-    { id: "reports", label: "Reportes", icon: <ShieldAlert size={20} /> },
-    { id: "users", label: "Usuarios", icon: <Users size={20} /> },
-    { id: "ads", label: "Anuncios", icon: <Car size={20} /> },
+    { id: "reports", label: t('admin_panel.reports_tab', "Reportes"), icon: <ShieldAlert size={20} /> }, // <-- MODIFICADO CON t()
+    { id: "users", label: t('admin_panel.users_tab', "Usuarios"), icon: <Users size={20} /> }, // <-- MODIFICADO CON t()
+    { id: "ads", label: t('admin_panel.ads_tab', "Anuncios"), icon: <Car size={20} /> }, // <-- MODIFICADO CON t()
   ] as const;
 
   return (
@@ -20,7 +22,7 @@ export default function AdminDashboard() {
           <div className="bg-red-600 p-2 rounded-lg">
             <ShieldAlert size={28} />
           </div>
-          Panel de Moderación
+          {t('admin_panel.title', "Panel de Moderación")} {/* <-- MODIFICADO CON t() */}
         </h1>
 
         {/* Selector de Pestañas */}

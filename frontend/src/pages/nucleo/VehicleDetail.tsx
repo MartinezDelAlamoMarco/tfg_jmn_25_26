@@ -3,11 +3,13 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { API_BASE_URL } from "../../config";
 import { Heart } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface Advertisement {
   id: number;
   price: string;
   description: string;
+  description_en?: string;
   views: number;
   state?: { name: string };
   province?: { name: string };
@@ -28,6 +30,9 @@ interface Advertisement {
 }
 
 const VehicleDetail = () => {
+  const { t, i18n } = useTranslation();
+  const isEnglish = i18n.language.startsWith("en");
+
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [advertisement, setAdvertisement] = useState<Advertisement | null>(
@@ -70,7 +75,7 @@ const VehicleDetail = () => {
         }
       } catch (err) {
         console.error("Error al cargar el vehículo:", err);
-        setError("No se pudo cargar la información del vehículo.");
+        setError(t('edit_ad.error_loading', "No se pudo cargar la información del vehículo."));
       } finally {
         setLoading(false);
       }
@@ -95,23 +100,23 @@ const VehicleDetail = () => {
         "favorites:updated",
         onFavsUpdated as EventListener,
       );
-  }, [id, token]);
+  }, [id, token, t]);
 
   const handleDeleteAd = async () => {
     if (
       window.confirm(
-        "⚠️ ¿Estás seguro de que quieres ELIMINAR este anuncio definitivamente por incumplir las normas?",
+        t('my_ads.delete_confirm', "⚠️ ¿Estás seguro de que quieres ELIMINAR este anuncio definitivamente por incumplir las normas?")
       )
     ) {
       try {
         await axios.delete(`${API_BASE_URL}/advertisements/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        alert("Anuncio eliminado correctamente.");
+        alert(t('common.delete', "Anuncio eliminado correctamente."));
         navigate("/admin/panel");
       } catch (error) {
         console.error("Error eliminando el anuncio", error);
-        alert("Hubo un error al eliminar el anuncio.");
+        alert(t('common.not_found', "Hubo un error al eliminar el anuncio."));
       }
     }
   };
@@ -147,7 +152,7 @@ const VehicleDetail = () => {
       }
     } catch (err) {
       console.error("Error updating favorite:", err);
-      alert("No se pudo actualizar favoritos");
+      alert(t('common.not_found', "No se pudo actualizar favoritos"));
     } finally {
       setFavoriteLoading(false);
     }
@@ -164,9 +169,9 @@ const VehicleDetail = () => {
   if (error || !advertisement) {
     return (
       <div className="min-h-screen flex flex-col justify-center items-center text-white bg-zinc-900">
-        <p className="text-xl mb-4">{error || "Vehículo no encontrado"}</p>
+        <p className="text-xl mb-4">{error || t('common.not_found', "Vehículo no encontrado")}</p>
         <Link to="/" className="text-red-700 hover:underline">
-          Volver al inicio
+          {t('details.home_link', 'Volver al inicio')}
         </Link>
       </div>
     );
@@ -179,7 +184,7 @@ const VehicleDetail = () => {
           to="/"
           className="flex items-center text-zinc-400 hover:text-white mb-8 transition duration-200"
         >
-          <span className="mr-2">←</span> Volver al catálogo
+          <span className="mr-2">←</span> {t('details.home_link', 'Volver al catálogo')}
         </Link>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
@@ -193,7 +198,7 @@ const VehicleDetail = () => {
                 />
               ) : (
                 <span className="text-zinc-500 italic text-lg">
-                  Sin imagen disponible
+                  {t('common.no_photo', 'Sin imagen disponible')}
                 </span>
               )}
             </div>
@@ -222,7 +227,7 @@ const VehicleDetail = () => {
             <div className="bg-zinc-800 rounded-2xl p-8 border border-zinc-700 shadow-xl">
               <div className="flex justify-between items-start mb-4">
                 <span className="px-3 py-1 bg-red-700/20 text-red-500 rounded-full text-xs font-bold uppercase tracking-wider">
-                  {advertisement.state?.name || "Disponible"}
+                  {advertisement.state?.name || t('common.available', "Disponible")}
                 </span>
                 <span className="text-zinc-500 text-sm">
                   Vistas: {advertisement.views || 0}
@@ -262,7 +267,7 @@ const VehicleDetail = () => {
                     ) : (
                       <>
                         <Heart size={20} />
-                        Añadir a favoritos
+                        {t('navbar.favorites', 'Añadir a favoritos')}
                       </>
                     )}
                   </button>
@@ -272,7 +277,7 @@ const VehicleDetail = () => {
               <div className="grid grid-cols-2 gap-4 mb-8">
                 <div className="bg-zinc-700/30 p-4 rounded-xl border border-zinc-600">
                   <p className="text-zinc-500 text-[10px] uppercase font-black tracking-widest mb-1">
-                    Kilómetros
+                    {t('common.km', 'Kilómetros')}
                   </p>
                   <p className="text-xl font-bold">
                     {advertisement.vehicle?.km?.toLocaleString("es-ES") || 0} km
@@ -280,7 +285,7 @@ const VehicleDetail = () => {
                 </div>
                 <div className="bg-zinc-700/30 p-4 rounded-xl border border-zinc-600">
                   <p className="text-zinc-500 text-[10px] uppercase font-black tracking-widest mb-1">
-                    Año
+                    {t('common.year', 'Año')}
                   </p>
                   <p className="text-xl font-bold">
                     {advertisement.vehicle?.year || "-"}
@@ -288,7 +293,7 @@ const VehicleDetail = () => {
                 </div>
                 <div className="bg-zinc-700/30 p-4 rounded-xl border border-zinc-600">
                   <p className="text-zinc-500 text-[10px] uppercase font-black tracking-widest mb-1">
-                    Combustible
+                    {t('common.fuel', 'Combustible')}
                   </p>
                   <p className="text-xl font-bold">
                     {advertisement.vehicle?.fuel_type?.name || "N/A"}
@@ -368,21 +373,23 @@ const VehicleDetail = () => {
         <div className="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 bg-zinc-800 p-8 rounded-2xl border border-zinc-700 shadow-xl">
             <h2 className="text-2xl font-black mb-6 border-b border-zinc-700 pb-2 uppercase italic">
-              Descripción
+              {t('details.description', 'Descripción')}
             </h2>
             <p className="text-zinc-300 leading-relaxed whitespace-pre-wrap text-lg">
-              {advertisement.description}
+              {isEnglish && advertisement.description_en
+                ? advertisement.description_en
+                : advertisement.description}
             </p>
           </div>
 
           <div className="bg-zinc-800 p-8 rounded-2xl border border-zinc-700 shadow-xl">
             <h2 className="text-2xl font-black mb-6 border-b border-zinc-700 pb-2 uppercase italic">
-              Ficha Técnica
+              {t('details.tech_sheet', 'Ficha Técnica')}
             </h2>
             <ul className="space-y-4">
               <li className="flex justify-between items-center border-b border-zinc-700/50 pb-2">
                 <span className="text-zinc-500 text-sm uppercase font-bold">
-                  Transmisión
+                  {t('common.transmission', 'Transmisión')}
                 </span>
                 <span className="font-semibold">
                   {advertisement.vehicle?.transmission?.name || "Manual"}
@@ -390,7 +397,7 @@ const VehicleDetail = () => {
               </li>
               <li className="flex justify-between items-center border-b border-zinc-700/50 pb-2">
                 <span className="text-zinc-500 text-sm uppercase font-bold">
-                  Puertas
+                  {t('common.doors', 'Puertas')}
                 </span>
                 <span className="font-semibold">
                   {advertisement.vehicle?.doors || "5"}
@@ -398,7 +405,7 @@ const VehicleDetail = () => {
               </li>
               <li className="flex justify-between items-center border-b border-zinc-700/50 pb-2">
                 <span className="text-zinc-500 text-sm uppercase font-bold">
-                  Color
+                  {t('common.color', 'Color')}
                 </span>
                 <span className="font-semibold">
                   {advertisement.vehicle?.tonality?.name || "N/A"}
@@ -406,7 +413,7 @@ const VehicleDetail = () => {
               </li>
               <li className="flex justify-between items-center pb-2">
                 <span className="text-zinc-500 text-sm uppercase font-bold">
-                  Ubicación
+                  {t('common.location', 'Ubicación')}
                 </span>
                 <span className="font-semibold">
                   {advertisement.province?.name || "N/A"}

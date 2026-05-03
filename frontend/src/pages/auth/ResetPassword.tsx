@@ -3,8 +3,10 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { API_BASE_URL } from "../../config";
 import { Lock, Eye, EyeOff, Check, X, ShieldCheck } from "lucide-react";
+import { useTranslation } from "react-i18next"; // <-- IMPRESCINDIBLE
 
 const ResetPassword = () => {
+  const { t } = useTranslation(); // <-- IMPRESCINDIBLE
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
@@ -41,7 +43,7 @@ const ResetPassword = () => {
         password_confirmation: passwordConfirmation
       });
 
-      setStatus({ type: 'success', msg: "¡Contraseña actualizada con éxito! Redirigiendo al login..." });
+      setStatus({ type: 'success', msg: t('reset_password.success_msg', "¡Contraseña actualizada con éxito! Redirigiendo al login...") }); // <-- MODIFICADO CON t()
       
       // Redirigimos al login tras 3 segundos
       setTimeout(() => {
@@ -51,7 +53,7 @@ const ResetPassword = () => {
     } catch (err: any) {
       setStatus({ 
         type: 'error', 
-        msg: err.response?.data?.error || "El enlace ha expirado o es inválido. Solicita uno nuevo." 
+        msg: err.response?.data?.error || t('reset_password.error_msg', "El enlace ha expirado o es inválido. Solicita uno nuevo.") // <-- MODIFICADO CON t()
       });
     } finally {
       setIsSubmitting(false);
@@ -68,9 +70,9 @@ const ResetPassword = () => {
             </div>
           </div>
           <h2 className="text-2xl font-bold text-white mb-2 uppercase tracking-tighter">
-            Restablecer <span className="text-red-600">Contraseña</span>
+            {t('reset_password.reset', "Restablecer")} <span className="text-red-600">{t('reset_password.password', "Contraseña")}</span> {/* <-- MODIFICADO CON t() */}
           </h2>
-          <p className="text-zinc-400 text-sm">Crea una nueva contraseña segura para tu cuenta.</p>
+          <p className="text-zinc-400 text-sm">{t('reset_password.subtitle', "Crea una nueva contraseña segura para tu cuenta.")}</p> {/* <-- MODIFICADO CON t() */}
         </div>
 
         {status && (
@@ -86,7 +88,7 @@ const ResetPassword = () => {
           <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
-              placeholder="Nueva contraseña"
+              placeholder={t('reset_password.new_password', "Nueva contraseña")} // <-- MODIFICADO CON t()
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-4 py-3 pl-10 bg-zinc-700 border border-zinc-600 rounded-lg text-white focus:ring-2 focus:ring-red-600 outline-none transition"
@@ -106,7 +108,7 @@ const ResetPassword = () => {
           <div className="relative">
             <input
               type="password"
-              placeholder="Repite la contraseña"
+              placeholder={t('reset_password.repeat_password', "Repite la contraseña")} // <-- MODIFICADO CON t()
               value={passwordConfirmation}
               onChange={(e) => setPasswordConfirmation(e.target.value)}
               className="w-full px-4 py-3 pl-10 bg-zinc-700 border border-zinc-600 rounded-lg text-white focus:ring-2 focus:ring-red-600 outline-none transition"
@@ -117,11 +119,11 @@ const ResetPassword = () => {
 
           {/* Panel de Requisitos (UX) */}
           <div className="bg-zinc-900/50 p-4 rounded-lg grid grid-cols-2 gap-2 mt-4">
-            <ValidationItem label="8+ caracteres" met={validations.length} />
-            <ValidationItem label="Mayúscula" met={validations.upper} />
-            <ValidationItem label="Número" met={validations.number} />
-            <ValidationItem label="Símbolo (!@#)" met={validations.special} />
-            <ValidationItem label="Coinciden" met={validations.match} />
+            <ValidationItem label={t('reset_password.char_length', "8+ caracteres")} met={validations.length} /> {/* <-- MODIFICADO CON t() */}
+            <ValidationItem label={t('reset_password.uppercase', "Mayúscula")} met={validations.upper} /> {/* <-- MODIFICADO CON t() */}
+            <ValidationItem label={t('reset_password.number', "Número")} met={validations.number} /> {/* <-- MODIFICADO CON t() */}
+            <ValidationItem label={t('reset_password.symbol', "Símbolo (!@#)")} met={validations.special} /> {/* <-- MODIFICADO CON t() */}
+            <ValidationItem label={t('reset_password.match', "Coinciden")} met={validations.match} /> {/* <-- MODIFICADO CON t() */}
           </div>
 
           <button
@@ -129,7 +131,7 @@ const ResetPassword = () => {
             disabled={!isFormValid || isSubmitting}
             className="w-full bg-red-700 hover:bg-red-600 disabled:bg-zinc-700 disabled:text-zinc-500 text-white font-black uppercase py-3 rounded-lg transition mt-6 shadow-lg shadow-red-900/20"
           >
-            {isSubmitting ? "Actualizando..." : "Guardar nueva contraseña"}
+            {isSubmitting ? t('reset_password.updating', "Actualizando...") : t('reset_password.save_new_password', "Guardar nueva contraseña")} {/* <-- MODIFICADO CON t() */}
           </button>
         </form>
       </div>

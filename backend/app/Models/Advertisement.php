@@ -15,6 +15,7 @@ class Advertisement extends Model
         'ad_state_id',
         'price',
         'description',
+        'description_en',
         'views',
         'is_rent'
     ];
