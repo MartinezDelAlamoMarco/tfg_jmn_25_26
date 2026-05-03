@@ -5,7 +5,7 @@ import { APP_NAME, API_BASE_URL } from "../config"; // Asegúrate de importar AP
 import logo from "../assets/Logotipo.png";
 import esFlag from "../assets/flag-es.svg";
 import gbFlag from "../assets/flag-gb.svg";
-import { ChevronDown, User, LayoutDashboard, LogOut, Heart, ShieldAlert } from "lucide-react";
+import { ChevronDown, User, LayoutDashboard, LogOut, Heart, ShieldAlert, MessageSquare } from "lucide-react";
 import { useTranslation } from "react-i18next"; // <-- AÑADIDO: Importación para idiomas
 
 export default function Navbar() {
