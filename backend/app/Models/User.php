@@ -85,4 +85,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(AdRequest::class, 'sender_id');
     }
+    // App\Models\User.php
+
+    public function advertisements()
+    {
+        return $this->hasMany(Advertisement::class, 'user_id');
+    }
 }

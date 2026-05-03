@@ -1,419 +1,266 @@
-import { useEffect, useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
-import axios from "axios";
-import { API_BASE_URL } from "../../config";
-import { Heart } from "lucide-react";
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { 
+  Heart, MapPin, Calendar, Gauge, MessageCircle, 
+  Trash2, ChevronLeft, ChevronRight,
+  Zap, Settings, Fuel, DoorOpen, UserCheck
+} from 'lucide-react';
 
-interface Advertisement {
-  id: number;
-  price: string;
-  description: string;
-  views: number;
-  state?: { name: string };
-  province?: { name: string };
-  images: { image_url: string; is_main: boolean }[];
-  vehicle?: {
-    km: number;
-    year: number;
-    power_hp: number;
-    doors: number;
-    fuel_type?: { name: string };
-    transmission?: { name: string };
-    tonality?: { name: string };
-    model?: {
-      name: string;
-      brand?: { name: string };
-    };
-  };
-}
-
-const VehicleDetail = () => {
+const VehicleDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [advertisement, setAdvertisement] = useState<Advertisement | null>(
-    null,
-  );
-  const [loading, setLoading] = useState<boolean>(true);
+  
+  const [vehicle, setVehicle] = useState<any | null>(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [mainImage, setMainImage] = useState<string>("");
-  const [isFavorite, setIsFavorite] = useState<boolean | null>(null);
-  const [favoriteLoading, setFavoriteLoading] = useState<boolean>(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
+  
+  // Estado para el ID del vendedor
+  const [sellerId, setSellerId] = useState<string | null>(null);
 
-  const token = localStorage.getItem("auth_token");
-  const userRole = localStorage.getItem("user_role");
+  const token = localStorage.getItem('auth_token');
+  const userRole = localStorage.getItem('user_role');
+  const currentUserId = localStorage.getItem('user_id');
 
   useEffect(() => {
-    const fetchVehicle = async () => {
+    const fetchVehicleDetail = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`${API_BASE_URL}/vehicles/${id}`);
-        setAdvertisement(response.data);
+        const response = await axios.get(`http://localhost:8000/api/advertisement/${id}`);
+        const data = response.data;
+        
+        // Log para depuración en consola
+        console.log("¡DATOS DE LARAVEL! ->", data);
+        
+        setVehicle(data);
+        
+        // BUSQUEDA DEL SELLER ID (Prioridad: Anuncio > Objeto User > Dueño del Vehículo)
+        const foundId = data.user_id || data.user?.id || data.vehicle?.owner_id;
+        
+        if (foundId) {
+          console.log("Vendedor detectado con ID:", foundId);
+          setSellerId(foundId.toString());
+        } else {
+          console.error("ALERTA: No se encontró ID de vendedor en el JSON.");
+        }
 
-        const img =
-          response.data.images?.find((i: any) => i.is_main)?.image_url ||
-          response.data.images?.[0]?.image_url;
-        setMainImage(img || "");
-
+        // Verificar favorito si hay token
         if (token) {
           try {
-            const favResp = await axios.get(`${API_BASE_URL}/favorites`, {
-              headers: { Authorization: `Bearer ${token}` },
+            // Nota: Si esto da 404, asegúrate de tener la ruta en api.php
+            const favResponse = await axios.get(`http://localhost:8000/api/favorites/check/${id}`, {
+              headers: { Authorization: `Bearer ${token}` }
             });
-            const favIds = (favResp.data || []).map((a: any) => a.id);
-            setIsFavorite(favIds.includes(response.data.id));
+            setIsFavorite(favResponse.data.is_favorite);
           } catch (e) {
-            // Si falla la comprobación, asumimos que no es favorito
-            setIsFavorite(false);
+            console.warn("Ruta de check favoritos no encontrada o error de servidor");
           }
-        } else {
-          setIsFavorite(false);
         }
-      } catch (err) {
-        console.error("Error al cargar el vehículo:", err);
-        setError("No se pudo cargar la información del vehículo.");
+      } catch (err: any) {
+        setError('Error al cargar los detalles del vehículo');
       } finally {
         setLoading(false);
       }
     };
-
-    fetchVehicle();
-
-    const onFavsUpdated = (e: any) => {
-      const detail = e?.detail || {};
-      if (!detail || !detail.adId) return;
-      if (String(detail.adId) === String(id)) {
-        setIsFavorite(detail.action === "added");
-      }
-    };
-    window.addEventListener(
-      "favorites:updated",
-      onFavsUpdated as EventListener,
-    );
-
-    return () =>
-      window.removeEventListener(
-        "favorites:updated",
-        onFavsUpdated as EventListener,
-      );
+    fetchVehicleDetail();
   }, [id, token]);
 
-  const handleDeleteAd = async () => {
-    if (
-      window.confirm(
-        "⚠️ ¿Estás seguro de que quieres ELIMINAR este anuncio definitivamente por incumplir las normas?",
-      )
-    ) {
-      try {
-        await axios.delete(`${API_BASE_URL}/advertisements/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        alert("Anuncio eliminado correctamente.");
-        navigate("/admin/panel");
-      } catch (error) {
-        console.error("Error eliminando el anuncio", error);
-        alert("Hubo un error al eliminar el anuncio.");
-      }
+  const handleContact = async () => {
+    if (!token) {
+      alert('Debes iniciar sesión para contactar');
+      navigate('/login');
+      return;
     }
-  };
 
-  const handleToggleFavorite = async () => {
-    if (!token || !advertisement) return;
-    setFavoriteLoading(true);
+    if (!sellerId) {
+      alert('No se pudo identificar al vendedor. Revisa la consola (F12).');
+      return;
+    }
+
+    if (currentUserId && sellerId === currentUserId.toString()) {
+      alert('Este anuncio es tuyo.');
+      return;
+    }
+
+    setActionLoading(true);
     try {
-      if (isFavorite) {
-        await axios.delete(`${API_BASE_URL}/favorites/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setIsFavorite(false);
-        window.dispatchEvent(
-          new CustomEvent("favorites:updated", {
-            detail: { adId: advertisement.id, action: "removed" },
-          }),
-        );
-      } else {
-        await axios.post(
-          `${API_BASE_URL}/favorites/${id}`,
-          {},
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          },
-        );
-        setIsFavorite(true);
-        window.dispatchEvent(
-          new CustomEvent("favorites:updated", {
-            detail: { adId: advertisement.id, action: "added" },
-          }),
-        );
-      }
-    } catch (err) {
-      console.error("Error updating favorite:", err);
-      alert("No se pudo actualizar favoritos");
+      const response = await axios.post('http://localhost:8000/api/conversations', {
+        advertisement_id: vehicle.id,
+        seller_id: sellerId
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      navigate(`/mensajes/${response.data.id}`);
+    } catch (err: any) {
+      // Capturamos el error 500 y mostramos el mensaje real de Laravel
+      const errorMsg = err.response?.data?.error || err.response?.data?.message || 'Error desconocido';
+      alert('Error al crear conversación: ' + errorMsg);
+      console.error("Detalle del error 500:", err.response?.data);
     } finally {
-      setFavoriteLoading(false);
+      setActionLoading(false);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex justify-center items-center bg-zinc-900">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-700"></div>
-      </div>
-    );
-  }
+  const toggleFavorite = async () => {
+    if (!token) return alert('Debes iniciar sesión');
+    try {
+      await axios.post(`http://localhost:8000/api/favorites/${id}`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setIsFavorite(!isFavorite);
+    } catch (err) {
+      console.error('Error al actualizar favorito');
+    }
+  };
 
-  if (error || !advertisement) {
-    return (
-      <div className="min-h-screen flex flex-col justify-center items-center text-white bg-zinc-900">
-        <p className="text-xl mb-4">{error || "Vehículo no encontrado"}</p>
-        <Link to="/" className="text-red-700 hover:underline">
-          Volver al inicio
-        </Link>
-      </div>
-    );
-  }
+  const handleDelete = async () => {
+    if (window.confirm('¿Estás seguro de eliminar este anuncio?')) {
+      try {
+        await axios.delete(`http://localhost:8000/api/advertisement/${id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        navigate('/');
+      } catch (err) {
+        alert('No se pudo eliminar el anuncio.');
+      }
+    }
+  };
+
+  if (loading) return <div className="min-h-screen bg-zinc-950 text-white flex items-center justify-center font-bold">Cargando...</div>;
+  if (error || !vehicle) return <div className="min-h-screen bg-zinc-950 text-red-500 p-20 text-center">{error}</div>;
 
   return (
-    <div className="min-h-screen bg-zinc-900 text-white py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto">
-        <Link
-          to="/"
-          className="flex items-center text-zinc-400 hover:text-white mb-8 transition duration-200"
-        >
-          <span className="mr-2">←</span> Volver al catálogo
-        </Link>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          <div className="space-y-4">
-            <div className="aspect-video bg-zinc-800 rounded-2xl border border-zinc-700 flex items-center justify-center shadow-2xl overflow-hidden">
-              {mainImage ? (
-                <img
-                  src={mainImage}
-                  alt="Coche"
-                  className="w-full h-full object-cover animate-fade-in"
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 pb-12">
+      <div className="max-w-7xl mx-auto px-4 pt-24">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          {/* Contenido Multimedia */}
+          <div className="lg:col-span-2 space-y-6">
+            <div className="relative bg-zinc-900 rounded-3xl overflow-hidden border border-zinc-800 aspect-video flex items-center justify-center shadow-2xl">
+              {vehicle.images?.length > 0 ? (
+                <img 
+                  src={vehicle.images[currentImageIndex].image_url} 
+                  className="max-h-full object-contain" 
+                  alt="Vehículo" 
                 />
               ) : (
-                <span className="text-zinc-500 italic text-lg">
-                  Sin imagen disponible
-                </span>
+                <div className="text-zinc-700 font-black uppercase italic text-4xl">Sin Imágenes</div>
               )}
             </div>
 
-            <div className="grid grid-cols-5 gap-2">
-              {advertisement.images?.map((img, i) => (
-                <button
-                  key={i}
-                  onClick={() => setMainImage(img.image_url)}
-                  className={`aspect-square rounded-lg border-2 overflow-hidden transition ${
-                    mainImage === img.image_url
-                      ? "border-red-600"
-                      : "border-zinc-700 opacity-50 hover:opacity-100"
+            {/* Ficha Técnica */}
+            <div className="bg-zinc-900/50 border border-zinc-800 p-8 rounded-3xl backdrop-blur-md">
+              <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+                <Settings className="text-red-500" size={20} /> Detalles del Vehículo
+              </h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div className="space-y-1">
+                  <p className="text-zinc-500 text-xs font-bold uppercase tracking-tighter">Combustible</p>
+                  <div className="flex items-center gap-2 text-zinc-200">
+                    <Fuel size={18} className="text-red-500" /> 
+                    {vehicle.vehicle.fuel_type?.name || 'Gasolina'}
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-zinc-500 text-xs font-bold uppercase tracking-tighter">Potencia</p>
+                  <div className="flex items-center gap-2 text-zinc-200">
+                    <Zap size={18} className="text-red-500" /> 
+                    {vehicle.vehicle.power_hp} CV
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-zinc-500 text-xs font-bold uppercase tracking-tighter">Transmisión</p>
+                  <div className="flex items-center gap-2 text-zinc-200">
+                    <Settings size={18} className="text-red-500" /> 
+                    {vehicle.vehicle.transmission?.name || 'Manual'}
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-zinc-500 text-xs font-bold uppercase tracking-tighter">Puertas</p>
+                  <div className="flex items-center gap-2 text-zinc-200">
+                    <DoorOpen size={18} className="text-red-500" /> 
+                    {vehicle.vehicle.doors}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Descripción */}
+            <div className="bg-zinc-900/50 border border-zinc-800 p-8 rounded-3xl">
+              <h2 className="text-xl font-bold mb-4">Descripción</h2>
+              <p className="text-zinc-400 leading-relaxed italic">
+                "{vehicle.description || 'No hay descripción disponible para este anuncio.'}"
+              </p>
+            </div>
+          </div>
+
+          {/* Panel Lateral de Acción */}
+          <div className="space-y-6">
+            <div className="bg-zinc-900 border border-zinc-800 p-8 rounded-3xl sticky top-24 shadow-2xl">
+              <div className="flex justify-between items-start">
+                <div>
+                  <span className="bg-red-600/20 text-red-500 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
+                    {vehicle.is_rent ? 'Alquiler' : 'En Venta'}
+                  </span>
+                  <h1 className="text-3xl font-bold mt-4 leading-none">
+                    {vehicle.vehicle.model.brand.name} <br/>
+                    <span className="text-zinc-500 text-2xl font-medium">{vehicle.vehicle.model.name}</span>
+                  </h1>
+                </div>
+                <button 
+                  onClick={toggleFavorite} 
+                  className={`p-3 rounded-2xl transition-all duration-300 cursor-pointer ${
+                    isFavorite ? 'bg-red-600 text-white shadow-lg shadow-red-600/40' : 'bg-zinc-800 text-zinc-500 hover:bg-zinc-700'
                   }`}
                 >
-                  <img
-                    src={img.image_url}
-                    className="w-full h-full object-cover"
-                  />
+                  <Heart fill={isFavorite ? "currentColor" : "none"} size={22} />
                 </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex flex-col">
-            <div className="bg-zinc-800 rounded-2xl p-8 border border-zinc-700 shadow-xl">
-              <div className="flex justify-between items-start mb-4">
-                <span className="px-3 py-1 bg-red-700/20 text-red-500 rounded-full text-xs font-bold uppercase tracking-wider">
-                  {advertisement.state?.name || "Disponible"}
-                </span>
-                <span className="text-zinc-500 text-sm">
-                  Vistas: {advertisement.views || 0}
-                </span>
               </div>
 
-              <h1 className="text-4xl font-black mb-2 uppercase tracking-tight">
-                {advertisement.vehicle?.model?.brand?.name}{" "}
-                {advertisement.vehicle?.model?.name}
-              </h1>
-              <p className="text-zinc-400 text-lg mb-6 flex items-center">
-                <span className="mr-2">📍</span>{" "}
-                {advertisement.province?.name || "España"}
-              </p>
-
-              <div className="text-5xl font-black text-white mb-8">
-                {Number(advertisement.price).toLocaleString("es-ES")}{" "}
-                <span className="text-red-700">€</span>
+              <div className="text-5xl font-black text-white mb-8 mt-6 tracking-tighter">
+                {vehicle.price.toLocaleString()} <span className="text-2xl text-red-600 font-bold">€</span>
               </div>
 
-              {token && userRole !== "admin" && (
-                <div className="mb-4">
-                  <button
-                    onClick={handleToggleFavorite}
-                    disabled={isFavorite === null || favoriteLoading}
-                    className={`w-full py-3 mb-4 rounded-xl font-bold transition flex items-center justify-center gap-2 ${isFavorite ? "bg-red-700 hover:bg-red-600 text-white" : "bg-zinc-700 hover:bg-zinc-600 text-white"} ${isFavorite === null || favoriteLoading ? "opacity-70 cursor-not-allowed" : ""}`}
+              <button 
+                onClick={handleContact} 
+                disabled={actionLoading}
+                className="w-full cursor-pointer bg-red-600 hover:bg-red-700 text-white font-black py-5 rounded-2xl flex items-center justify-center gap-3 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-widest text-sm"
+              >
+                <MessageCircle size={20} /> 
+                {actionLoading ? 'Iniciando Chat...' : 'Contactar Vendedor'}
+              </button>
+
+              {/* Información del Vendedor */}
+              <div className="pt-6 mt-6 border-t border-zinc-800/50 flex items-center gap-4">
+                <div className="h-12 w-12 bg-zinc-800 rounded-full flex items-center justify-center border border-zinc-700 shadow-inner">
+                  <UserCheck className="text-red-500" size={24} />
+                </div>
+                <div>
+                  <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Vendedor</p>
+                  <p className="text-lg font-bold text-zinc-200">
+                    {vehicle.user?.name || 'Vendedor Particular'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Acciones de Propietario o Admin */}
+              {(userRole === 'admin' || (currentUserId && sellerId && currentUserId.toString() === sellerId)) && (
+                <div className="mt-8 pt-4 border-t border-zinc-800/50">
+                  <button 
+                    onClick={handleDelete} 
+                    className="w-full cursor-pointer text-zinc-600 hover:text-red-500 flex items-center justify-center gap-2 py-2 text-xs transition-colors font-bold uppercase tracking-tighter"
                   >
-                    {isFavorite === null || favoriteLoading ? (
-                      <span className="inline-flex items-center justify-center">
-                        <span className="animate-spin inline-block h-4 w-4 border-b-2 border-white rounded-full"></span>
-                      </span>
-                    ) : isFavorite ? (
-                      <>
-                        <Heart size={20} className="fill-current" />
-                        Quitar de favoritos
-                      </>
-                    ) : (
-                      <>
-                        <Heart size={20} />
-                        Añadir a favoritos
-                      </>
-                    )}
+                    <Trash2 size={14} /> Eliminar Publicación
                   </button>
                 </div>
               )}
-
-              <div className="grid grid-cols-2 gap-4 mb-8">
-                <div className="bg-zinc-700/30 p-4 rounded-xl border border-zinc-600">
-                  <p className="text-zinc-500 text-[10px] uppercase font-black tracking-widest mb-1">
-                    Kilómetros
-                  </p>
-                  <p className="text-xl font-bold">
-                    {advertisement.vehicle?.km?.toLocaleString("es-ES") || 0} km
-                  </p>
-                </div>
-                <div className="bg-zinc-700/30 p-4 rounded-xl border border-zinc-600">
-                  <p className="text-zinc-500 text-[10px] uppercase font-black tracking-widest mb-1">
-                    Año
-                  </p>
-                  <p className="text-xl font-bold">
-                    {advertisement.vehicle?.year || "-"}
-                  </p>
-                </div>
-                <div className="bg-zinc-700/30 p-4 rounded-xl border border-zinc-600">
-                  <p className="text-zinc-500 text-[10px] uppercase font-black tracking-widest mb-1">
-                    Combustible
-                  </p>
-                  <p className="text-xl font-bold">
-                    {advertisement.vehicle?.fuel_type?.name || "N/A"}
-                  </p>
-                </div>
-                <div className="bg-zinc-700/30 p-4 rounded-xl border border-zinc-600">
-                  <p className="text-zinc-500 text-[10px] uppercase font-black tracking-widest mb-1">
-                    Potencia
-                  </p>
-                  <p className="text-xl font-bold">
-                    {advertisement.vehicle?.power_hp || 0} CV
-                  </p>
-                </div>
-              </div>
-
-              {userRole === "admin" ? (
-                <div className="mt-6 bg-red-950/30 p-6 rounded-xl border border-red-900 text-center">
-                  <h3 className="text-red-500 font-bold uppercase text-sm tracking-widest mb-4">
-                    🛠️ Herramientas de Moderador
-                  </h3>
-                  <button
-                    onClick={handleDeleteAd}
-                    className="w-full py-4 bg-red-700 hover:bg-red-600 text-white font-black uppercase tracking-widest rounded-xl transition duration-300 shadow-lg shadow-red-900/20"
-                  >
-                    Eliminar Anuncio
-                  </button>
-                </div>
-              ) : (
-                <>
-                  {token ? (
-                    <button className="w-full py-4 bg-red-700 hover:bg-red-600 text-white font-black uppercase tracking-widest rounded-xl transition duration-300 shadow-lg shadow-red-900/20 active:scale-95 mb-6">
-                      Contactar con el vendedor
-                    </button>
-                  ) : (
-                    <Link
-                      to="/login"
-                      className="block w-full py-4 bg-zinc-700 hover:bg-zinc-600 text-white text-center font-black uppercase tracking-widest rounded-xl transition duration-300 mb-6"
-                    >
-                      Inicia sesión para contactar
-                    </Link>
-                  )}
-
-                  <div className="pt-4 border-t border-zinc-700/50 flex justify-end">
-                    {token ? (
-                      <Link
-                        to={`/anuncios/${advertisement.id}/reportar`}
-                        className="text-zinc-500 hover:text-red-500 text-xs font-bold uppercase flex items-center gap-2 transition-colors"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          strokeWidth={1.5}
-                          stroke="currentColor"
-                          className="w-4 h-4"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                          />
-                        </svg>
-                        Denunciar este anuncio
-                      </Link>
-                    ) : (
-                      <span className="text-zinc-600 text-[10px] uppercase font-black italic">
-                        Inicia sesión para denunciar
-                      </span>
-                    )}
-                  </div>
-                </>
-              )}
             </div>
           </div>
-        </div>
 
-        <div className="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 bg-zinc-800 p-8 rounded-2xl border border-zinc-700 shadow-xl">
-            <h2 className="text-2xl font-black mb-6 border-b border-zinc-700 pb-2 uppercase italic">
-              Descripción
-            </h2>
-            <p className="text-zinc-300 leading-relaxed whitespace-pre-wrap text-lg">
-              {advertisement.description}
-            </p>
-          </div>
-
-          <div className="bg-zinc-800 p-8 rounded-2xl border border-zinc-700 shadow-xl">
-            <h2 className="text-2xl font-black mb-6 border-b border-zinc-700 pb-2 uppercase italic">
-              Ficha Técnica
-            </h2>
-            <ul className="space-y-4">
-              <li className="flex justify-between items-center border-b border-zinc-700/50 pb-2">
-                <span className="text-zinc-500 text-sm uppercase font-bold">
-                  Transmisión
-                </span>
-                <span className="font-semibold">
-                  {advertisement.vehicle?.transmission?.name || "Manual"}
-                </span>
-              </li>
-              <li className="flex justify-between items-center border-b border-zinc-700/50 pb-2">
-                <span className="text-zinc-500 text-sm uppercase font-bold">
-                  Puertas
-                </span>
-                <span className="font-semibold">
-                  {advertisement.vehicle?.doors || "5"}
-                </span>
-              </li>
-              <li className="flex justify-between items-center border-b border-zinc-700/50 pb-2">
-                <span className="text-zinc-500 text-sm uppercase font-bold">
-                  Color
-                </span>
-                <span className="font-semibold">
-                  {advertisement.vehicle?.tonality?.name || "N/A"}
-                </span>
-              </li>
-              <li className="flex justify-between items-center pb-2">
-                <span className="text-zinc-500 text-sm uppercase font-bold">
-                  Ubicación
-                </span>
-                <span className="font-semibold">
-                  {advertisement.province?.name || "N/A"}
-                </span>
-              </li>
-            </ul>
-          </div>
         </div>
       </div>
     </div>

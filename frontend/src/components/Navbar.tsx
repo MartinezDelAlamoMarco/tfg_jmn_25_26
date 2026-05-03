@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { APP_NAME, API_BASE_URL } from "../config"; // Asegúrate de importar API_BASE_URL
 import logo from "../assets/Logotipo.png";
-import { ChevronDown, User, LayoutDashboard, LogOut, Heart, ShieldAlert } from "lucide-react";
+import { ChevronDown, User, LayoutDashboard, LogOut, Heart, ShieldAlert, MessageSquare } from "lucide-react";
 
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -131,7 +131,7 @@ export default function Navbar() {
                       return (
                         <li key={v.id}>
                           <Link 
-                            to={isRent ? `/alquiler/${v.id}` : `/advertisement/${v.id}`} 
+                            to={isRent ? `/alquiler/${v.id}` : `/advertisements/${v.id}`} 
                             onClick={() => setShowSuggestions(false)}
                             className="flex items-center gap-4 p-3 hover:bg-zinc-700 transition border-b border-zinc-700/50 last:border-0"
                           >
@@ -185,6 +185,12 @@ export default function Navbar() {
                 <Link to="/favoritos" className="text-zinc-300 hover:text-red-500 transition-colors font-medium flex items-center gap-2 mr-2">
                   <Heart size={18} />
                   Favoritos
+                </Link>
+
+                {/* BOTÓN DE MENSAJES DESKTOP */}
+                <Link to="/mis-mensajes" className="text-zinc-300 hover:text-white transition-colors font-medium flex items-center gap-2 mr-2">
+                  <MessageSquare size={18} />
+                  Mensajes
                 </Link>
 
                 <div className="relative" ref={dropdownRef}>
@@ -274,6 +280,10 @@ export default function Navbar() {
                 
                 <Link to="/favoritos" onClick={closeMenus} className="flex items-center gap-3 px-2 py-2 text-zinc-300 hover:text-white">
                   <Heart size={18} /> Favoritos
+                </Link>
+                {/* BOTÓN DE MENSAJES MÓVIL */}
+                <Link to="/mis-mensajes" onClick={closeMenus} className="flex items-center gap-3 px-2 py-2 text-zinc-300 hover:text-white">
+                  <MessageSquare size={18} /> Mensajes
                 </Link>
                 <Link to="/mis-anuncios" onClick={closeMenus} className="flex items-center gap-3 px-2 py-2 text-zinc-300 hover:text-white">
                   <LayoutDashboard size={18} /> Mis Anuncios

@@ -8,6 +8,7 @@ use App\Http\Controllers\MasterDataController;
 use App\Http\Controllers\ReportController; 
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AdminAdController;
+use App\Http\Controllers\ChatController;
 use Illuminate\Support\Facades\Route;
 
 // --- AUTENTICACIÓN Y PERFIL ---
@@ -46,6 +47,7 @@ Route::get('/vehicles', [VehicleController::class, 'index']);
 Route::get('/vehicles/{id}', [VehicleController::class, 'show']);
 Route::get('/advertisements', [AdvertisementController::class, 'index']);
 Route::get('/advertisements/brand/{brand_id}', [AdvertisementController::class, 'byBrand']);
+Route::get('/advertisement/{id}', [AdvertisementController::class, 'show']);
 
 // --- FAVORITOS (ÁREA PERSONAL) ---
 Route::middleware('auth:sanctum')->group(function () {
@@ -76,7 +78,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // 3. Gestión de Anuncios (Moderación)
     Route::get('/admin/ads', [AdminAdController::class, 'index']); // Listar anuncios con la Vista SQL
     Route::patch('/admin/ads/{id}/state', [AdminAdController::class, 'updateState']); // Cambiar estado del anuncio
-    Route::delete('/advertisements/{id}', [AdvertisementController::class, 'destroy']); // Borrado físico (ya la tenías)
+    Route::delete('/advertisement/{id}', [AdvertisementController::class, 'destroy']); // Borrado físico (ya la tenías)
 });
 
 // Ruta Ping para evitar el Cold Start
@@ -86,3 +88,13 @@ Route::get('/ping', function () {
         'message' => '¡El servidor está despierto!'
     ], 200);
 });
+
+// api.php
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/conversations', [ChatController::class, 'index']); // Listado
+    Route::post('/conversations', [ChatController::class, 'startConversation']); // Crear
+    Route::get('/conversations/{id}', [ChatController::class, 'getMessages']);
+    Route::post('/conversations/{id}/messages', [ChatController::class, 'sendMessage']); // Enviar
+});
+
+Route::get('/conversations', [ChatController::class, 'index'])->middleware('auth:sanctum');

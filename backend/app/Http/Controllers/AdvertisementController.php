@@ -116,4 +116,23 @@ class AdvertisementController extends Controller
             ], 500);
         }
     }
+
+    public function show($id)
+    {
+        try {
+            $advertisement = Advertisement::with([
+                'vehicle.model.brand', // Ruta correcta según tu Vehicle.php
+                'vehicle.fuelType',
+                'vehicle.transmission',
+                'images',
+                'user',
+                'province'
+            ])->findOrFail($id);
+
+            return response()->json($advertisement);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
 }

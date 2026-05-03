@@ -51,4 +51,5 @@ class Vehicle extends Model
         return $this->hasOne(Advertisement::class, 'vehicle_id');
     }
     
+    
 }
