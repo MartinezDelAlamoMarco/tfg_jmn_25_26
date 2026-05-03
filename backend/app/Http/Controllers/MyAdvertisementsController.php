@@ -10,6 +10,7 @@ use App\Models\Advertisement;
 use App\Models\VehicleBrand;          // Añadido para buscar la marca
 use App\Models\AdvertisementImage;    // Añadido para guardar la imagen
 use App\Services\GoogleDriveService;  // Añadido para conectar con Drive
+use App\Services\TranslationService;
 
 class MyAdvertisementsController extends Controller
 {
@@ -69,23 +70,20 @@ class MyAdvertisementsController extends Controller
         }
     }
 
-    public function store(Request $request)
+    public function store(Request $request, TranslationService $translator) // <-- INYECTAMOS EL SERVICIO
     {
-        // 1. Validamos los datos
         $request->validate([
             'price' => 'required|numeric',
             'vehicle_model_id' => 'required',
-            'vehicle_brand_id' => 'required', // Viene del frontend, lo necesitamos para la carpeta
+            'vehicle_brand_id' => 'required',
             'province_id' => 'required',
-            'images' => 'nullable|array|max:5', // Máximo 5 fotos por anuncio
-            'images.*' => 'image|mimes:jpeg,png,jpg,webp|max:10240', // Reglas para cada foto individual
+            'images' => 'nullable|array|max:5',
+            'images.*' => 'image|mimes:jpeg,png,jpg,webp|max:10240',
         ]);
 
         try {
-            // Iniciamos la transacción manualmente para mayor control
             DB::beginTransaction();
 
-            // 2. Crear el Vehículo (Tabla: vehicles)
             $vehicle = Vehicle::create([
                 'owner_id'         => Auth::id(),
                 'model_id'         => $request->vehicle_model_id,
@@ -98,35 +96,28 @@ class MyAdvertisementsController extends Controller
                 'doors'            => $request->doors,
             ]);
 
-            // 3. Crear el Anuncio (Tabla: advertisements)
+            // <-- AÑADIDO: Traducir la descripción antes de crear el anuncio
+            $translatedDescription = $translator->translateToEnglish($request->description);
+
             $advertisement = Advertisement::create([
                 'vehicle_id'   => $vehicle->id,
                 'province_id'  => $request->province_id,
                 'ad_state_id'  => 1,
                 'price'        => $request->price,
                 'description'  => $request->description,
+                'description_en' => $translatedDescription, // <-- AÑADIDO
                 'views'        => 0,
                 'is_rent'      => $request->boolean('is_rent'),
             ]);
 
-            // 4. Lógica de subida a Google Drive
             if ($request->hasFile('images')) {
                 $brand = VehicleBrand::find($request->vehicle_brand_id);
                 $brandName = $brand ? $brand->name : 'Sin_Marca';
                 $driveService = new GoogleDriveService();
 
-                // Recorremos cada imagen que nos manda React
                 foreach ($request->file('images') as $index => $file) {
-                    // Añadimos uniqid() para que si subes 3 fotos con el mismo nombre no se pisen en Drive
                     $fileName = time() . '_' . uniqid() . '_' . $file->getClientOriginalName();
-
-                    $uploadData = $driveService->uploadImageByBrand(
-                        $file->getRealPath(),
-                        $fileName,
-                        $brandName
-                    );
-
-                    // Guardamos en BD: La primera imagen del array ($index == 0) será la principal
+                    $uploadData = $driveService->uploadImageByBrand($file->getRealPath(), $fileName, $brandName);
                     AdvertisementImage::create([
                         'advertisement_id' => $advertisement->id,
                         'image_url'        => $uploadData['url'],
@@ -135,12 +126,9 @@ class MyAdvertisementsController extends Controller
                 }
             }
 
-            // Confirmamos los cambios en la Base de Datos
             DB::commit();
-
             return response()->json(['message' => '¡Vehículo publicado con éxito!'], 201);
         } catch (\Exception $e) {
-            // Si algo falla (BD o Drive), deshacemos la inserción en BD
             DB::rollBack();
             return response()->json(['error' => $e->getMessage()], 500);
         }
@@ -157,7 +145,7 @@ class MyAdvertisementsController extends Controller
         return response()->json($ad);
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $id, TranslationService $translator) // <-- INYECTAMOS EL SERVICIO
     {
         $ad = Advertisement::with('vehicle')->findOrFail($id);
 
@@ -166,7 +154,7 @@ class MyAdvertisementsController extends Controller
         }
 
         try {
-            DB::transaction(function () use ($request, $ad) {
+            DB::transaction(function () use ($request, $ad, $translator) { // <-- PASAMOS EL TRADUCTOR
                 $ad->vehicle->update([
                     'model_id'         => $request->vehicle_model_id,
                     'fuel_type_id'     => $request->fuel_type_id,
@@ -178,10 +166,19 @@ class MyAdvertisementsController extends Controller
                     'doors'            => $request->doors,
                 ]);
 
+                // <-- AÑADIDO: Traducir solo si la descripción en español ha cambiado
+                $newTranslatedDescription = null;
+                if ($request->description !== $ad->description) {
+                    $newTranslatedDescription = $translator->translateToEnglish($request->description);
+                } else {
+                    $newTranslatedDescription = $ad->description_en;
+                }
+
                 $ad->update([
-                    'province_id' => $request->province_id,
-                    'price'       => $request->price,
-                    'description' => $request->description,
+                    'province_id'    => $request->province_id,
+                    'price'          => $request->price,
+                    'description'    => $request->description,
+                    'description_en' => $newTranslatedDescription, // <-- AÑADIDO
                 ]);
             });
 

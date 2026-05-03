@@ -4,8 +4,10 @@ import axios from "axios";
 import { API_BASE_URL } from "../../config";
 import LoadingScreen from "../../components/LoadingScreen"; // Importamos tu nuevo componente
 import { Eye, EyeOff } from "lucide-react";
+import { useTranslation } from "react-i18next"; // <-- IMPRESCINDIBLE
 
 const Login = () => {
+  const { t } = useTranslation(); // <-- IMPRESCINDIBLE
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoggingIn, setIsLoggingIn] = useState(false); // Estado para la ruletita
@@ -34,7 +36,7 @@ const Login = () => {
       window.location.href = "/";
     } catch (error) {
       setIsLoggingIn(false); // Paramos la carga si falla
-      alert("Credenciales inválidas");
+      alert(t('login.invalid_credentials', "Credenciales inválidas")); // <-- MODIFICADO CON t()
     }
   };
 
@@ -70,7 +72,7 @@ const Login = () => {
           .catch((error) => {
             setIsLoggingIn(false);
             console.error("Error en el backend de Laravel:", error);
-            alert("Hubo un problema al validar el usuario con el servidor.");
+            alert(t('login.google_error', "Hubo un problema al validar el usuario con el servidor.")); // <-- MODIFICADO CON t()
           });
       }
 
@@ -91,11 +93,11 @@ const Login = () => {
         document.head.removeChild(script);
       }
     };
-  }, []);
+  }, [t]);
 
   // Si estamos en proceso de login, mostramos la ruletita
   if (isLoggingIn) {
-    return <LoadingScreen message="Validando credenciales..." />;
+    return <LoadingScreen message={t('login.validating', "Validando credenciales...")} />; // <-- MODIFICADO CON t()
   }
 
   return (
@@ -106,7 +108,7 @@ const Login = () => {
             <h1 className="text-3xl font-bold text-white mb-2 italic uppercase tracking-tighter">
               Redline <span className="text-red-600">Motors</span>
             </h1>
-            <p className="text-zinc-400">Inicia sesión en tu cuenta</p>
+            <p className="text-zinc-400">{t('login.sign_in_title', "Inicia sesión en tu cuenta")}</p> {/* <-- MODIFICADO CON t() */}
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -115,7 +117,7 @@ const Login = () => {
                 htmlFor="email"
                 className="block text-sm font-medium text-zinc-300 mb-2"
               >
-                Correo electrónico
+                {t('login.email', "Correo electrónico")} {/* <-- MODIFICADO CON t() */}
               </label>
               <input
                 type="email"
@@ -133,7 +135,7 @@ const Login = () => {
                 htmlFor="password"
                 className="block text-sm font-medium text-zinc-300 mb-2"
               >
-                Contraseña
+                {t('login.password', "Contraseña")} {/* <-- MODIFICADO CON t() */}
               </label>
               <div className="relative">
                 <input
@@ -150,7 +152,7 @@ const Login = () => {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition duration-150"
                   aria-label={
-                    showPassword ? "Ocultar contraseña" : "Ver contraseña"
+                    showPassword ? t('login.hide_password', "Ocultar contraseña") : t('login.show_password', "Ver contraseña") // <-- MODIFICADO CON t()
                   }
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -162,7 +164,7 @@ const Login = () => {
               type="submit"
               className="w-full bg-red-700 hover:bg-red-600 text-white font-black uppercase py-3 px-4 rounded-lg transition duration-200 shadow-lg shadow-red-900/20 active:scale-95"
             >
-              Iniciar sesión
+              {t('login.sign_in_btn', "Iniciar sesión")} {/* <-- MODIFICADO CON t() */}
             </button>
           </form>
 
@@ -172,7 +174,7 @@ const Login = () => {
             </div>
             <div className="relative flex justify-center text-sm">
               <span className="px-2 bg-zinc-800 text-zinc-400 font-bold uppercase italic">
-                O
+                {t('login.or', "O")} {/* <-- MODIFICADO CON t() */}
               </span>
             </div>
           </div>
@@ -185,16 +187,16 @@ const Login = () => {
                 to="/recovery"
                 className="text-red-500 hover:text-red-400 font-bold transition duration-200"
               >
-                ¿Olvidaste tu contraseña?
+                {t('login.forgot_password', "¿Olvidaste tu contraseña?")} {/* <-- MODIFICADO CON t() */}
               </Link>
             </p>
             <p className="text-zinc-400">
-              ¿No tienes cuenta?{" "}
+              {t('login.no_account', "¿No tienes cuenta?")}{" "} {/* <-- MODIFICADO CON t() */}
               <Link
                 to="/register"
                 className="text-red-500 hover:text-red-400 font-bold transition duration-200"
               >
-                REGÍSTRATE
+                {t('login.register', "REGÍSTRATE")} {/* <-- MODIFICADO CON t() */}
               </Link>
             </p>
           </div>
