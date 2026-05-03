@@ -18,6 +18,7 @@ import RentScreen from "../pages/nucleo/RentScreen"
 import RentDetail from "../pages/nucleo/RentDetail"
 import SearchScreen from "../pages/nucleo/SearchScreen"
 import Profile from "../pages/areaPersonal/GestionarPerfil"
+import UserProfile from "../pages/nucleo/UserProfile"
 import ReportAdvertisement from "../components/ReportAdvertisement"
 import AdminDashboard from "../components/AdminDashboard" 
 import ChatList from "../pages/nucleo/ChatList"
@@ -46,6 +47,7 @@ export default function AppRouter() {
           <Route path="/create-ad-rent" element={<CreateAdRent />} />
           <Route path="/alquiler/:id" element={<RentDetail />} />
           <Route path="/perfil" element={<Profile />} />
+          <Route path="/usuario/:id" element={<UserProfile />} />
           <Route path="/anuncios/:id/reportar" element={<ReportAdvertisement />} />
           <Route path="/admin/panel" element={<AdminDashboard />} />
           <Route path="/buscar" element={<SearchScreen />} />

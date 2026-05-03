@@ -3,8 +3,10 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../../config";
 import imageCompression from "browser-image-compression";
+import { useTranslation } from "react-i18next"; // <-- IMPRESCINDIBLE
 
 const CreateAdRent = () => {
+  const { t } = useTranslation(); // <-- IMPRESCINDIBLE
   const navigate = useNavigate();
   const [pageLoading, setPageLoading] = useState(true);
   const [loading, setLoading] = useState(false); // Bloqueo de pantalla completa
@@ -102,62 +104,62 @@ const CreateAdRent = () => {
     <div className="min-h-screen bg-zinc-900 text-white p-4 md:p-8 relative">
       {/* BLOQUEO TOTAL DURANTE EL ENVÍO */}
       {loading && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] flex items-center justify-center">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-9999 flex items-center justify-center">
           <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-red-600"></div>
         </div>
       )}
 
       <div className="max-w-5xl mx-auto">
         <header className="mb-8">
-          <h1 className="text-3xl font-black italic uppercase tracking-tighter">Publicar <span className="text-red-600">Alquiler</span></h1>
-          <p className="text-zinc-500 font-bold text-sm uppercase tracking-widest mt-1">Rent-a-Beast: Pon tu máquina a trabajar</p>
+          <h1 className="text-3xl font-black italic uppercase tracking-tighter">{t('create_ad.publish', "Publicar")} <span className="text-red-600">{t('common.rent', "Alquiler")}</span></h1> {/* <-- MODIFICADO CON t() */}
+          <p className="text-zinc-500 font-bold text-sm uppercase tracking-widest mt-1">{t('create_ad.rent_slogan', "Rent-a-Beast: Pon tu máquina a trabajar")}</p> {/* <-- MODIFICADO CON t() */}
         </header>
 
         <form onSubmit={handleSubmit} className="space-y-8 bg-zinc-800 p-6 md:p-10 rounded-3xl border border-zinc-700 shadow-2xl">
           <section className="space-y-6">
-            <h2 className="text-red-500 font-bold uppercase text-xs tracking-widest border-l-4 border-red-600 pl-3">Datos Técnicos</h2>
+            <h2 className="text-red-500 font-bold uppercase text-xs tracking-widest border-l-4 border-red-600 pl-3">{t('create_ad.tech_data', "Datos Técnicos")}</h2> {/* <-- MODIFICADO CON t() */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <select name="vehicle_brand_id" required value={formData.vehicle_brand_id} onChange={handleBrandChange} className="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-red-600 transition">
-                <option value="">Marca</option>
+                <option value="">{t('filters.brand', "Marca")}</option> {/* <-- MODIFICADO CON t() */}
                 {brands.map((b: any) => <option key={b.id} value={b.id}>{b.name}</option>)}
               </select>
               <select name="vehicle_model_id" required value={formData.vehicle_model_id} onChange={handleChange} disabled={!formData.vehicle_brand_id} className="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-3 outline-none disabled:opacity-30 focus:ring-2 focus:ring-red-600 transition">
-                <option value="">Modelo</option>
+                <option value="">{t('filters.model', "Modelo")}</option> {/* <-- MODIFICADO CON t() */}
                 {models.map((m: any) => <option key={m.id} value={m.id}>{m.name}</option>)}
               </select>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <select name="fuel_type_id" required value={formData.fuel_type_id} onChange={handleChange} className="bg-zinc-900 border border-zinc-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-red-600">
-                <option value="">Combustible</option>
+                <option value="">{t('common.fuel', "Combustible")}</option> {/* <-- MODIFICADO CON t() */}
                 {fuelTypes.map((f: any) => <option key={f.id} value={f.id}>{f.name}</option>)}
               </select>
               <select name="transmission_id" required value={formData.transmission_id} onChange={handleChange} className="bg-zinc-900 border border-zinc-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-red-600">
-                <option value="">Cambio</option>
+                <option value="">{t('common.transmission', "Cambio")}</option> {/* <-- MODIFICADO CON t() */}
                 {transmissions.map((t: any) => <option key={t.id} value={t.id}>{t.name}</option>)}
               </select>
-              <input type="text" name="year" required value={formData.year} onChange={handleNumericChange} placeholder="Año (Ej: 2021)" className="bg-zinc-900 border border-zinc-700 rounded-xl p-3 focus:ring-2 focus:ring-red-600 outline-none" />
-              <input type="text" name="hp" required value={formData.hp} onChange={handleNumericChange} placeholder="Potencia (CV)" className="bg-zinc-900 border border-zinc-700 rounded-xl p-3 focus:ring-2 focus:ring-red-600 outline-none" />
+              <input type="text" name="year" required value={formData.year} onChange={handleNumericChange} placeholder={t('create_ad.year_placeholder', "Año (Ej: 2021)")} className="bg-zinc-900 border border-zinc-700 rounded-xl p-3 focus:ring-2 focus:ring-red-600 outline-none" /> {/* <-- MODIFICADO CON t() */}
+              <input type="text" name="hp" required value={formData.hp} onChange={handleNumericChange} placeholder={t('create_ad.hp_placeholder', "Potencia (CV)")} className="bg-zinc-900 border border-zinc-700 rounded-xl p-3 focus:ring-2 focus:ring-red-600 outline-none" /> {/* <-- MODIFICADO CON t() */}
             </div>
             <div className="grid grid-cols-2 gap-4">
               <select name="tonality_id" required value={formData.tonality_id} onChange={handleChange} className="bg-zinc-900 border border-zinc-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-red-600">
-                <option value="">Color / Tonalidad</option>
+                <option value="">{t('common.color', "Color")} / {t('create_ad.tonality', "Tonalidad")}</option> {/* <-- MODIFICADO CON t() */}
                 {tonalities.map((ton: any) => <option key={ton.id} value={ton.id}>{ton.name}</option>)}
               </select>
               <select name="doors" required value={formData.doors} onChange={handleChange} className="bg-zinc-900 border border-zinc-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-red-600">
-                <option value="2">2 Puertas</option><option value="3">3 Puertas</option><option value="4">4 Puertas</option><option value="5">5 Puertas</option>
+                <option value="2">2 {t('common.doors', "Puertas")}</option><option value="3">3 {t('common.doors', "Puertas")}</option><option value="4">4 {t('common.doors', "Puertas")}</option><option value="5">5 {t('common.doors', "Puertas")}</option> {/* <-- MODIFICADO CON t() */}
               </select>
             </div>
           </section>
           <section className="space-y-6">
-            <div className="flex items-center justify-between"><h2 className="text-red-500 font-bold uppercase text-xs tracking-widest border-l-4 border-red-600 pl-3">Fotografías</h2><span className="text-xs text-zinc-400">{selectedFiles.length} / 5</span></div>
-            <div className="border-2 border-dashed border-zinc-700 rounded-2xl p-6 bg-zinc-900/40 min-h-[200px] flex flex-col justify-center">
+            <div className="flex items-center justify-between"><h2 className="text-red-500 font-bold uppercase text-xs tracking-widest border-l-4 border-red-600 pl-3">{t('create_ad.photos', "Fotografías")}</h2><span className="text-xs text-zinc-400">{selectedFiles.length} / 5</span></div> {/* <-- MODIFICADO CON t() */}
+            <div className="border-2 border-dashed border-zinc-700 rounded-2xl p-6 bg-zinc-900/40 min-h-200px flex flex-col justify-center">
               {previews.length > 0 ? (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                   {previews.map((preview, index) => (
                     <div key={index} className="relative group">
-                      <img src={preview} alt={`Foto ${index + 1}`} className="rounded-xl object-cover w-full h-32 shadow-2xl border border-zinc-700" />
+                      <img src={preview} alt={`${t('common.photo', "Foto")} ${index + 1}`} className="rounded-xl object-cover w-full h-32 shadow-2xl border border-zinc-700" /> {/* <-- MODIFICADO CON t() */}
                       <button type="button" onClick={() => removeImage(index)} className="absolute -top-2 -right-2 bg-red-600 rounded-full w-7 h-7 font-bold border-2 border-zinc-800 flex items-center justify-center hover:bg-red-500 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100 z-10">✕</button>
-                      {index === 0 && <div className="absolute bottom-2 left-2 bg-black/80 backdrop-blur-sm text-white text-[10px] uppercase tracking-wider px-2 py-1 rounded-md font-bold border border-zinc-700">Principal</div>}
+                      {index === 0 && <div className="absolute bottom-2 left-2 bg-black/80 backdrop-blur-sm text-white text-[10px] uppercase tracking-wider px-2 py-1 rounded-md font-bold border border-zinc-700">{t('create_ad.main', "Principal")}</div>} {/* <-- MODIFICADO CON t() */}
                     </div>
                   ))}
                   {selectedFiles.length < 5 && (
@@ -168,31 +170,31 @@ const CreateAdRent = () => {
                   )}
                 </div>
               ) : (
-                <label className="cursor-pointer text-zinc-500 hover:text-white transition group flex flex-col items-center justify-center w-full h-full min-h-[150px]">
+                <label className="cursor-pointer text-zinc-500 hover:text-white transition group flex flex-col items-center justify-center w-full h-full min-h-150px">
                   <span className="text-4xl mb-3 group-hover:scale-110 transition-transform">📷</span>
-                  <span className="text-lg font-medium">Subir fotos para alquiler</span>
+                  <span className="text-lg font-medium">{t('create_ad.upload_rent_photos', "Subir fotos para alquiler")}</span> {/* <-- MODIFICADO CON t() */}
                   <input type="file" className="hidden" accept="image/*" multiple onChange={handleFileChange} />
                 </label>
               )}
             </div>
           </section>
           <section className="space-y-6">
-            <h2 className="text-red-500 font-bold uppercase text-xs tracking-widest border-l-4 border-red-600 pl-3">Condiciones de Alquiler</h2>
+            <h2 className="text-red-500 font-bold uppercase text-xs tracking-widest border-l-4 border-red-600 pl-3">{t('create_ad.rent_conditions', "Condiciones de Alquiler")}</h2> {/* <-- MODIFICADO CON t() */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="relative">
-                <input type="text" name="price" required value={formData.price} onChange={handleNumericChange} placeholder="Precio" className="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-3 pl-8 outline-none text-red-500 font-bold focus:ring-2 focus:ring-red-600" />
+                <input type="text" name="price" required value={formData.price} onChange={handleNumericChange} placeholder={t('common.price', "Precio")} className="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-3 pl-8 outline-none text-red-500 font-bold focus:ring-2 focus:ring-red-600" /> {/* <-- MODIFICADO CON t() */}
                 <span className="absolute left-3 top-3 text-red-700 font-bold">€</span>
-                <span className="absolute right-3 top-3 text-zinc-500 font-bold text-sm">/ día</span>
+                <span className="absolute right-3 top-3 text-zinc-500 font-bold text-sm">{t('common.per_day', "/ día")}</span> {/* <-- MODIFICADO CON t() */}
               </div>
-              <input type="text" name="mileage" required value={formData.mileage} onChange={handleNumericChange} placeholder="Kilometraje actual (Km)" className="bg-zinc-900 border border-zinc-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-red-600" />
+              <input type="text" name="mileage" required value={formData.mileage} onChange={handleNumericChange} placeholder={t('create_ad.current_mileage', "Kilometraje actual (Km)")} className="bg-zinc-900 border border-zinc-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-red-600" /> {/* <-- MODIFICADO CON t() */}
               <select name="province_id" required value={formData.province_id} onChange={handleChange} className="bg-zinc-900 border border-zinc-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-red-600">
-                <option value="">Provincia</option>
+                <option value="">{t('filters.province', "Provincia")}</option> {/* <-- MODIFICADO CON t() */}
                 {provinces.map((p: any) => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
             </div>
-            <textarea name="description" rows={4} required value={formData.description} onChange={handleChange} placeholder="Describe las condiciones..." className="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-3 outline-none resize-none focus:ring-2 focus:ring-red-600" />
+            <textarea name="description" rows={4} required value={formData.description} onChange={handleChange} placeholder={t('create_ad.describe_conditions', "Describe las condiciones...")} className="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-3 outline-none resize-none focus:ring-2 focus:ring-red-600" /> {/* <-- MODIFICADO CON t() */}
           </section>
-          <button type="submit" disabled={loading} className="w-full bg-red-700 hover:bg-red-600 py-5 rounded-2xl font-black uppercase tracking-widest transition-all shadow-lg shadow-red-900/30 active:scale-95 disabled:opacity-50 flex justify-center items-center gap-3">Publicar Alquiler</button>
+          <button type="submit" disabled={loading} className="w-full bg-red-700 hover:bg-red-600 py-5 rounded-2xl font-black uppercase tracking-widest transition-all shadow-lg shadow-red-900/30 active:scale-95 disabled:opacity-50 flex justify-center items-center gap-3">{t('create_ad.publish_rent', "Publicar Alquiler")}</button> {/* <-- MODIFICADO CON t() */}
         </form>
       </div>
     </div>

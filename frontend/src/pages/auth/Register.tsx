@@ -4,8 +4,10 @@ import { APP_NAME } from "../../config"
 import axios from "axios";
 // Importamos los iconos de ojo y ojo-tachado
 import { Eye, EyeOff } from 'lucide-react'
+import { useTranslation } from 'react-i18next'; // <-- IMPRESCINDIBLE
 
 const Register = () => {
+  const { t } = useTranslation(); // <-- IMPRESCINDIBLE
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -47,7 +49,7 @@ const Register = () => {
       window.location.href = '/'
     } catch (error) {
       console.error('Error en registro:', error)
-      alert('Error en registro')
+      alert(t('register.error_register', 'Error en registro')) // <-- MODIFICADO CON t()
     }
   }
 
@@ -71,15 +73,15 @@ const Register = () => {
       <div className="max-w-md w-full">
         <div className="bg-zinc-800 rounded-2xl shadow-2xl p-8 border border-zinc-700">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-white mb-2">Crear cuenta</h1>
-            <p className="text-zinc-400">Únete a {APP_NAME}</p>
+            <h1 className="text-3xl font-bold text-white mb-2">{t('register.create_account', 'Crear cuenta')}</h1> {/* <-- MODIFICADO CON t() */}
+            <p className="text-zinc-400">{t('register.join', 'Únete a')} {APP_NAME}</p> {/* <-- MODIFICADO CON t() */}
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label htmlFor="firstName" className="block text-sm font-medium text-zinc-300 mb-2">
-                  Nombre
+                  {t('register.first_name', 'Nombre')} {/* <-- MODIFICADO CON t() */}
                 </label>
                 <input
                   type="text"
@@ -94,7 +96,7 @@ const Register = () => {
               </div>
               <div>
                 <label htmlFor="lastName" className="block text-sm font-medium text-zinc-300 mb-2">
-                  Apellido
+                  {t('register.last_name', 'Apellido')} {/* <-- MODIFICADO CON t() */}
                 </label>
                 <input
                   type="text"
@@ -111,7 +113,7 @@ const Register = () => {
 
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-zinc-300 mb-2">
-                Correo electrónico
+                {t('register.email', 'Correo electrónico')} {/* <-- MODIFICADO CON t() */}
               </label>
               <input
                 type="email"
@@ -128,7 +130,7 @@ const Register = () => {
             {/* CAMPO DE CONTRASEÑA CON LA VALIDACIÓN VISUAL Y EL BOTÓN DE OJITO */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-zinc-300 mb-2">
-                Contraseña
+                {t('register.password', 'Contraseña')} {/* <-- MODIFICADO CON t() */}
               </label>
               <div className="relative">
                 <input
@@ -147,7 +149,7 @@ const Register = () => {
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition duration-150"
-                  aria-label={showPassword ? 'Ocultar contraseña' : 'Ver contraseña'}
+                  aria-label={showPassword ? t('register.hide_password', 'Ocultar contraseña') : t('register.show_password', 'Ver contraseña')} // <-- MODIFICADO CON t()
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
@@ -156,19 +158,19 @@ const Register = () => {
               {/* Feedback visual de validación (se mantiene igual) */}
               <div className="mt-3 text-sm space-y-1">
                 <p className={`${passwordValidations.length ? 'text-green-500' : 'text-zinc-500'} transition-colors duration-200 flex items-center gap-2`}>
-                  {passwordValidations.length ? '✓' : '○'} Mínimo 8 caracteres
+                  {passwordValidations.length ? '✓' : '○'} {t('register.min_length', 'Mínimo 8 caracteres')} {/* <-- MODIFICADO CON t() */}
                 </p>
                 <p className={`${passwordValidations.upper ? 'text-green-500' : 'text-zinc-500'} transition-colors duration-200 flex items-center gap-2`}>
-                  {passwordValidations.upper ? '✓' : '○'} Al menos una mayúscula
+                  {passwordValidations.upper ? '✓' : '○'} {t('register.uppercase', 'Al menos una mayúscula')} {/* <-- MODIFICADO CON t() */}
                 </p>
                 <p className={`${passwordValidations.lower ? 'text-green-500' : 'text-zinc-500'} transition-colors duration-200 flex items-center gap-2`}>
-                  {passwordValidations.lower ? '✓' : '○'} Al menos una minúscula
+                  {passwordValidations.lower ? '✓' : '○'} {t('register.lowercase', 'Al menos una minúscula')} {/* <-- MODIFICADO CON t() */}
                 </p>
                 <p className={`${passwordValidations.number ? 'text-green-500' : 'text-zinc-500'} transition-colors duration-200 flex items-center gap-2`}>
-                  {passwordValidations.number ? '✓' : '○'} Al menos un número
+                  {passwordValidations.number ? '✓' : '○'} {t('register.number', 'Al menos un número')} {/* <-- MODIFICADO CON t() */}
                 </p>
                 <p className={`${passwordValidations.special ? 'text-green-500' : 'text-zinc-500'} transition-colors duration-200 flex items-center gap-2`}>
-                  {passwordValidations.special ? '✓' : '○'} Al menos un carácter especial
+                  {passwordValidations.special ? '✓' : '○'} {t('register.special', 'Al menos un carácter especial')} {/* <-- MODIFICADO CON t() */}
                 </p>
               </div>
             </div>
@@ -176,7 +178,7 @@ const Register = () => {
             {/* CONFIRMAR CONTRASEÑA CON EL BOTÓN DE OJITO */}
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-zinc-300 mb-2">
-                Confirmar contraseña
+                {t('register.confirm_password', 'Confirmar contraseña')} {/* <-- MODIFICADO CON t() */}
               </label>
               <div className="relative">
                 <input
@@ -196,14 +198,14 @@ const Register = () => {
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition duration-150"
-                  aria-label={showConfirmPassword ? 'Ocultar contraseña' : 'Ver contraseña'}
+                  aria-label={showConfirmPassword ? t('register.hide_password', 'Ocultar contraseña') : t('register.show_password', 'Ver contraseña')} // <-- MODIFICADO CON t()
                 >
                   {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
               {/* Mensaje de error si no coinciden las contraseñas */}
               {formData.confirmPassword.length > 0 && !passwordsMatch && (
-                <p className="text-red-500 text-sm mt-2">Las contraseñas no coinciden</p>
+                <p className="text-red-500 text-sm mt-2">{t('register.passwords_not_match', 'Las contraseñas no coinciden')}</p> // <-- MODIFICADO CON t()
               )}
             </div>
 
@@ -217,15 +219,15 @@ const Register = () => {
                   : 'bg-red-700 hover:bg-red-600 text-white'
               }`}
             >
-              Crear cuenta
+              {t('register.create_account', 'Crear cuenta')} {/* <-- MODIFICADO CON t() */}
             </button>
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-zinc-400">
-              ¿Ya tienes cuenta?{' '}
+              {t('register.already_have_account', '¿Ya tienes cuenta?')} {/* <-- MODIFICADO CON t() */}{' '}
               <Link to="/login" className="text-red-500 hover:text-red-400 font-medium transition duration-200">
-                Inicia sesión
+                {t('register.login', 'Inicia sesión')} {/* <-- MODIFICADO CON t() */}
               </Link>
             </p>
           </div>

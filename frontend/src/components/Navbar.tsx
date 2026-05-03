@@ -4,8 +4,11 @@ import axios from "axios";
 import { APP_NAME, API_BASE_URL } from "../config"; // Asegúrate de importar API_BASE_URL
 import logo from "../assets/Logotipo.png";
 import { ChevronDown, User, LayoutDashboard, LogOut, Heart, ShieldAlert, MessageSquare } from "lucide-react";
+import { useTranslation } from "react-i18next"; // <-- AÑADIDO: Importación para idiomas
 
 export default function Navbar() {
+  const { t, i18n } = useTranslation(); // <-- AÑADIDO: Hook de traducción
+
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -56,6 +59,11 @@ export default function Navbar() {
   const closeMenus = () => {
     setIsMobileMenuOpen(false);
     setIsProfileDropdownOpen(false);
+  };
+
+  // <-- AÑADIDO: Función para cambiar de idioma
+  const changeLanguage = (lng: string) => {
+    i18n.changeLanguage(lng);
   };
 
   // Clic fuera para cerrar menús y buscador
@@ -112,7 +120,7 @@ export default function Navbar() {
                   setShowSuggestions(true);
                 }}
                 onFocus={() => setShowSuggestions(true)}
-                placeholder="Buscar vehículos en venta o alquiler..." 
+                placeholder={t('navbar.search_placeholder', 'Buscar vehículos en venta o alquiler...')} // <-- AÑADIDO t()
                 className="w-full pl-10 pr-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-red-500 transition duration-200" 
               />
             </form>
@@ -158,7 +166,7 @@ export default function Navbar() {
                     })}
                     <li className="bg-zinc-900 p-2 text-center">
                       <button onClick={handleSearch} className="text-sm font-bold text-zinc-300 hover:text-white transition">
-                        Ver todos los resultados
+                        {t('navbar.see_all', 'Ver todos los resultados')} {/* <-- AÑADIDO t() */}
                       </button>
                     </li>
                   </ul>
@@ -171,20 +179,20 @@ export default function Navbar() {
 
           {/* Enlaces Desktop */}
           <div className="hidden md:flex items-center space-x-6">
-            <Link to="/" className="text-zinc-300 hover:text-white transition-colors font-medium">Inicio</Link>
-            <Link to="/alquileres" className="text-zinc-300 hover:text-white transition-colors font-medium">Alquileres</Link>
+            <Link to="/" className="text-zinc-300 hover:text-white transition-colors font-medium">{t('navbar.home', 'Inicio')}</Link>
+            <Link to="/alquileres" className="text-zinc-300 hover:text-white transition-colors font-medium">{t('navbar.rents', 'Alquileres')}</Link>
 
             {!token ? (
-              <div className="flex items-center gap-4">
-                <Link to="/login" className="text-white hover:text-red-700 transition-colors font-medium">Login</Link>
-                <Link to="/register" className="bg-red-700 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">Register</Link>
+              <div className="flex items-center gap-4 border-l border-zinc-700 pl-4">
+                <Link to="/login" className="text-white hover:text-red-700 transition-colors font-medium">{t('navbar.login', 'Iniciar Sesión')}</Link>
+                <Link to="/register" className="bg-red-700 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">{t('navbar.register', 'Registrarse')}</Link>
               </div>
             ) : (
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 border-l border-zinc-700 pl-4">
                 
                 <Link to="/favoritos" className="text-zinc-300 hover:text-red-500 transition-colors font-medium flex items-center gap-2 mr-2">
                   <Heart size={18} />
-                  Favoritos
+                  {t('navbar.favorites', 'Favoritos')}
                 </Link>
 
                 {/* BOTÓN DE MENSAJES DESKTOP */}
@@ -203,7 +211,7 @@ export default function Navbar() {
                     </div>
                     <div className="flex items-center gap-1">
                       <span className="text-zinc-300 text-sm group-hover:text-white transition-colors">
-                        Hola, <span className="text-white font-semibold">{user.name?.split(" ")[0]}</span>
+                        {t('navbar.hello', 'Hola')}, <span className="text-white font-semibold">{user.name?.split(" ")[0]}</span>
                       </span>
                       <ChevronDown size={14} className={`text-zinc-500 transition-transform duration-200 ${isProfileDropdownOpen ? 'rotate-180' : ''}`} />
                     </div>
@@ -212,14 +220,14 @@ export default function Navbar() {
                   {isProfileDropdownOpen && (
                     <div className="absolute right-0 mt-2 w-48 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl py-2 z-50 animate-in fade-in zoom-in duration-150">
                       <Link to="/mis-anuncios" onClick={closeMenus} className="flex items-center gap-3 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors">
-                        <LayoutDashboard size={16} /> Mis Anuncios
+                        <LayoutDashboard size={16} /> {t('navbar.my_ads', 'Mis Anuncios')}
                       </Link>
                       <Link to="/perfil" onClick={closeMenus} className="flex items-center gap-3 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors">
-                        <User size={16} /> Gestionar Perfil
+                        <User size={16} /> {t('navbar.profile', 'Gestionar Perfil')}
                       </Link>
                       <hr className="my-2 border-zinc-800" />
                       <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-500 hover:bg-red-500/10 transition-colors">
-                        <LogOut size={16} /> Cerrar Sesión
+                        <LogOut size={16} /> {t('navbar.logout', 'Cerrar Sesión')}
                       </button>
                     </div>
                   )}
@@ -231,15 +239,35 @@ export default function Navbar() {
                     className="flex items-center gap-2 bg-red-700 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg transition-all font-bold text-xs uppercase tracking-tighter shadow-lg shadow-red-900/20"
                   >
                     <ShieldAlert size={16} />
-                    Panel Moderación
+                    {t('navbar.admin_panel', 'Panel Moderación')}
                   </Link>
                 )}
               </div>
             )}
+
+            {/* <-- AÑADIDO: Selector de Idiomas Desktop MOVIDO A LA DERECHA DEL TODO --> */}
+            <div className="flex items-center gap-2 border-l border-zinc-700 pl-4 ml-2">
+              <button 
+                onClick={() => changeLanguage('es')} 
+                className={`text-xl transition-transform hover:scale-110 ${i18n.language?.startsWith('es') ? 'opacity-100' : 'opacity-50'}`}
+              >🇪🇸</button>
+              <button 
+                onClick={() => changeLanguage('en')} 
+                className={`text-xl transition-transform hover:scale-110 ${i18n.language?.startsWith('en') ? 'opacity-100' : 'opacity-50'}`}
+              >🇬🇧</button>
+            </div>
+
           </div>
 
           {/* Menú Móvil */}
-          <div className="md:hidden">
+          <div className="md:hidden flex items-center gap-4"> {/* <-- MODIFICADO PARA ALOJAR BANDERAS MÓVILES */}
+            
+            {/* <-- AÑADIDO: Selector de Idiomas Móvil --> */}
+            <div className="flex items-center gap-2">
+              <button onClick={() => changeLanguage('es')} className={`text-xl ${i18n.language?.startsWith('es') ? 'opacity-100' : 'opacity-50'}`}>🇪🇸</button>
+              <button onClick={() => changeLanguage('en')} className={`text-xl ${i18n.language?.startsWith('en') ? 'opacity-100' : 'opacity-50'}`}>🇬🇧</button>
+            </div>
+
             <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-white hover:text-red-700 p-2">
               <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 {isMobileMenuOpen ? (
@@ -256,12 +284,12 @@ export default function Navbar() {
       {isMobileMenuOpen && (
         <div className="md:hidden bg-zinc-900 border-t border-zinc-800 shadow-xl pb-6">
           <div className="px-4 pt-4 space-y-2">
-            <Link to="/" onClick={closeMenus} className="block px-2 py-2 text-zinc-300 font-medium hover:text-white">Inicio</Link>
-            <Link to="/alquileres" onClick={closeMenus} className="block px-2 py-2 text-zinc-300 font-medium hover:text-white">Alquileres</Link>
+            <Link to="/" onClick={closeMenus} className="block px-2 py-2 text-zinc-300 font-medium hover:text-white">{t('navbar.home', 'Inicio')}</Link>
+            <Link to="/alquileres" onClick={closeMenus} className="block px-2 py-2 text-zinc-300 font-medium hover:text-white">{t('navbar.rents', 'Alquileres')}</Link>
             
             {token && userRole === 'admin' && (
               <Link to="/admin/panel" onClick={closeMenus} className="flex items-center gap-2 px-2 py-2 text-red-500 font-bold">
-                 <ShieldAlert size={18} /> Panel Moderación
+                 <ShieldAlert size={18} /> {t('navbar.admin_panel', 'Panel Moderación')}
               </Link>
             )}
             
@@ -269,31 +297,31 @@ export default function Navbar() {
             
             {!token ? (
               <div className="flex flex-col space-y-2 pt-2">
-                <Link to="/login" onClick={closeMenus} className="block px-2 py-2 text-white font-medium hover:text-red-500">Iniciar Sesión</Link>
-                <Link to="/register" onClick={closeMenus} className="block px-2 py-2 text-red-500 font-medium">Registrarse</Link>
+                <Link to="/login" onClick={closeMenus} className="block px-2 py-2 text-white font-medium hover:text-red-500">{t('navbar.login', 'Iniciar Sesión')}</Link>
+                <Link to="/register" onClick={closeMenus} className="block px-2 py-2 text-red-500 font-medium">{t('navbar.register', 'Registrarse')}</Link>
               </div>
             ) : (
               <div className="flex flex-col space-y-2 pt-2">
                 <div className="px-2 py-2 text-zinc-400 text-sm">
-                  Conectado como <span className="text-white font-semibold">{user.name}</span>
+                  {t('navbar.hello', 'Hola')}, <span className="text-white font-semibold">{user.name}</span>
                 </div>
                 
                 <Link to="/favoritos" onClick={closeMenus} className="flex items-center gap-3 px-2 py-2 text-zinc-300 hover:text-white">
-                  <Heart size={18} /> Favoritos
+                  <Heart size={18} /> {t('navbar.favorites', 'Favoritos')}
                 </Link>
                 {/* BOTÓN DE MENSAJES MÓVIL */}
                 <Link to="/mis-mensajes" onClick={closeMenus} className="flex items-center gap-3 px-2 py-2 text-zinc-300 hover:text-white">
                   <MessageSquare size={18} /> Mensajes
                 </Link>
                 <Link to="/mis-anuncios" onClick={closeMenus} className="flex items-center gap-3 px-2 py-2 text-zinc-300 hover:text-white">
-                  <LayoutDashboard size={18} /> Mis Anuncios
+                  <LayoutDashboard size={18} /> {t('navbar.my_ads', 'Mis Anuncios')}
                 </Link>
                 <Link to="/perfil" onClick={closeMenus} className="flex items-center gap-3 px-2 py-2 text-zinc-300 hover:text-white">
-                  <User size={18} /> Gestionar Perfil
+                  <User size={18} /> {t('navbar.profile', 'Gestionar Perfil')}
                 </Link>
                 
                 <button onClick={handleLogout} className="w-full flex items-center gap-3 px-2 py-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors text-left mt-2">
-                  <LogOut size={18} /> Cerrar Sesión
+                  <LogOut size={18} /> {t('navbar.logout', 'Cerrar Sesión')}
                 </button>
               </div>
             )}

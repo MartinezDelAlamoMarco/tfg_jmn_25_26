@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { API_BASE_URL } from "../../config";
-
+import { useTranslation } from "react-i18next";
 
 interface Advertisement {
   id: number;
   price: string;
   description: string;
+  description_en?: string;
   views: number;
   state?: { name: string };
   province?: { name: string };
@@ -28,6 +29,8 @@ interface Advertisement {
 }
 
 const RentDetail = () => {
+  const { t, i18n } = useTranslation();
+  const isEnglish = i18n.language.startsWith("en");
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [advertisement, setAdvertisement] = useState<Advertisement | null>(null);
@@ -59,14 +62,14 @@ const RentDetail = () => {
         setTotalPrice(Number(response.data.price));
       } catch (err) {
         console.error("Error al cargar el vehículo:", err);
-        setError("No se pudo cargar la información del vehículo.");
+        setError(t('edit_ad.error_loading', "No se pudo cargar la información del vehículo."));
       } finally {
         setLoading(false);
       }
     };
 
     fetchVehicle();
-  }, [id]);
+  }, [id, t]);
 
   useEffect(() => {
     if (dates.start && dates.end && advertisement) {
@@ -87,13 +90,13 @@ const RentDetail = () => {
 
   const handleRent = async () => {
     if (!token) {
-        alert("Debes iniciar sesión para realizar una reserva.");
+        alert(t('details.login_required_rent', "Debes iniciar sesión para realizar una reserva."));
         navigate("/login");
         return;
     }
 
     if (!dates.start || !dates.end) {
-      setError("Por favor, selecciona las fechas de inicio y fin.");
+      setError(t('details.select_dates', "Por favor, selecciona las fechas de inicio y fin."));
       return;
     }
     
@@ -112,23 +115,23 @@ const RentDetail = () => {
       setSuccess(true); 
     } catch (err: any) {
       console.error("Error al reservar", err);
-      setError(err.response?.data?.message || "Error al procesar la reserva. Verifica tu sesión.");
+      setError(err.response?.data?.message || t('details.booking_error', "Error al procesar la reserva. Verifica tu sesión."));
     } finally {
       setActionLoading(false);
     }
   };
 
   const handleDeleteAd = async () => {
-    if (window.confirm("⚠️ ¿Estás seguro de que quieres ELIMINAR este anuncio definitivamente por incumplir las normas?")) {
+    if (window.confirm(t('my_ads.delete_confirm', "⚠️ ¿Estás seguro de que quieres ELIMINAR este anuncio definitivamente por incumplir las normas?"))) {
       try {
         await axios.delete(`${API_BASE_URL}/advertisements/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        alert("Anuncio de alquiler eliminado correctamente.");
+        alert(t('common.delete_success', "Anuncio de alquiler eliminado correctamente."));
         navigate('/admin/panel');
       } catch (error) {
         console.error("Error eliminando el anuncio", error);
-        alert("Hubo un error al eliminar el anuncio.");
+        alert(t('common.delete_error', "Hubo un error al eliminar el anuncio."));
       }
     }
   };
@@ -144,8 +147,8 @@ const RentDetail = () => {
   if (error || !advertisement) {
     return (
       <div className="min-h-screen flex flex-col justify-center items-center text-white bg-zinc-950">
-        <p className="text-xl mb-4 text-zinc-500 italic">{error || "Vehículo no encontrado"}</p>
-        <button onClick={() => navigate(-1)} className="text-red-700 font-bold hover:underline">Volver atrás</button>
+        <p className="text-xl mb-4 text-zinc-500 italic">{error || t('common.not_found', "Vehículo no encontrado")}</p>
+        <button onClick={() => navigate(-1)} className="text-red-700 font-bold hover:underline">{t('details.go_back', "Volver atrás")}</button>
       </div>
     );
   }
@@ -156,7 +159,7 @@ const RentDetail = () => {
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-9999 flex items-center justify-center">
           <div className="flex flex-col items-center">
             <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-red-600 mb-4"></div>
-            <p className="text-red-500 font-bold uppercase tracking-widest animate-pulse">Procesando reserva...</p>
+            <p className="text-red-500 font-bold uppercase tracking-widest animate-pulse">{t('details.processing_booking', "Procesando reserva...")}</p>
           </div>
         </div>
       )}
@@ -166,14 +169,14 @@ const RentDetail = () => {
           onClick={() => navigate('/alquileres')}
           className="flex items-center text-zinc-400 hover:text-white mb-8 transition duration-200 uppercase font-bold text-xs tracking-widest"
         >
-          <span className="mr-2">←</span> Volver a la flota
+          <span className="mr-2">←</span> {t('details.back_to_fleet', "Volver a la flota")}
         </button>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           <div className="space-y-4">
             <div className="aspect-video bg-zinc-800 rounded-2xl border border-zinc-700 flex items-center justify-center shadow-2xl overflow-hidden relative">
               <div className="absolute top-4 left-4 z-10 bg-red-700 text-white text-[10px] font-bold px-3 py-1 rounded shadow-lg uppercase tracking-widest">
-                Alquiler
+                {t('common.rent', "Alquiler")}
               </div>
               {mainImage ? (
                 <img
@@ -182,7 +185,7 @@ const RentDetail = () => {
                   className="w-full h-full object-cover animate-fade-in"
                 />
               ) : (
-                <span className="text-zinc-500 italic text-lg">Sin imagen disponible</span>
+                <span className="text-zinc-500 italic text-lg">{t('common.no_photo', "Sin imagen disponible")}</span>
               )}
             </div>
             
@@ -205,10 +208,10 @@ const RentDetail = () => {
             <div className="bg-zinc-800 rounded-2xl p-8 border border-zinc-700 shadow-xl">
               <div className="flex justify-between items-start mb-4">
                 <span className="px-3 py-1 bg-red-700/20 text-red-500 rounded-full text-xs font-bold uppercase tracking-wider">
-                  {advertisement.state?.name || "Disponible"}
+                  {advertisement.state?.name || t('common.available', "Disponible")}
                 </span>
                 <span className="text-zinc-500 text-sm">
-                  Vistas: {advertisement.views || 0}
+                  {t('details.views', "Vistas:")} {advertisement.views || 0}
                 </span>
               </div>
 
@@ -216,7 +219,7 @@ const RentDetail = () => {
                 {advertisement.vehicle?.model?.brand?.name} {advertisement.vehicle?.model?.name}
               </h1>
               <p className="text-zinc-400 text-lg mb-6 flex items-center">
-                <span className="mr-2">📍</span> {advertisement.province?.name || "España"}
+                <span className="mr-2">📍</span> {advertisement.province?.name || t('common.spain', "España")}
               </p>
 
               <div className="flex items-end mb-8 gap-2">
@@ -224,17 +227,17 @@ const RentDetail = () => {
                   {Number(advertisement.price).toLocaleString("es-ES")}{" "}
                   <span className="text-red-700">€</span>
                 </div>
-                <span className="text-zinc-500 font-bold uppercase italic pb-1">/ día</span>
+                <span className="text-zinc-500 font-bold uppercase italic pb-1">{t('common.per_day', "/ día")}</span>
               </div>
 
               {userRole === 'admin' ? (
                 <div className="mt-8 bg-red-950/30 p-6 rounded-xl border border-red-900 mb-8 text-center">
-                  <h3 className="text-red-500 font-bold uppercase text-sm tracking-widest mb-4">🛠️ Herramientas de Moderador</h3>
+                  <h3 className="text-red-500 font-bold uppercase text-sm tracking-widest mb-4">{t('details.mod_tools', "🛠️ Herramientas de Moderador")}</h3>
                   <button 
                     onClick={handleDeleteAd}
                     className="w-full py-4 bg-red-700 hover:bg-red-600 text-white font-black uppercase tracking-widest rounded-xl transition duration-300 shadow-lg shadow-red-900/20"
                   >
-                    Eliminar Anuncio
+                    {t('common.delete_ad', "Eliminar Anuncio")}
                   </button>
                 </div>
               ) : (
@@ -242,16 +245,16 @@ const RentDetail = () => {
                   {success ? (
                     <div className="bg-green-900/20 border border-green-700 p-8 rounded-2xl text-center mb-8 animate-fade-in">
                       <div className="w-16 h-16 bg-green-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">✓</div>
-                      <h3 className="text-xl font-bold text-green-500 mb-2">¡Reserva Confirmada!</h3>
-                      <p className="text-zinc-400 text-sm">El propietario se pondrá en contacto contigo pronto.</p>
-                      <button onClick={() => navigate('/mis-reservas')} className="mt-6 px-6 py-2 bg-zinc-900 hover:bg-zinc-700 border border-zinc-600 rounded-lg text-sm font-bold uppercase transition">Ver mis reservas</button>
+                      <h3 className="text-xl font-bold text-green-500 mb-2">{t('details.booking_success', "¡Reserva Confirmada!")}</h3>
+                      <p className="text-zinc-400 text-sm">{t('details.booking_contact', "El propietario se pondrá en contacto contigo pronto.")}</p>
+                      <button onClick={() => navigate('/mis-reservas')} className="mt-6 px-6 py-2 bg-zinc-900 hover:bg-zinc-700 border border-zinc-600 rounded-lg text-sm font-bold uppercase transition">{t('details.view_my_bookings', "Ver mis reservas")}</button>
                     </div>
                   ) : (
                     <div className="bg-zinc-900/50 p-6 rounded-2xl border border-zinc-700 mb-8">
-                      <h3 className="text-lg font-bold uppercase italic border-b border-zinc-700 pb-3 mb-4">Fechas de reserva</h3>
+                      <h3 className="text-lg font-bold uppercase italic border-b border-zinc-700 pb-3 mb-4">{t('details.booking_dates', "Fechas de reserva")}</h3>
                       <div className="grid grid-cols-2 gap-4 mb-4">
                         <div>
-                          <label className="block text-zinc-400 text-[10px] font-black uppercase tracking-widest mb-2">Recogida</label>
+                          <label className="block text-zinc-400 text-[10px] font-black uppercase tracking-widest mb-2">{t('details.pickup', "Recogida")}</label>
                           <input 
                             type="date" 
                             min={today}
@@ -261,7 +264,7 @@ const RentDetail = () => {
                           />
                         </div>
                         <div>
-                          <label className="block text-zinc-400 text-[10px] font-black uppercase tracking-widest mb-2">Devolución</label>
+                          <label className="block text-zinc-400 text-[10px] font-black uppercase tracking-widest mb-2">{t('details.dropoff', "Devolución")}</label>
                           <input 
                             type="date" 
                             min={dates.start || today}
@@ -273,7 +276,7 @@ const RentDetail = () => {
                       </div>
 
                       <div className="flex justify-between items-center bg-black/40 p-4 rounded-xl border border-zinc-800">
-                        <span className="text-zinc-400 font-bold uppercase text-xs tracking-widest">Total Estimado</span>
+                        <span className="text-zinc-400 font-bold uppercase text-xs tracking-widest">{t('details.estimated_total', "Total Estimado")}</span>
                         <span className="text-2xl font-black text-red-500">{totalPrice.toLocaleString("es-ES")} €</span>
                       </div>
 
@@ -288,14 +291,14 @@ const RentDetail = () => {
                           onClick={handleRent}
                           className="w-full py-4 bg-red-700 hover:bg-red-600 text-white font-black uppercase tracking-widest rounded-xl transition duration-300 shadow-lg shadow-red-900/20 active:scale-95 mb-4"
                         >
-                          Confirmar Reserva
+                          {t('details.confirm_booking', "Confirmar Reserva")}
                         </button>
                       ) : (
                         <Link 
                           to="/login"
                           className="block w-full py-4 bg-zinc-700 hover:bg-zinc-600 text-white text-center font-black uppercase tracking-widest rounded-xl transition duration-300 mb-4"
                         >
-                          Inicia sesión para reservar
+                          {t('details.login_to_book', "Inicia sesión para reservar")}
                         </Link>
                       )}
                     </div>
@@ -310,10 +313,10 @@ const RentDetail = () => {
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                             </svg>
-                            Denunciar este anuncio
+                            {t('details.report_ad', "Denunciar este anuncio")}
                         </Link>
                     ) : (
-                        <span className="text-zinc-600 text-[10px] uppercase font-black italic">Inicia sesión para denunciar</span>
+                        <span className="text-zinc-600 text-[10px] uppercase font-black italic">{t('details.login_to_report', "Inicia sesión para denunciar")}</span>
                     )}
                   </div>
                 </>
@@ -325,35 +328,35 @@ const RentDetail = () => {
 
         <div className="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 bg-zinc-800 p-8 rounded-2xl border border-zinc-700 shadow-xl">
-            <h2 className="text-2xl font-black mb-6 border-b border-zinc-700 pb-2 uppercase italic">Descripción</h2>
-            <p className="text-zinc-300 leading-relaxed whitespace-pre-wrap text-lg">{advertisement.description}</p>
+            <h2 className="text-2xl font-black mb-6 border-b border-zinc-700 pb-2 uppercase italic">{t('details.description', "Descripción")}</h2>
+            <p className="text-zinc-300 leading-relaxed whitespace-pre-wrap text-lg">{isEnglish && advertisement.description_en ? advertisement.description_en : advertisement.description}</p>
           </div>
 
           <div className="bg-zinc-800 p-8 rounded-2xl border border-zinc-700 shadow-xl">
-            <h2 className="text-2xl font-black mb-6 border-b border-zinc-700 pb-2 uppercase italic">Ficha Técnica</h2>
+            <h2 className="text-2xl font-black mb-6 border-b border-zinc-700 pb-2 uppercase italic">{t('details.tech_sheet', "Ficha Técnica")}</h2>
             <ul className="space-y-4">
               <li className="flex justify-between items-center border-b border-zinc-700/50 pb-2">
-                <span className="text-zinc-500 text-sm uppercase font-bold">Motor</span>
+                <span className="text-zinc-500 text-sm uppercase font-bold">{t('details.engine', "Motor")}</span>
                 <span className="font-semibold">{advertisement.vehicle?.fuel_type?.name || "N/A"} - {advertisement.vehicle?.power_hp || 0} CV</span>
               </li>
               <li className="flex justify-between items-center border-b border-zinc-700/50 pb-2">
-                <span className="text-zinc-500 text-sm uppercase font-bold">Transmisión</span>
-                <span className="font-semibold">{advertisement.vehicle?.transmission?.name || "Manual"}</span>
+                <span className="text-zinc-500 text-sm uppercase font-bold">{t('common.transmission', "Transmisión")}</span>
+                <span className="font-semibold">{advertisement.vehicle?.transmission?.name || t('common.manual', "Manual")}</span>
               </li>
               <li className="flex justify-between items-center border-b border-zinc-700/50 pb-2">
-                <span className="text-zinc-500 text-sm uppercase font-bold">Año</span>
+                <span className="text-zinc-500 text-sm uppercase font-bold">{t('common.year', "Año")}</span>
                 <span className="font-semibold">{advertisement.vehicle?.year || "-"}</span>
               </li>
               <li className="flex justify-between items-center border-b border-zinc-700/50 pb-2">
-                <span className="text-zinc-500 text-sm uppercase font-bold">Puertas</span>
+                <span className="text-zinc-500 text-sm uppercase font-bold">{t('common.doors', "Puertas")}</span>
                 <span className="font-semibold">{advertisement.vehicle?.doors || "5"}</span>
               </li>
               <li className="flex justify-between items-center border-b border-zinc-700/50 pb-2">
-                <span className="text-zinc-500 text-sm uppercase font-bold">Color</span>
+                <span className="text-zinc-500 text-sm uppercase font-bold">{t('common.color', "Color")}</span>
                 <span className="font-semibold">{advertisement.vehicle?.tonality?.name || "N/A"}</span>
               </li>
               <li className="flex justify-between items-center pb-2">
-                <span className="text-zinc-500 text-sm uppercase font-bold">Ubicación</span>
+                <span className="text-zinc-500 text-sm uppercase font-bold">{t('common.location', "Ubicación")}</span>
                 <span className="font-semibold">{advertisement.province?.name || "N/A"}</span>
               </li>
             </ul>

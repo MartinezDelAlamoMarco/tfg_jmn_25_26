@@ -1,4 +1,11 @@
-const LoadingScreen = ({ message = "Cargando..." }) => {
+import { useTranslation } from "react-i18next"; // <-- IMPRESCINDIBLE
+
+const LoadingScreen = ({ message }: { message?: string }) => {
+  const { t } = useTranslation(); // <-- IMPRESCINDIBLE
+  
+  // Si no le pasan mensaje, usa "Cargando..." traducido
+  const displayMessage = message || t('common.loading', "Cargando...");
+
   return (
     <div className="min-h-screen bg-zinc-900 flex flex-col items-center justify-center text-white">
       {/* El Spinner con los colores de tu marca */}
@@ -6,7 +13,7 @@ const LoadingScreen = ({ message = "Cargando..." }) => {
       
       {/* El texto con estilo Redline */}
       <p className="font-black italic uppercase tracking-[0.2em] text-zinc-500 animate-pulse text-sm">
-        {message}
+        {displayMessage}
       </p>
     </div>
   );

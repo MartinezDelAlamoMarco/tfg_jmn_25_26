@@ -3,8 +3,10 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import { API_BASE_URL } from "../../config";
 import { Mail, ArrowLeft, Send } from "lucide-react";
+import { useTranslation } from "react-i18next"; // <-- IMPRESCINDIBLE
 
 const PasswordRecovery = () => {
+  const { t } = useTranslation(); // <-- IMPRESCINDIBLE
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState("");
@@ -24,7 +26,7 @@ const PasswordRecovery = () => {
       setError(
         err.response?.data?.error || 
         err.response?.data?.message || 
-        "No se pudo enviar el correo. Inténtalo de nuevo."
+        t('password_recovery.error_send', "No se pudo enviar el correo. Inténtalo de nuevo.") // <-- MODIFICADO CON t()
       );
     } finally {
       setIsSubmitting(false);
@@ -38,10 +40,10 @@ const PasswordRecovery = () => {
         <div className="bg-zinc-800 rounded-2xl shadow-2xl p-8 border border-zinc-700">
           <div className="text-center mb-8">
             <h2 className="text-2xl font-bold text-white mb-2 uppercase tracking-tight">
-              Recuperar <span className="text-red-600">Contraseña</span>
+              {t('password_recovery.recover', "Recuperar")} <span className="text-red-600">{t('password_recovery.password', "Contraseña")}</span> {/* <-- MODIFICADO CON t() */}
             </h2>
             <p className="text-zinc-400 text-sm">
-              Introduce tu correo electrónico y te enviaremos un enlace para restablecer tu cuenta.
+              {t('password_recovery.subtitle', "Introduce tu correo electrónico y te enviaremos un enlace para restablecer tu cuenta.")} {/* <-- MODIFICADO CON t() */}
             </p>
           </div>
 
@@ -49,7 +51,7 @@ const PasswordRecovery = () => {
             /* Mensaje de Éxito */
             <div className="bg-green-900/30 border border-green-500 text-green-400 p-4 rounded-lg text-center mb-6 animate-in fade-in duration-500">
               <p className="font-medium">{message}</p>
-              <p className="text-xs mt-2 text-green-500/80">Revisa tu bandeja de entrada (y spam).</p>
+              <p className="text-xs mt-2 text-green-500/80">{t('password_recovery.check_inbox', "Revisa tu bandeja de entrada (y spam).")}</p> {/* <-- MODIFICADO CON t() */}
             </div>
           ) : (
             /* Formulario */
@@ -62,7 +64,7 @@ const PasswordRecovery = () => {
               
               <div>
                 <label htmlFor="email" className="block text-xs font-black text-zinc-400 uppercase mb-2 ml-1">
-                  Correo electrónico
+                  {t('password_recovery.email_label', "Correo electrónico")} {/* <-- MODIFICADO CON t() */}
                 </label>
                 <div className="relative">
                   <input
@@ -71,7 +73,7 @@ const PasswordRecovery = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full px-4 py-3 pl-10 bg-zinc-700 border border-zinc-600 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-600 transition duration-200"
-                    placeholder="ejemplo@correo.com"
+                    placeholder={t('password_recovery.email_placeholder', "ejemplo@correo.com")} // <-- MODIFICADO CON t()
                     required
                   />
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={18} />
@@ -84,10 +86,10 @@ const PasswordRecovery = () => {
                 className="w-full bg-red-700 hover:bg-red-600 disabled:bg-zinc-700 disabled:text-zinc-500 text-white font-black uppercase py-3 px-4 rounded-lg transition duration-200 shadow-lg shadow-red-900/20 flex items-center justify-center gap-2"
               >
                 {isSubmitting ? (
-                  "Enviando..."
+                  t('password_recovery.sending', "Enviando...") // <-- MODIFICADO CON t()
                 ) : (
                   <>
-                    <span>Enviar enlace</span>
+                    <span>{t('password_recovery.send_link', "Enviar enlace")}</span> {/* <-- MODIFICADO CON t() */}
                     <Send size={18} />
                   </>
                 )}
@@ -102,7 +104,7 @@ const PasswordRecovery = () => {
               className="inline-flex items-center text-sm text-zinc-400 hover:text-white transition duration-200 group"
             >
               <ArrowLeft size={16} className="mr-2 group-hover:-translate-x-1 transition-transform" />
-              Volver al inicio de sesión
+              {t('password_recovery.back_to_login', "Volver al inicio de sesión")} {/* <-- MODIFICADO CON t() */}
             </Link>
           </div>
         </div>

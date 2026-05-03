@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { API_BASE_URL } from "../../config";
 import { ShieldAlert, Eye, AlertTriangle } from "lucide-react";
+import { useTranslation } from "react-i18next"; // <-- IMPRESCINDIBLE
 
 interface PriorityReport {
   advertisement_id: number;
@@ -21,6 +22,7 @@ interface PriorityReport {
 }
 
 const AdminReportsPanel = () => {
+  const { t } = useTranslation(); // <-- IMPRESCINDIBLE
   const [reports, setReports] = useState<PriorityReport[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -50,18 +52,18 @@ const AdminReportsPanel = () => {
         <div className="p-2 bg-red-600/20 rounded-lg">
           <ShieldAlert className="text-red-500" size={20} />
         </div>
-        <h2 className="text-xl font-bold uppercase tracking-tight">Incidencias Prioritarias</h2>
+        <h2 className="text-xl font-bold uppercase tracking-tight">{t('admin_panel.priority_reports', "Incidencias Prioritarias")}</h2> {/* <-- MODIFICADO CON t() */}
       </div>
 
       <div className="bg-zinc-900/50 rounded-2xl border border-zinc-800 overflow-hidden shadow-2xl">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-zinc-900/80 text-zinc-500 text-xs uppercase font-black tracking-widest border-b border-zinc-800">
-              <th className="p-5">Urgencia</th>
-              <th className="p-5">Vehículo / Anuncio</th>
-              <th className="p-5">Motivo</th>
-              <th className="p-5">Fecha</th>
-              <th className="p-5 text-right">Acción</th>
+              <th className="p-5">{t('admin_panel.urgency', "Urgencia")}</th> {/* <-- MODIFICADO CON t() */}
+              <th className="p-5">{t('admin_panel.vehicle_ad', "Vehículo / Anuncio")}</th> {/* <-- MODIFICADO CON t() */}
+              <th className="p-5">{t('admin_panel.reason', "Motivo")}</th> {/* <-- MODIFICADO CON t() */}
+              <th className="p-5">{t('admin_panel.date', "Fecha")}</th> {/* <-- MODIFICADO CON t() */}
+              <th className="p-5 text-right">{t('admin_panel.actions', "Acción")}</th> {/* <-- MODIFICADO CON t() */}
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-800/50">
@@ -71,13 +73,13 @@ const AdminReportsPanel = () => {
                 <td colSpan={5} className="p-20 text-center">
                   <div className="flex flex-col items-center gap-3">
                     <div className="w-8 h-8 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
-                    <span className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-500">Analizando Reportes...</span>
+                    <span className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-500">{t('admin_panel.analyzing_reports', "Analizando Reportes...")}</span> {/* <-- MODIFICADO CON t() */}
                   </div>
                 </td>
               </tr>
             ) : reports.length === 0 ? (
               <tr>
-                <td colSpan={5} className="p-10 text-center text-zinc-500 italic">No hay reportes pendientes. ¡Plataforma limpia!</td>
+                <td colSpan={5} className="p-10 text-center text-zinc-500 italic">{t('admin_panel.no_reports', "No hay reportes pendientes. ¡Plataforma limpia!")}</td> {/* <-- MODIFICADO CON t() */}
               </tr>
             ) : (
               reports.map((report) => (
@@ -89,7 +91,7 @@ const AdminReportsPanel = () => {
                       'bg-zinc-800 text-zinc-400'
                     }`}>
                       <AlertTriangle size={10} />
-                      {report.total_reports} {report.total_reports === 1 ? 'Reporte' : 'Reportes'}
+                      {report.total_reports} {report.total_reports === 1 ? t('admin_panel.report', 'Reporte') : t('admin_panel.reports', 'Reportes')} {/* <-- MODIFICADO CON t() */}
                     </div>
                   </td>
                   <td className="p-5">
@@ -110,7 +112,7 @@ const AdminReportsPanel = () => {
                       className="inline-flex items-center gap-2 bg-zinc-800 text-white hover:bg-white hover:text-black px-4 py-2 rounded-lg font-black uppercase text-[10px] transition-all active:scale-95"
                     >
                       <Eye size={14} />
-                      Revisar
+                      {t('admin_panel.review', "Revisar")} {/* <-- MODIFICADO CON t() */}
                     </button>
                   </td>
                 </tr>
