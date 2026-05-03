@@ -3,6 +3,8 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { APP_NAME, API_BASE_URL } from "../config"; // Asegúrate de importar API_BASE_URL
 import logo from "../assets/Logotipo.png";
+import esFlag from "../assets/flag-es.svg";
+import gbFlag from "../assets/flag-gb.svg";
 import { ChevronDown, User, LayoutDashboard, LogOut, Heart, ShieldAlert } from "lucide-react";
 import { useTranslation } from "react-i18next"; // <-- AÑADIDO: Importación para idiomas
 
@@ -241,14 +243,20 @@ export default function Navbar() {
 
             {/* <-- AÑADIDO: Selector de Idiomas Desktop MOVIDO A LA DERECHA DEL TODO --> */}
             <div className="flex items-center gap-2 border-l border-zinc-700 pl-4 ml-2">
-              <button 
-                onClick={() => changeLanguage('es')} 
-                className={`text-xl transition-transform hover:scale-110 ${i18n.language?.startsWith('es') ? 'opacity-100' : 'opacity-50'}`}
-              >🇪🇸</button>
-              <button 
-                onClick={() => changeLanguage('en')} 
-                className={`text-xl transition-transform hover:scale-110 ${i18n.language?.startsWith('en') ? 'opacity-100' : 'opacity-50'}`}
-              >🇬🇧</button>
+              <button
+                onClick={() => changeLanguage('es')}
+                className={`transition-transform hover:scale-110 ${i18n.language?.startsWith('es') ? 'opacity-100' : 'opacity-50'}`}
+                aria-label="Español"
+              >
+                <img src={esFlag} alt="Español" className="h-5 w-6 object-contain" />
+              </button>
+              <button
+                onClick={() => changeLanguage('en')}
+                className={`transition-transform hover:scale-110 ${i18n.language?.startsWith('en') ? 'opacity-100' : 'opacity-50'}`}
+                aria-label="English"
+              >
+                <img src={gbFlag} alt="English" className="h-5 w-6 object-contain" />
+              </button>
             </div>
 
           </div>
@@ -258,8 +266,12 @@ export default function Navbar() {
             
             {/* <-- AÑADIDO: Selector de Idiomas Móvil --> */}
             <div className="flex items-center gap-2">
-              <button onClick={() => changeLanguage('es')} className={`text-xl ${i18n.language?.startsWith('es') ? 'opacity-100' : 'opacity-50'}`}>🇪🇸</button>
-              <button onClick={() => changeLanguage('en')} className={`text-xl ${i18n.language?.startsWith('en') ? 'opacity-100' : 'opacity-50'}`}>🇬🇧</button>
+              <button onClick={() => changeLanguage('es')} className={`${i18n.language?.startsWith('es') ? 'opacity-100' : 'opacity-50'}`} aria-label="Español">
+                <img src={esFlag} alt="Español" className="h-5 w-6 object-contain" />
+              </button>
+              <button onClick={() => changeLanguage('en')} className={`${i18n.language?.startsWith('en') ? 'opacity-100' : 'opacity-50'}`} aria-label="English">
+                <img src={gbFlag} alt="English" className="h-5 w-6 object-contain" />
+              </button>
             </div>
 
             <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-white hover:text-red-700 p-2">
