@@ -21,9 +21,6 @@ import Profile from "../pages/areaPersonal/GestionarPerfil"
 import UserProfile from "../pages/nucleo/UserProfile"
 import ReportAdvertisement from "../components/ReportAdvertisement"
 import AdminDashboard from "../components/AdminDashboard" 
-import ChatList from "../pages/nucleo/ChatList"
-import ChatScreen from "../pages/nucleo/ChatScreen"
-
 
 export default function AppRouter() {
   return (
@@ -51,9 +48,6 @@ export default function AppRouter() {
           <Route path="/anuncios/:id/reportar" element={<ReportAdvertisement />} />
           <Route path="/admin/panel" element={<AdminDashboard />} />
           <Route path="/buscar" element={<SearchScreen />} />
-          <Route path="/mis-mensajes" element={<ChatList />} />
-          <Route path="/mensajes/:id" element={<ChatScreen />} />
-
 
         </Route>
 
