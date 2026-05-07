@@ -1,11 +1,15 @@
 // src/config.ts
 import axios from 'axios';
 
-//export const API_BASE_URL: string = 'https://tfg-jmn-25-26.onrender.com/api';
-export const API_BASE_URL = 'http://127.0.0.1:8000/api';
+export const API_BASE_URL: string = 'https://tfg-jmn-25-26.onrender.com/api';
+//export const API_BASE_URL = 'http://127.0.0.1:8000/api';
 
 export const APP_NAME: string = 'LosAutosDeJavibu';
 export const SUPER_ADMIN_EMAIL: string = "admin@redlinemotors.com";
+
+// --- CREDENCIALES DE SUPABASE ---
+export const SUPABASE_URL: string = import.meta.env.VITE_SUPABASE_URL;
+export const SUPABASE_ANON_KEY: string = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 // Configurar axios
 axios.defaults.baseURL = API_BASE_URL;

@@ -3,6 +3,7 @@ import { Link, useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { API_BASE_URL } from "../../config";
 import { useTranslation } from "react-i18next";
+import { MessageCircle } from "lucide-react";
 
 interface Advertisement {
   id: number;
@@ -47,6 +48,10 @@ const RentDetail = () => {
   const today = new Date().toISOString().split("T")[0];
   const userRole = localStorage.getItem('user_role');
   const token = localStorage.getItem("auth_token");
+  const currentUserId = Number(localStorage.getItem("user_id"));
+
+  // Extraemos el propietario
+  const owner = (advertisement as any)?.user || (advertisement as any)?.seller || (advertisement as any)?.owner || (advertisement as any)?.vehicle?.owner;
 
   useEffect(() => {
     const fetchVehicle = async () => {
@@ -112,17 +117,45 @@ const RentDetail = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       
+      // Creamos la sala de chat automáticamente tras la reserva
+      if (owner) {
+         await axios.post(`${API_BASE_URL}/conversations`, {
+           advertisement_id: advertisement?.id,
+           seller_id: owner.id
+         }, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
+      }
+
       setSuccess(true); 
     } catch (err: any) {
       console.error("Error al reservar", err);
-      setError(err.response?.data?.message || t('details.booking_error', "Error al procesar la reserva. Verifica tu sesión."));
+      setError(err.response?.data?.message || t('details.booking_error', "Error al procesar la reserva."));
     } finally {
       setActionLoading(false);
     }
   };
 
+  const handleContactSeller = async () => {
+    if (!token) {
+        navigate('/login');
+        return;
+    }
+    if (!advertisement || !owner) return;
+    try {
+      await axios.post(`${API_BASE_URL}/conversations`, {
+        advertisement_id: advertisement.id,
+        seller_id: owner.id
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      navigate('/mis-mensajes');
+    } catch (err) {
+      console.error("Error al iniciar la conversación", err);
+      alert("No se pudo iniciar la conversación con el vendedor.");
+    }
+  };
+
   const handleDeleteAd = async () => {
-    if (window.confirm(t('my_ads.delete_confirm', "⚠️ ¿Estás seguro de que quieres ELIMINAR este anuncio definitivamente por incumplir las normas?"))) {
+    if (window.confirm(t('my_ads.delete_confirm', "⚠️ ¿Estás seguro de que quieres ELIMINAR este anuncio definitivamente?"))) {
       try {
         await axios.delete(`${API_BASE_URL}/advertisements/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
@@ -153,10 +186,12 @@ const RentDetail = () => {
     );
   }
 
+  const isOwner = currentUserId === owner?.id;
+
   return (
     <div className="min-h-screen bg-zinc-900 text-white py-12 px-4 sm:px-6 lg:px-8 relative pt-24">
       {actionLoading && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-9999 flex items-center justify-center">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center">
           <div className="flex flex-col items-center">
             <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-red-600 mb-4"></div>
             <p className="text-red-500 font-bold uppercase tracking-widest animate-pulse">{t('details.processing_booking', "Procesando reserva...")}</p>
@@ -165,10 +200,7 @@ const RentDetail = () => {
       )}
 
       <div className="max-w-6xl mx-auto">
-        <button
-          onClick={() => navigate('/alquileres')}
-          className="flex items-center text-zinc-400 hover:text-white mb-8 transition duration-200 uppercase font-bold text-xs tracking-widest"
-        >
+        <button onClick={() => navigate('/alquileres')} className="flex items-center text-zinc-400 hover:text-white mb-8 transition duration-200 uppercase font-bold text-xs tracking-widest">
           <span className="mr-2">←</span> {t('details.back_to_fleet', "Volver a la flota")}
         </button>
 
@@ -179,11 +211,7 @@ const RentDetail = () => {
                 {t('common.rent', "Alquiler")}
               </div>
               {mainImage ? (
-                <img
-                  src={mainImage}
-                  alt="Coche principal"
-                  className="w-full h-full object-cover animate-fade-in"
-                />
+                <img src={mainImage} alt="Coche principal" className="w-full h-full object-cover animate-fade-in" />
               ) : (
                 <span className="text-zinc-500 italic text-lg">{t('common.no_photo', "Sin imagen disponible")}</span>
               )}
@@ -194,9 +222,7 @@ const RentDetail = () => {
                 <button
                   key={i}
                   onClick={() => setMainImage(img.image_url)}
-                  className={`aspect-square rounded-lg border-2 overflow-hidden transition ${
-                    mainImage === img.image_url ? 'border-red-600' : 'border-zinc-700 opacity-50 hover:opacity-100'
-                  }`}
+                  className={`aspect-square rounded-lg border-2 overflow-hidden transition ${mainImage === img.image_url ? 'border-red-600' : 'border-zinc-700 opacity-50 hover:opacity-100'}`}
                 >
                   <img src={img.image_url} alt="Miniatura" className="w-full h-full object-cover" />
                 </button>
@@ -224,8 +250,7 @@ const RentDetail = () => {
 
               <div className="flex items-end mb-8 gap-2">
                 <div className="text-5xl font-black text-white">
-                  {Number(advertisement.price).toLocaleString("es-ES")}{" "}
-                  <span className="text-red-700">€</span>
+                  {Number(advertisement.price).toLocaleString("es-ES")} <span className="text-red-700">€</span>
                 </div>
                 <span className="text-zinc-500 font-bold uppercase italic pb-1">{t('common.per_day', "/ día")}</span>
               </div>
@@ -233,10 +258,7 @@ const RentDetail = () => {
               {userRole === 'admin' ? (
                 <div className="mt-8 bg-red-950/30 p-6 rounded-xl border border-red-900 mb-8 text-center">
                   <h3 className="text-red-500 font-bold uppercase text-sm tracking-widest mb-4">{t('details.mod_tools', "🛠️ Herramientas de Moderador")}</h3>
-                  <button 
-                    onClick={handleDeleteAd}
-                    className="w-full py-4 bg-red-700 hover:bg-red-600 text-white font-black uppercase tracking-widest rounded-xl transition duration-300 shadow-lg shadow-red-900/20"
-                  >
+                  <button onClick={handleDeleteAd} className="w-full py-4 bg-red-700 hover:bg-red-600 text-white font-black uppercase tracking-widest rounded-xl transition shadow-lg shadow-red-900/20">
                     {t('common.delete_ad', "Eliminar Anuncio")}
                   </button>
                 </div>
@@ -246,8 +268,12 @@ const RentDetail = () => {
                     <div className="bg-green-900/20 border border-green-700 p-8 rounded-2xl text-center mb-8 animate-fade-in">
                       <div className="w-16 h-16 bg-green-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">✓</div>
                       <h3 className="text-xl font-bold text-green-500 mb-2">{t('details.booking_success', "¡Reserva Confirmada!")}</h3>
-                      <p className="text-zinc-400 text-sm">{t('details.booking_contact', "El propietario se pondrá en contacto contigo pronto.")}</p>
-                      <button onClick={() => navigate('/mis-reservas')} className="mt-6 px-6 py-2 bg-zinc-900 hover:bg-zinc-700 border border-zinc-600 rounded-lg text-sm font-bold uppercase transition">{t('details.view_my_bookings', "Ver mis reservas")}</button>
+                      <p className="text-zinc-400 text-sm">{t('details.booking_contact', "Habla con el dueño para concretar la entrega.")}</p>
+                      
+                      <button onClick={() => navigate('/mis-mensajes')} className="mt-6 px-6 py-3 bg-red-700 hover:bg-red-600 rounded-lg text-sm font-bold uppercase transition flex items-center justify-center gap-2 mx-auto shadow-lg">
+                        <MessageCircle size={18} />
+                        Ir al chat ahora
+                      </button>
                     </div>
                   ) : (
                     <div className="bg-zinc-900/50 p-6 rounded-2xl border border-zinc-700 mb-8">
@@ -255,23 +281,11 @@ const RentDetail = () => {
                       <div className="grid grid-cols-2 gap-4 mb-4">
                         <div>
                           <label className="block text-zinc-400 text-[10px] font-black uppercase tracking-widest mb-2">{t('details.pickup', "Recogida")}</label>
-                          <input 
-                            type="date" 
-                            min={today}
-                            value={dates.start} 
-                            onChange={(e) => setDates({...dates, start: e.target.value})}
-                            className="w-full bg-zinc-800 border border-zinc-600 rounded-xl p-3 text-white outline-none focus:border-red-600 focus:ring-1 focus:ring-red-600 transition" 
-                          />
+                          <input type="date" min={today} value={dates.start} onChange={(e) => setDates({...dates, start: e.target.value})} className="w-full bg-zinc-800 border border-zinc-600 rounded-xl p-3 text-white outline-none focus:border-red-600 transition" />
                         </div>
                         <div>
                           <label className="block text-zinc-400 text-[10px] font-black uppercase tracking-widest mb-2">{t('details.dropoff', "Devolución")}</label>
-                          <input 
-                            type="date" 
-                            min={dates.start || today}
-                            value={dates.end} 
-                            onChange={(e) => setDates({...dates, end: e.target.value})}
-                            className="w-full bg-zinc-800 border border-zinc-600 rounded-xl p-3 text-white outline-none focus:border-red-600 focus:ring-1 focus:ring-red-600 transition" 
-                          />
+                          <input type="date" min={dates.start || today} value={dates.end} onChange={(e) => setDates({...dates, end: e.target.value})} className="w-full bg-zinc-800 border border-zinc-600 rounded-xl p-3 text-white outline-none focus:border-red-600 transition" />
                         </div>
                       </div>
 
@@ -285,79 +299,62 @@ const RentDetail = () => {
                   )}
 
                   {!success && (
-                    <div className="mb-6">
-                      {token ? (
-                        <button 
-                          onClick={handleRent}
-                          className="w-full py-4 bg-red-700 hover:bg-red-600 text-white font-black uppercase tracking-widest rounded-xl transition duration-300 shadow-lg shadow-red-900/20 active:scale-95 mb-4"
-                        >
-                          {t('details.confirm_booking', "Confirmar Reserva")}
-                        </button>
+                    <div className="mb-6 flex flex-col gap-3">
+                      {isOwner ? (
+                         <button disabled className="w-full py-4 bg-zinc-900 text-zinc-500 border border-zinc-700 font-black uppercase tracking-widest rounded-xl cursor-not-allowed mb-2">
+                           ES TU ANUNCIO
+                         </button>
+                      ) : token ? (
+                        <>
+                          <button onClick={handleRent} className="w-full py-4 bg-red-700 hover:bg-red-600 text-white font-black uppercase tracking-widest rounded-xl transition shadow-lg shadow-red-900/20 active:scale-95">
+                            {t('details.confirm_booking', "Confirmar Reserva")}
+                          </button>
+                          
+                          <button onClick={handleContactSeller} className="w-full py-3 bg-zinc-800 hover:bg-zinc-700 text-white font-bold uppercase tracking-widest rounded-xl border border-zinc-700 transition flex justify-center items-center gap-2 text-sm">
+                            <MessageCircle size={18} />
+                            Contactar por Chat
+                          </button>
+                        </>
                       ) : (
-                        <Link 
-                          to="/login"
-                          className="block w-full py-4 bg-zinc-700 hover:bg-zinc-600 text-white text-center font-black uppercase tracking-widest rounded-xl transition duration-300 mb-4"
-                        >
+                        <Link to="/login" className="block w-full py-4 bg-zinc-700 hover:bg-zinc-600 text-white text-center font-black uppercase tracking-widest rounded-xl transition mb-4">
                           {t('details.login_to_book', "Inicia sesión para reservar")}
                         </Link>
                       )}
                     </div>
                   )}
-
-                  <div className="pt-4 border-t border-zinc-700/50 flex justify-end">
-                    {token ? (
-                        <Link
-                            to={`/anuncios/${advertisement.id}/reportar`}
-                            className="text-zinc-500 hover:text-red-500 text-xs font-bold uppercase flex items-center gap-2 transition-colors"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                            </svg>
-                            {t('details.report_ad', "Denunciar este anuncio")}
-                        </Link>
-                    ) : (
-                        <span className="text-zinc-600 text-[10px] uppercase font-black italic">{t('details.login_to_report', "Inicia sesión para denunciar")}</span>
-                    )}
-                  </div>
                 </>
               )}
-
             </div>
           </div>
         </div>
 
+        {/* Ficha Técnica y Descripción */}
         <div className="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 bg-zinc-800 p-8 rounded-2xl border border-zinc-700 shadow-xl">
             <h2 className="text-2xl font-black mb-6 border-b border-zinc-700 pb-2 uppercase italic">{t('details.description', "Descripción")}</h2>
-            <p className="text-zinc-300 leading-relaxed whitespace-pre-wrap text-lg">{isEnglish && advertisement.description_en ? advertisement.description_en : advertisement.description}</p>
+            <p className="text-zinc-300 leading-relaxed whitespace-pre-wrap text-lg">
+              {isEnglish && advertisement.description_en ? advertisement.description_en : advertisement.description}
+            </p>
           </div>
 
           <div className="bg-zinc-800 p-8 rounded-2xl border border-zinc-700 shadow-xl">
             <h2 className="text-2xl font-black mb-6 border-b border-zinc-700 pb-2 uppercase italic">{t('details.tech_sheet', "Ficha Técnica")}</h2>
             <ul className="space-y-4">
               <li className="flex justify-between items-center border-b border-zinc-700/50 pb-2">
-                <span className="text-zinc-500 text-sm uppercase font-bold">{t('details.engine', "Motor")}</span>
-                <span className="font-semibold">{advertisement.vehicle?.fuel_type?.name || "N/A"} - {advertisement.vehicle?.power_hp || 0} CV</span>
+                <span className="text-zinc-500 text-sm uppercase font-bold">Motor</span>
+                <span className="font-semibold">{advertisement.vehicle?.fuel_type?.name}</span>
               </li>
               <li className="flex justify-between items-center border-b border-zinc-700/50 pb-2">
-                <span className="text-zinc-500 text-sm uppercase font-bold">{t('common.transmission', "Transmisión")}</span>
-                <span className="font-semibold">{advertisement.vehicle?.transmission?.name || t('common.manual', "Manual")}</span>
+                <span className="text-zinc-500 text-sm uppercase font-bold">Potencia</span>
+                <span className="font-semibold">{advertisement.vehicle?.power_hp} CV</span>
               </li>
               <li className="flex justify-between items-center border-b border-zinc-700/50 pb-2">
-                <span className="text-zinc-500 text-sm uppercase font-bold">{t('common.year', "Año")}</span>
-                <span className="font-semibold">{advertisement.vehicle?.year || "-"}</span>
-              </li>
-              <li className="flex justify-between items-center border-b border-zinc-700/50 pb-2">
-                <span className="text-zinc-500 text-sm uppercase font-bold">{t('common.doors', "Puertas")}</span>
-                <span className="font-semibold">{advertisement.vehicle?.doors || "5"}</span>
-              </li>
-              <li className="flex justify-between items-center border-b border-zinc-700/50 pb-2">
-                <span className="text-zinc-500 text-sm uppercase font-bold">{t('common.color', "Color")}</span>
-                <span className="font-semibold">{advertisement.vehicle?.tonality?.name || "N/A"}</span>
+                <span className="text-zinc-500 text-sm uppercase font-bold">Año</span>
+                <span className="font-semibold">{advertisement.vehicle?.year}</span>
               </li>
               <li className="flex justify-between items-center pb-2">
-                <span className="text-zinc-500 text-sm uppercase font-bold">{t('common.location', "Ubicación")}</span>
-                <span className="font-semibold">{advertisement.province?.name || "N/A"}</span>
+                <span className="text-zinc-500 text-sm uppercase font-bold">Ubicación</span>
+                <span className="font-semibold">{advertisement.province?.name}</span>
               </li>
             </ul>
           </div>

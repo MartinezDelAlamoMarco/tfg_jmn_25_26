@@ -21,6 +21,12 @@ import Profile from "../pages/areaPersonal/GestionarPerfil"
 import UserProfile from "../pages/nucleo/UserProfile"
 import ReportAdvertisement from "../components/ReportAdvertisement"
 import AdminDashboard from "../components/AdminDashboard" 
+import ChatInterface from "../pages/areaPersonal/ChatInterface"
+import AvisoLegal from "../pages/legal/AvisoLegal"
+import PoliticaCookies from "../pages/legal/PoliticaCookies"
+import PoliticaPrivacidad from "../pages/legal/PoliticaPrivacidad"
+import TerminosCondiciones from "../pages/legal/TerminosCondiciones"
+
 
 export default function AppRouter() {
   return (
@@ -48,7 +54,13 @@ export default function AppRouter() {
           <Route path="/anuncios/:id/reportar" element={<ReportAdvertisement />} />
           <Route path="/admin/panel" element={<AdminDashboard />} />
           <Route path="/buscar" element={<SearchScreen />} />
+          <Route path="/mis-mensajes" element={<ChatInterface />} />
 
+
+          <Route path="/aviso-legal" element={<AvisoLegal />} />
+          <Route path="/politica-cookies" element={<PoliticaCookies />} />
+          <Route path="/politica-privacidad" element={<PoliticaPrivacidad />} />
+          <Route path="/terminos-condiciones" element={<TerminosCondiciones />} />
         </Route>
 
       </Routes>
