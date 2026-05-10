@@ -1,15 +1,19 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
-import { APP_NAME, API_BASE_URL } from "../config"; // Asegúrate de importar API_BASE_URL
+import { APP_NAME, API_BASE_URL, SUPABASE_URL, SUPABASE_ANON_KEY } from "../config"; 
 import logo from "../assets/Logotipo.png";
 import esFlag from "../assets/flag-es.svg";
 import gbFlag from "../assets/flag-gb.svg";
 import { ChevronDown, User, LayoutDashboard, LogOut, Heart, ShieldAlert, MessageSquare } from "lucide-react";
-import { useTranslation } from "react-i18next"; // <-- AÑADIDO: Importación para idiomas
+import { useTranslation } from "react-i18next";
+import { createClient } from '@supabase/supabase-js'; 
+
+// Inicializamos Supabase para escuchar notificaciones globales
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 export default function Navbar() {
-  const { t, i18n } = useTranslation(); // <-- AÑADIDO: Hook de traducción
+  const { t, i18n } = useTranslation();
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
@@ -20,11 +24,14 @@ export default function Navbar() {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const userRole = localStorage.getItem("user_role");
 
-  // --- NUEVOS ESTADOS PARA LIVE SEARCH ---
+  // Estados para Live Search
   const [allAds, setAllAds] = useState<any[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
+
+  // --- NUEVO: ESTADO DE NOTIFICACIONES ---
+  const [totalUnread, setTotalUnread] = useState(0);
 
   // Cargar anuncios al montar
   useEffect(() => {
@@ -32,6 +39,38 @@ export default function Navbar() {
       .then(res => setAllAds(res.data))
       .catch(err => console.error("Error cargando anuncios", err));
   }, []);
+
+  // --- NUEVO: LÓGICA DE NOTIFICACIONES EN TIEMPO REAL ---
+  useEffect(() => {
+    if (!token) return;
+
+    // Función para obtener el total de mensajes sin leer
+    const fetchUnreadCount = async () => {
+      try {
+        const res = await axios.get(`${API_BASE_URL}/conversations`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        // Sumamos los unread_count de todas las conversaciones
+        const total = res.data.reduce((sum: number, chat: any) => sum + (chat.unread_count || 0), 0);
+        setTotalUnread(total);
+      } catch (error) {
+        console.error("Error al obtener notificaciones", error);
+      }
+    };
+
+    // Cargamos los datos al iniciar
+    fetchUnreadCount();
+
+    // Escuchamos CUALQUIER cambio en la tabla de mensajes para actualizar el número en tiempo real
+    const notificationsChannel = supabase
+      .channel('global-notifications')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, () => {
+        fetchUnreadCount();
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(notificationsChannel); };
+  }, [token]);
 
   // Limpiar buscador al cambiar de página
   useEffect(() => {
@@ -49,7 +88,6 @@ export default function Navbar() {
     window.location.href = "/";
   };
 
-  // Función para manejar la búsqueda al darle enter
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchTerm.trim()) {
@@ -63,18 +101,15 @@ export default function Navbar() {
     setIsProfileDropdownOpen(false);
   };
 
-  // <-- AÑADIDO: Función para cambiar de idioma
   const changeLanguage = (lng: string) => {
     i18n.changeLanguage(lng);
   };
 
-  // Clic fuera para cerrar menús y buscador
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsProfileDropdownOpen(false);
       }
-      // Añadido para cerrar el buscador
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
         setShowSuggestions(false);
       }
@@ -83,7 +118,6 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // --- LÓGICA DE SUGERENCIAS ---
   const suggestions = useMemo(() => {
     if (!searchTerm.trim()) return [];
     const query = searchTerm.toLowerCase();
@@ -91,7 +125,7 @@ export default function Navbar() {
     return allAds.filter(ad => {
       const searchString = `${ad.brand_name} ${ad.model_name} ${ad.province_name} ${ad.year}`.toLowerCase();
       return searchString.includes(query);
-    }).slice(0, 5); // Máximo 5 resultados
+    }).slice(0, 5); 
   }, [searchTerm, allAds]);
 
   return (
@@ -106,7 +140,7 @@ export default function Navbar() {
             </Link>
           </div>
 
-          {/* Buscador - MODIFICADO CON REFERENCIA Y SUGERENCIAS */}
+          {/* Buscador */}
           <div className="flex-1 max-w-lg mx-8 hidden md:block relative" ref={searchRef}>
             <form onSubmit={handleSearch} className="relative"> 
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -122,12 +156,12 @@ export default function Navbar() {
                   setShowSuggestions(true);
                 }}
                 onFocus={() => setShowSuggestions(true)}
-                placeholder={t('navbar.search_placeholder', 'Buscar vehículos en venta o alquiler...')} // <-- AÑADIDO t()
+                placeholder={t('navbar.search_placeholder', 'Buscar vehículos en venta o alquiler...')} 
                 className="w-full pl-10 pr-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-red-500 transition duration-200" 
               />
             </form>
 
-            {/* CAJA DESPLEGABLE DE RESULTADOS (NUEVO) */}
+            {/* CAJA DESPLEGABLE DE RESULTADOS */}
             {showSuggestions && searchTerm.trim() !== "" && (
               <div className="absolute top-full left-0 right-0 mt-2 bg-zinc-800 border border-zinc-700 rounded-xl shadow-2xl overflow-hidden z-50">
                 {suggestions.length > 0 ? (
@@ -168,7 +202,7 @@ export default function Navbar() {
                     })}
                     <li className="bg-zinc-900 p-2 text-center">
                       <button onClick={handleSearch} className="text-sm font-bold text-zinc-300 hover:text-white transition">
-                        {t('navbar.see_all', 'Ver todos los resultados')} {/* <-- AÑADIDO t() */}
+                        {t('navbar.see_all', 'Ver todos los resultados')}
                       </button>
                     </li>
                   </ul>
@@ -197,10 +231,15 @@ export default function Navbar() {
                   {t('navbar.favorites', 'Favoritos')}
                 </Link>
 
-                {/* BOTÓN DE MENSAJES DESKTOP */}
-                <Link to="/mis-mensajes" className="text-zinc-300 hover:text-white transition-colors font-medium flex items-center gap-2 mr-2">
+                {/* BOTÓN DE MENSAJES DESKTOP (CON NOTIFICACIÓN FLOTANTE) */}
+                <Link to="/mis-mensajes" className="relative text-zinc-300 hover:text-white transition-colors font-medium flex items-center gap-2 mr-2">
                   <MessageSquare size={18} />
                   Mensajes
+                  {totalUnread > 0 && (
+                    <span className="absolute -top-2 -right-3 bg-red-600 text-white text-[10px] font-bold h-4 w-4 flex items-center justify-center rounded-full shadow-lg shadow-red-900/50 animate-bounce">
+                      {totalUnread}
+                    </span>
+                  )}
                 </Link>
 
                 <div className="relative" ref={dropdownRef}>
@@ -221,13 +260,22 @@ export default function Navbar() {
 
                   {isProfileDropdownOpen && (
                     <div className="absolute right-0 mt-2 w-48 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl py-2 z-50 animate-in fade-in zoom-in duration-150">
+                      
+                      {/* ENLACE A MI PERFIL PÚBLICO - RUTA CORREGIDA */}
+                      <Link to={`/usuario/${user.id}`} onClick={closeMenus} className="flex items-center gap-3 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors">
+                        <User size={16} className="text-red-500" /> {t('navbar.public_profile', 'Mi Perfil Público')}
+                      </Link>
+
                       <Link to="/mis-anuncios" onClick={closeMenus} className="flex items-center gap-3 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors">
                         <LayoutDashboard size={16} /> {t('navbar.my_ads', 'Mis Anuncios')}
                       </Link>
+                      
                       <Link to="/perfil" onClick={closeMenus} className="flex items-center gap-3 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors">
                         <User size={16} /> {t('navbar.profile', 'Gestionar Perfil')}
                       </Link>
+                      
                       <hr className="my-2 border-zinc-800" />
+                      
                       <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-500 hover:bg-red-500/10 transition-colors">
                         <LogOut size={16} /> {t('navbar.logout', 'Cerrar Sesión')}
                       </button>
@@ -247,7 +295,7 @@ export default function Navbar() {
               </div>
             )}
 
-            {/* <-- AÑADIDO: Selector de Idiomas Desktop MOVIDO A LA DERECHA DEL TODO --> */}
+            {/* Selector de Idiomas Desktop */}
             <div className="flex items-center gap-2 border-l border-zinc-700 pl-4 ml-2">
               <button
                 onClick={() => changeLanguage('es')}
@@ -268,9 +316,9 @@ export default function Navbar() {
           </div>
 
           {/* Menú Móvil */}
-          <div className="md:hidden flex items-center gap-4"> {/* <-- MODIFICADO PARA ALOJAR BANDERAS MÓVILES */}
+          <div className="md:hidden flex items-center gap-4"> 
             
-            {/* <-- AÑADIDO: Selector de Idiomas Móvil --> */}
+            {/* Selector de Idiomas Móvil */}
             <div className="flex items-center gap-2">
               <button onClick={() => changeLanguage('es')} className={`${i18n.language?.startsWith('es') ? 'opacity-100' : 'opacity-50'}`} aria-label="Español">
                 <img src={esFlag} alt="Español" className="h-5 w-6 object-contain" />
@@ -318,13 +366,27 @@ export default function Navbar() {
                   {t('navbar.hello', 'Hola')}, <span className="text-white font-semibold">{user.name}</span>
                 </div>
                 
+                {/* ENLACE A MI PERFIL PÚBLICO MÓVIL - RUTA CORREGIDA */}
+                <Link to={`/usuario/${user.id}`} onClick={closeMenus} className="flex items-center gap-3 px-2 py-2 text-zinc-300 hover:text-white">
+                  <User size={18} className="text-red-500" /> {t('navbar.public_profile', 'Mi Perfil Público')}
+                </Link>
+
                 <Link to="/favoritos" onClick={closeMenus} className="flex items-center gap-3 px-2 py-2 text-zinc-300 hover:text-white">
                   <Heart size={18} /> {t('navbar.favorites', 'Favoritos')}
                 </Link>
-                {/* BOTÓN DE MENSAJES MÓVIL */}
-                <Link to="/mis-mensajes" onClick={closeMenus} className="flex items-center gap-3 px-2 py-2 text-zinc-300 hover:text-white">
-                  <MessageSquare size={18} /> Mensajes
+                
+                {/* BOTÓN DE MENSAJES MÓVIL (CON NOTIFICACIÓN) */}
+                <Link to="/mis-mensajes" onClick={closeMenus} className="flex items-center justify-between px-2 py-2 text-zinc-300 hover:text-white">
+                  <div className="flex items-center gap-3">
+                    <MessageSquare size={18} /> Mensajes
+                  </div>
+                  {totalUnread > 0 && (
+                    <span className="bg-red-600 text-white text-[10px] font-bold h-5 w-5 flex items-center justify-center rounded-full shadow-lg shadow-red-900/50">
+                      {totalUnread}
+                    </span>
+                  )}
                 </Link>
+
                 <Link to="/mis-anuncios" onClick={closeMenus} className="flex items-center gap-3 px-2 py-2 text-zinc-300 hover:text-white">
                   <LayoutDashboard size={18} /> {t('navbar.my_ads', 'Mis Anuncios')}
                 </Link>

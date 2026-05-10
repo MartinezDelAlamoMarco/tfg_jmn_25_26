@@ -4,6 +4,7 @@ import axios from "axios";
 import { API_BASE_URL } from "../../config";
 import { useTranslation } from "react-i18next";
 import { MessageCircle } from "lucide-react";
+import StarRating from "../../components/StarRating";
 
 interface Advertisement {
   id: number;
@@ -11,10 +12,12 @@ interface Advertisement {
   description: string;
   description_en?: string;
   views: number;
+  status: string; // <-- AÑADIDO: Para 'disponible', 'reservado', 'vendido'
   state?: { name: string };
   province?: { name: string };
   images: { image_url: string; is_main: boolean }[];
   vehicle?: {
+    owner_id: number;
     km: number;
     year: number;
     power_hp: number;
@@ -48,10 +51,35 @@ const RentDetail = () => {
   const today = new Date().toISOString().split("T")[0];
   const userRole = localStorage.getItem('user_role');
   const token = localStorage.getItem("auth_token");
-  const currentUserId = Number(localStorage.getItem("user_id"));
+  
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
-  // Extraemos el propietario
-  const owner = (advertisement as any)?.user || (advertisement as any)?.seller || (advertisement as any)?.owner || (advertisement as any)?.vehicle?.owner;
+  useEffect(() => {
+    let storedId = localStorage.getItem('user_id');
+    if (!storedId) {
+      const storedUserStr = localStorage.getItem('user');
+      if (storedUserStr) {
+        try { storedId = JSON.parse(storedUserStr).id; } catch(e) {}
+      }
+    }
+
+    if (storedId) {
+      setCurrentUserId(String(storedId));
+    } else if (token) {
+      axios.get(`${API_BASE_URL}/user`, { headers: { Authorization: `Bearer ${token}` } })
+        .then(res => {
+          if (res.data && res.data.id) {
+            setCurrentUserId(String(res.data.id));
+            localStorage.setItem('user_id', res.data.id);
+          }
+        })
+        .catch(err => console.error("No se pudo identificar al usuario", err));
+    }
+  }, [token]);
+
+  const owner = (advertisement as any)?.user || (advertisement as any)?.seller || (advertisement as any)?.vehicle?.owner;
+  const ownerId = advertisement?.vehicle?.owner_id || (advertisement as any)?.user_id || owner?.id;
+  const isOwner = currentUserId !== null && ownerId !== undefined && String(currentUserId) === String(ownerId);
 
   useEffect(() => {
     const fetchVehicle = async () => {
@@ -61,7 +89,7 @@ const RentDetail = () => {
         setAdvertisement(response.data);
         
         const img = response.data.images?.find((i: any) => i.is_main)?.image_url 
-                 || response.data.images?.[0]?.image_url;
+                  || response.data.images?.[0]?.image_url;
         setMainImage(img || "");
         
         setTotalPrice(Number(response.data.price));
@@ -117,11 +145,10 @@ const RentDetail = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      // Creamos la sala de chat automáticamente tras la reserva
-      if (owner) {
+      if (ownerId) {
          await axios.post(`${API_BASE_URL}/conversations`, {
            advertisement_id: advertisement?.id,
-           seller_id: owner.id
+           seller_id: ownerId
          }, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
       }
 
@@ -139,11 +166,11 @@ const RentDetail = () => {
         navigate('/login');
         return;
     }
-    if (!advertisement || !owner) return;
+    if (!advertisement || !ownerId) return;
     try {
       await axios.post(`${API_BASE_URL}/conversations`, {
         advertisement_id: advertisement.id,
-        seller_id: owner.id
+        seller_id: ownerId
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -186,8 +213,6 @@ const RentDetail = () => {
     );
   }
 
-  const isOwner = currentUserId === owner?.id;
-
   return (
     <div className="min-h-screen bg-zinc-900 text-white py-12 px-4 sm:px-6 lg:px-8 relative pt-24">
       {actionLoading && (
@@ -207,9 +232,23 @@ const RentDetail = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           <div className="space-y-4">
             <div className="aspect-video bg-zinc-800 rounded-2xl border border-zinc-700 flex items-center justify-center shadow-2xl overflow-hidden relative">
-              <div className="absolute top-4 left-4 z-10 bg-red-700 text-white text-[10px] font-bold px-3 py-1 rounded shadow-lg uppercase tracking-widest">
+              
+              {/* --- INICIO: ETIQUETAS DE ESTADO SOBRE LA IMAGEN --- */}
+              {advertisement.status === 'reservado' && (
+                <div className="absolute top-4 left-4 z-10 bg-orange-600 text-white text-[10px] font-black px-3 py-1 rounded shadow-lg uppercase tracking-widest animate-pulse">
+                  ⚠️ Reservado
+                </div>
+              )}
+              {advertisement.status === 'vendido' && (
+                <div className="absolute top-4 left-4 z-10 bg-zinc-700 text-zinc-300 text-[10px] font-black px-3 py-1 rounded shadow-lg uppercase tracking-widest border border-zinc-500">
+                  🏁 Alquilado
+                </div>
+              )}
+              <div className="absolute top-4 right-4 z-10 bg-red-700 text-white text-[10px] font-bold px-3 py-1 rounded shadow-lg uppercase tracking-widest">
                 {t('common.rent', "Alquiler")}
               </div>
+              {/* --- FIN: ETIQUETAS --- */}
+
               {mainImage ? (
                 <img src={mainImage} alt="Coche principal" className="w-full h-full object-cover animate-fade-in" />
               ) : (
@@ -228,6 +267,30 @@ const RentDetail = () => {
                 </button>
               ))}
             </div>
+
+            {owner && (
+              <Link
+                to={`/usuario/${owner.id}`}
+                className="mt-4 block bg-zinc-800 p-4 rounded-lg border border-zinc-700 hover:bg-zinc-700 transition-all shadow-lg"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="h-14 w-14 rounded-full bg-zinc-900 flex items-center justify-center text-xl font-bold uppercase overflow-hidden">
+                    {owner.avatar_url ? (
+                      <img src={owner.avatar_url} alt={owner.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span>{owner.name ? owner.name[0] : 'U'}</span>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-bold text-lg">{owner.name || 'Vendedor'}</div>
+                    <div className="flex items-center gap-2 text-sm text-zinc-400 mt-1">
+                      <StarRating value={Math.round(owner.average_rating || 0)} size={14} />
+                      <span>{Number(owner.average_rating || 0).toFixed(1)}</span>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            )}
           </div>
 
           <div className="flex flex-col">
@@ -281,11 +344,11 @@ const RentDetail = () => {
                       <div className="grid grid-cols-2 gap-4 mb-4">
                         <div>
                           <label className="block text-zinc-400 text-[10px] font-black uppercase tracking-widest mb-2">{t('details.pickup', "Recogida")}</label>
-                          <input type="date" min={today} value={dates.start} onChange={(e) => setDates({...dates, start: e.target.value})} className="w-full bg-zinc-800 border border-zinc-600 rounded-xl p-3 text-white outline-none focus:border-red-600 transition" />
+                          <input type="date" min={today} value={dates.start} onChange={(e) => setDates({...dates, start: e.target.value})} className="w-full bg-zinc-800 border border-zinc-600 rounded-xl p-3 text-white outline-none focus:border-red-600 transition shadow-inner" />
                         </div>
                         <div>
                           <label className="block text-zinc-400 text-[10px] font-black uppercase tracking-widest mb-2">{t('details.dropoff', "Devolución")}</label>
-                          <input type="date" min={dates.start || today} value={dates.end} onChange={(e) => setDates({...dates, end: e.target.value})} className="w-full bg-zinc-800 border border-zinc-600 rounded-xl p-3 text-white outline-none focus:border-red-600 transition" />
+                          <input type="date" min={dates.start || today} value={dates.end} onChange={(e) => setDates({...dates, end: e.target.value})} className="w-full bg-zinc-800 border border-zinc-600 rounded-xl p-3 text-white outline-none focus:border-red-600 transition shadow-inner" />
                         </div>
                       </div>
 
@@ -304,6 +367,10 @@ const RentDetail = () => {
                          <button disabled className="w-full py-4 bg-zinc-900 text-zinc-500 border border-zinc-700 font-black uppercase tracking-widest rounded-xl cursor-not-allowed mb-2">
                            ES TU ANUNCIO
                          </button>
+                      ) : advertisement.status === 'vendido' ? (
+                        <button disabled className="w-full py-4 bg-zinc-950 text-zinc-600 border border-zinc-800 font-black uppercase tracking-widest rounded-xl cursor-not-allowed mb-2 opacity-50">
+                          NO DISPONIBLE ACTUALMENTE
+                        </button>
                       ) : token ? (
                         <>
                           <button onClick={handleRent} className="w-full py-4 bg-red-700 hover:bg-red-600 text-white font-black uppercase tracking-widest rounded-xl transition shadow-lg shadow-red-900/20 active:scale-95">
@@ -328,17 +395,14 @@ const RentDetail = () => {
           </div>
         </div>
 
-        {/* Ficha Técnica y Descripción */}
         <div className="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 bg-zinc-800 p-8 rounded-2xl border border-zinc-700 shadow-xl">
             <h2 className="text-2xl font-black mb-6 border-b border-zinc-700 pb-2 uppercase italic">{t('details.description', "Descripción")}</h2>
-            <p className="text-zinc-300 leading-relaxed whitespace-pre-wrap text-lg">
-              {isEnglish && advertisement.description_en ? advertisement.description_en : advertisement.description}
-            </p>
+            <p className="text-zinc-300 leading-relaxed whitespace-pre-wrap text-lg">{isEnglish && advertisement.description_en ? advertisement.description_en : advertisement.description}</p>
           </div>
 
           <div className="bg-zinc-800 p-8 rounded-2xl border border-zinc-700 shadow-xl">
-            <h2 className="text-2xl font-black mb-6 border-b border-zinc-700 pb-2 uppercase italic">{t('details.tech_sheet', "Ficha Técnica")}</h2>
+            <h2 className="text-2xl font-black mb-6 border-b border-zinc-700 pb-2 uppercase italic">Ficha Técnica</h2>
             <ul className="space-y-4">
               <li className="flex justify-between items-center border-b border-zinc-700/50 pb-2">
                 <span className="text-zinc-500 text-sm uppercase font-bold">Motor</span>

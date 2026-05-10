@@ -12,11 +12,12 @@ interface Advertisement {
   description: string;
   description_en?: string;
   views: number;
+  status: string; // <-- AÑADIDO: Para 'disponible', 'reservado', 'vendido'
   state?: { name: string };
   province?: { name: string };
   images: { image_url: string; is_main: boolean }[];
   vehicle?: {
-    owner_id: number; // Aseguramos que tenemos el ID del dueño
+    owner_id: number; 
     km: number;
     year: number;
     power_hp: number;
@@ -46,10 +47,41 @@ const VehicleDetail = () => {
 
   const token = localStorage.getItem("auth_token");
   const userRole = localStorage.getItem("user_role");
-  const currentUserId = Number(localStorage.getItem("user_id"));
+  
+  // ESTADO ROBUSTO PARA EL ID DEL USUARIO
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
-  // Extraemos el objeto del propietario (normalmente viene anidado en el anuncio o el vehículo)
+  // 1. OBTENER EL ID DEL USUARIO ACTUAL (A PRUEBA DE FALLOS)
+  useEffect(() => {
+    let storedId = localStorage.getItem('user_id');
+    
+    if (!storedId) {
+      const storedUserStr = localStorage.getItem('user');
+      if (storedUserStr) {
+        try { storedId = JSON.parse(storedUserStr).id; } catch(e) {}
+      }
+    }
+
+    if (storedId) {
+      setCurrentUserId(String(storedId));
+    } else if (token) {
+      axios.get(`${API_BASE_URL}/user`, { headers: { Authorization: `Bearer ${token}` } })
+        .then(res => {
+          if (res.data && res.data.id) {
+            setCurrentUserId(String(res.data.id));
+            localStorage.setItem('user_id', res.data.id);
+          }
+        })
+        .catch(err => console.error("No se pudo identificar al usuario", err));
+    }
+  }, [token]);
+
+  // Extraemos el propietario de forma segura
   const owner = (advertisement as any)?.user || (advertisement as any)?.seller || (advertisement as any)?.vehicle?.owner;
+  const ownerId = advertisement?.vehicle?.owner_id || (advertisement as any)?.user_id || owner?.id;
+
+  // COMPROBACIÓN ESTRICTA COMO TEXTO
+  const isOwner = currentUserId !== null && ownerId !== undefined && String(currentUserId) === String(ownerId);
 
   useEffect(() => {
     const fetchVehicle = async () => {
@@ -131,24 +163,21 @@ const VehicleDetail = () => {
     }
   };
 
-  // --- LÓGICA DE CHAT ACTUALIZADA ---
   const handleContactSeller = async () => {
     if (!token) {
         navigate('/login');
         return;
     }
-    if (!advertisement || !owner) return;
+    if (!advertisement || !ownerId) return;
     
     try {
-      // Creamos la conversación en el Backend
       await axios.post(`${API_BASE_URL}/conversations`, {
         advertisement_id: advertisement.id,
-        seller_id: owner.id
+        seller_id: ownerId
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      // Navegamos a la bandeja de entrada unificada
       navigate('/mis-mensajes');
     } catch (err) {
       console.error("Error al iniciar la conversación", err);
@@ -173,9 +202,6 @@ const VehicleDetail = () => {
     );
   }
 
-  // Comprobamos si el usuario actual es el dueño del vehículo
-  const isOwner = currentUserId === owner?.id;
-
   return (
     <div className="min-h-screen bg-zinc-900 text-white py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
@@ -185,7 +211,20 @@ const VehicleDetail = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           <div className="space-y-4">
-            <div className="aspect-video bg-zinc-800 rounded-2xl border border-zinc-700 flex items-center justify-center shadow-2xl overflow-hidden">
+            <div className="aspect-video bg-zinc-800 rounded-2xl border border-zinc-700 flex items-center justify-center shadow-2xl overflow-hidden relative">
+              
+              {/* --- ETIQUETAS DE ESTADO (NUEVO) --- */}
+              {advertisement.status === 'reservado' && (
+                <div className="absolute top-4 left-4 z-10 bg-orange-600 text-white text-[10px] font-black px-3 py-1 rounded shadow-lg uppercase tracking-widest animate-pulse">
+                  ⚠️ Reservado
+                </div>
+              )}
+              {advertisement.status === 'vendido' && (
+                <div className="absolute top-4 left-4 z-10 bg-zinc-700 text-zinc-300 text-[10px] font-black px-3 py-1 rounded shadow-lg uppercase tracking-widest border border-zinc-500">
+                  🏁 Vendido
+                </div>
+              )}
+
               {mainImage ? (
                 <img src={mainImage} alt="Coche" className="w-full h-full object-cover animate-fade-in" />
               ) : (
@@ -266,10 +305,13 @@ const VehicleDetail = () => {
                 </button>
               ) : (
                 <>
-                  {/* VALIDACIÓN DE DUEÑO O CONTACTO */}
                   {isOwner ? (
                     <button disabled className="w-full py-4 bg-zinc-900 text-zinc-500 border border-zinc-700 font-black uppercase tracking-widest rounded-xl cursor-not-allowed mb-4">
                       ES TU ANUNCIO
+                    </button>
+                  ) : advertisement.status === 'vendido' ? (
+                    <button disabled className="w-full py-4 bg-zinc-950 text-zinc-600 border border-zinc-800 font-black uppercase tracking-widest rounded-xl cursor-not-allowed mb-4 opacity-50">
+                      VEHÍCULO NO DISPONIBLE
                     </button>
                   ) : (
                     <button 

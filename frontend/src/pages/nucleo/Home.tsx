@@ -11,6 +11,7 @@ interface Advertisement {
   description_en?: string;
   views: number;
   is_rent: boolean;
+  status: string; // <-- DISPONIBLE, RESERVADO, VENDIDO
   state_name?: string;
   brand_name?: string;
   model_name?: string;
@@ -184,28 +185,28 @@ const Home = () => {
             <span className="text-red-700">{marketPart}</span>
           </h1>
           <p className="text-xl text-zinc-400">
-            {t('home.title', 'Encuentra el vehículo perfecto para comprar')} {/* <-- MODIFICADO CON t() */}
+            {t('home.title', 'Encuentra el vehículo perfecto para comprar')}
           </p>
         </div>
 
         {/* --- SECCIÓN DE FILTROS --- */}
         <div className="bg-zinc-800 rounded-2xl p-6 mb-12 border border-zinc-700 shadow-2xl">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold">{t('filters.search_filters', 'Filtros de Búsqueda')}</h2> {/* <-- MODIFICADO CON t() */}
+            <h2 className="text-xl font-bold">{t('filters.search_filters', 'Filtros de Búsqueda')}</h2>
             <div className="space-x-4">
               <button
                 onClick={clearFilters}
                 className="text-sm text-zinc-400 hover:text-white underline"
               >
-                {t('filters.clear', 'Limpiar filtros')} {/* <-- MODIFICADO CON t() */}
+                {t('filters.clear', 'Limpiar filtros')}
               </button>
               <button
                 onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
                 className="text-sm bg-zinc-700 hover:bg-zinc-600 px-4 py-2 rounded transition"
               >
                 {showAdvancedFilters
-                  ? t('filters.hide', "Ocultar avanzados") /* <-- MODIFICADO CON t() */
-                  : t('filters.advanced', "Filtros avanzados ⬇")} {/* <-- MODIFICADO CON t() */}
+                  ? t('filters.hide', "Ocultar avanzados")
+                  : t('filters.advanced', "Filtros avanzados ⬇")}
               </button>
             </div>
           </div>
@@ -218,7 +219,7 @@ const Home = () => {
               onChange={handleFilterChange}
               className="w-full px-4 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white outline-none focus:border-red-500"
             >
-              <option value="">{t('filters.all_brands', 'Todas las marcas')}</option> {/* <-- MODIFICADO CON t() */}
+              <option value="">{t('filters.all_brands', 'Todas las marcas')}</option>
               {availableBrands.map((b) => (
                 <option key={b} value={b}>
                   {b}
@@ -232,7 +233,7 @@ const Home = () => {
               disabled={!filters.brand}
               className="w-full px-4 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white outline-none disabled:opacity-50"
             >
-              <option value="">{t('filters.all_models', 'Todos los modelos')}</option> {/* <-- MODIFICADO CON t() */}
+              <option value="">{t('filters.all_models', 'Todos los modelos')}</option>
               {availableModels.map((m) => (
                 <option key={m} value={m}>
                   {m}
@@ -245,7 +246,7 @@ const Home = () => {
               onChange={handleFilterChange}
               className="w-full px-4 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white outline-none focus:border-red-500"
             >
-              <option value="">{t('filters.any_province', 'Cualquier provincia')}</option> {/* <-- MODIFICADO CON t() */}
+              <option value="">{t('filters.any_province', 'Cualquier provincia')}</option>
               {availableProvinces.map((p) => (
                 <option key={p} value={p}>
                   {p}
@@ -260,7 +261,7 @@ const Home = () => {
               <input
                 type="number"
                 name="minPrice"
-                placeholder={t('filters.min_price', "Precio Min (€)")} // <-- MODIFICADO CON t()
+                placeholder={t('filters.min_price', "Precio Min (€)")}
                 value={filters.minPrice}
                 onChange={handleFilterChange}
                 className="w-full px-4 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white outline-none"
@@ -268,7 +269,7 @@ const Home = () => {
               <input
                 type="number"
                 name="maxPrice"
-                placeholder={t('filters.max_price', "Precio Max (€)")} // <-- MODIFICADO CON t()
+                placeholder={t('filters.max_price', "Precio Max (€)")}
                 value={filters.maxPrice}
                 onChange={handleFilterChange}
                 className="w-full px-4 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white outline-none"
@@ -277,7 +278,7 @@ const Home = () => {
               <input
                 type="number"
                 name="minYear"
-                placeholder={t('filters.min_year', "Año Min")} // <-- MODIFICADO CON t()
+                placeholder={t('filters.min_year', "Año Min")}
                 value={filters.minYear}
                 onChange={handleFilterChange}
                 className="w-full px-4 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white outline-none"
@@ -285,7 +286,7 @@ const Home = () => {
               <input
                 type="number"
                 name="maxYear"
-                placeholder={t('filters.max_year', "Año Max")} // <-- MODIFICADO CON t()
+                placeholder={t('filters.max_year', "Año Max")}
                 value={filters.maxYear}
                 onChange={handleFilterChange}
                 className="w-full px-4 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white outline-none"
@@ -294,7 +295,7 @@ const Home = () => {
               <input
                 type="number"
                 name="minKm"
-                placeholder={t('filters.min_km', "Km Min")} // <-- MODIFICADO CON t()
+                placeholder={t('filters.min_km', "Km Min")}
                 value={filters.minKm}
                 onChange={handleFilterChange}
                 className="w-full px-4 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white outline-none"
@@ -302,7 +303,7 @@ const Home = () => {
               <input
                 type="number"
                 name="maxKm"
-                placeholder={t('filters.max_km', "Km Max")} // <-- MODIFICADO CON t()
+                placeholder={t('filters.max_km', "Km Max")}
                 value={filters.maxKm}
                 onChange={handleFilterChange}
                 className="w-full px-4 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white outline-none"
@@ -314,7 +315,7 @@ const Home = () => {
                 onChange={handleFilterChange}
                 className="w-full px-4 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white outline-none"
               >
-                <option value="">{t('common.fuel', 'Combustible')}</option> {/* <-- MODIFICADO CON t() */}
+                <option value="">{t('common.fuel', 'Combustible')}</option>
                 {availableFuels.map((f) => (
                   <option key={f} value={f}>
                     {f}
@@ -328,7 +329,7 @@ const Home = () => {
                 onChange={handleFilterChange}
                 className="w-full px-4 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white outline-none"
               >
-                <option value="">{t('common.transmission', 'Transmisión')}</option> {/* <-- MODIFICADO CON t() */}
+                <option value="">{t('common.transmission', 'Transmisión')}</option>
                 {availableTransmissions.map((t) => (
                   <option key={t} value={t}>
                     {t}
@@ -342,7 +343,7 @@ const Home = () => {
                 onChange={handleFilterChange}
                 className="w-full px-4 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white outline-none"
               >
-                <option value="">{t('common.color', 'Color')}</option> {/* <-- MODIFICADO CON t() */}
+                <option value="">{t('common.color', 'Color')}</option>
                 {availableColors.map((c) => (
                   <option key={c} value={c}>
                     {c}
@@ -356,11 +357,11 @@ const Home = () => {
                 onChange={handleFilterChange}
                 className="w-full px-4 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white outline-none"
               >
-                <option value="">{t('filters.doors_qty', 'Nº Puertas')}</option> {/* <-- MODIFICADO CON t() */}
-                <option value="2">{t('filters.doors_2', '2 puertas')}</option> {/* <-- MODIFICADO CON t() */}
-                <option value="3">{t('filters.doors_3', '3 puertas')}</option> {/* <-- MODIFICADO CON t() */}
-                <option value="4">{t('filters.doors_4', '4 puertas')}</option> {/* <-- MODIFICADO CON t() */}
-                <option value="5">{t('filters.doors_5', '5 puertas')}</option> {/* <-- MODIFICADO CON t() */}
+                <option value="">{t('filters.doors_qty', 'Nº Puertas')}</option>
+                <option value="2">{t('filters.doors_2', '2 puertas')}</option>
+                <option value="3">{t('filters.doors_3', '3 puertas')}</option>
+                <option value="4">{t('filters.doors_4', '4 puertas')}</option>
+                <option value="5">{t('filters.doors_5', '5 puertas')}</option>
               </select>
             </div>
           )}
@@ -368,12 +369,12 @@ const Home = () => {
 
         {/* --- LISTA DE ANUNCIOS FILTRADOS --- */}
         <div className="mb-4 text-zinc-400 font-bold">
-          {filteredAds.length} {t('home.vehicles_found', 'vehículos encontrados')} {/* <-- MODIFICADO CON t() */}
+          {filteredAds.length} {t('home.vehicles_found', 'vehículos encontrados')}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredAds.map((v) => {
-            // PARSEO DE IMÁGENES ULTRA SEGURO (Se mantiene igual que lo tenías)
+            // PARSEO DE IMÁGENES ULTRA SEGURO
             let parsedImages = [];
             if (typeof v.images === "string") {
               try {
@@ -392,31 +393,46 @@ const Home = () => {
                 key={v.id}
                 className="bg-zinc-800 rounded-xl p-6 border border-zinc-700 flex flex-col hover:shadow-2xl transition group relative"
               >
-                {/* ... tu maquetación de tarjeta de vehículo igual que antes ... */}
-                <div className="absolute top-8 left-8 z-10 bg-black/80 backdrop-blur-sm px-3 py-1 rounded border border-zinc-700 text-[10px] font-bold uppercase tracking-widest shadow-lg text-white">
-                  {t('common.sale', 'Venta')} {/* <-- MODIFICADO CON t() */}
-                </div>
                 <div className="h-48 bg-zinc-900 rounded-lg mb-4 overflow-hidden border border-zinc-700 relative">
+                  
+                  {/* --- NUEVAS ETIQUETAS DE ESTADO --- */}
+                  {v.status === 'reservado' && (
+                    <div className="absolute top-2 left-2 z-20 bg-orange-600 text-white text-[10px] font-black px-2 py-1 rounded shadow-lg uppercase tracking-widest animate-pulse">
+                      ⚠️ Reservado
+                    </div>
+                  )}
+                  {v.status === 'vendido' && (
+                    <div className="absolute top-2 left-2 z-20 bg-zinc-700 text-zinc-300 text-[10px] font-black px-2 py-1 rounded shadow-lg uppercase tracking-widest border border-zinc-500">
+                      🏁 Vendido
+                    </div>
+                  )}
+
+                  <div className="absolute top-2 right-2 z-20 bg-black/80 backdrop-blur-sm px-2 py-1 rounded border border-zinc-700 text-[9px] font-bold uppercase tracking-widest shadow-lg text-white">
+                    {t('common.sale', 'Venta')}
+                  </div>
+
                   {imageUrl ? (
                     <img
                       src={imageUrl}
                       alt="Coche"
-                      className="w-full h-full object-cover group-hover:scale-110 transition duration-500"
+                      className={`w-full h-full object-cover group-hover:scale-110 transition duration-500 ${v.status === 'vendido' ? 'grayscale opacity-50' : ''}`}
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-zinc-600 uppercase font-bold text-sm">
-                      {t('common.no_photo', 'Sin foto')} {/* <-- MODIFICADO CON t() */}
+                      {t('common.no_photo', 'Sin foto')}
                     </div>
                   )}
                 </div>
+
                 <div className="flex justify-between items-start mb-4 gap-2">
                   <h3 className="text-xl font-bold uppercase truncate">
                     {v.brand_name} {v.model_name}
                   </h3>
                   <span className="px-2 py-1 text-[10px] bg-red-700/20 text-red-300 rounded-full font-bold uppercase whitespace-nowrap">
-                    {v.state_name || t('common.available', "Disponible")} {/* <-- MODIFICADO CON t() */}
+                    {v.state_name || t('common.available', "Disponible")}
                   </span>
                 </div>
+
                 <div className="flex flex-col gap-1 mb-6 mt-auto">
                   <p className="text-xs text-zinc-400">
                     {v.year} • {v.km} km • {v.fuel_type_name} •{" "}
@@ -428,6 +444,7 @@ const Home = () => {
                     </p>
                   </div>
                 </div>
+
                 <Link
                   to={`/advertisement/${v.id}`}
                   className="block w-full text-center py-3 bg-red-700 hover:bg-red-600 rounded-lg font-bold transition uppercase tracking-widest text-sm"
@@ -442,4 +459,5 @@ const Home = () => {
     </div>
   );
 };
+
 export default Home;

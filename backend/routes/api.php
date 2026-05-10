@@ -13,30 +13,16 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\ChatController;
 use Illuminate\Support\Facades\Route;
 
-// --- AUTENTICACIÓN Y PERFIL ---
+// --- RUTAS PÚBLICAS ---
+
+// Autenticación
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/auth/google', [AuthController::class, 'googleLogin']);
 Route::post('/forgot-password', [AuthController::class, 'sendResetLink']);
 Route::post('/reset-password', [AuthController::class, 'resetPasswordWithToken']);
 
-// Agrupamos todas las rutas que gestionan al usuario logueado
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/user', [AuthController::class, 'user']);
-    Route::put('/user/profile', [AuthController::class, 'updateProfile']);
-    Route::put('/user/password', [AuthController::class, 'updatePassword']);
-});
-
-// --- GESTIÓN DE MIS ANUNCIOS (VENDEDOR) ---
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/my-advertisements', [MyAdvertisementsController::class, 'index']);
-    Route::post('/my-advertisements', [MyAdvertisementsController::class, 'store']);
-    Route::delete('/my-advertisements/{id}', [MyAdvertisementsController::class, 'destroy']);
-    Route::get('/my-advertisements/{id}', [MyAdvertisementsController::class, 'show']);
-    Route::put('/my-advertisements/{id}', [MyAdvertisementsController::class, 'update']);
-});
-
-// --- SELECTORES DINÁMICOS (CATÁLOGOS) ---
+// Selectores dinámicos
 Route::get('/brands', [MasterDataController::class, 'getBrands']);
 Route::get('/brands/{brandId}/models', [MasterDataController::class, 'getModelsByBrand']);
 Route::get('/provinces', [MasterDataController::class, 'getProvinces']);
@@ -44,69 +30,72 @@ Route::get('/fuel-types', [MasterDataController::class, 'getFuelTypes']);
 Route::get('/tonalities', [MasterDataController::class, 'getTonalities']);
 Route::get('/transmissions', [MasterDataController::class, 'getTransmissions']);
 
-// --- CONSULTAS PÚBLICAS (CATÁLOGO GENERAL) ---
+// Catálogo general
 Route::get('/vehicles', [VehicleController::class, 'index']);
 Route::get('/vehicles/{id}', [VehicleController::class, 'show']);
 Route::get('/advertisements', [AdvertisementController::class, 'index']);
 Route::get('/advertisements/brand/{brand_id}', [AdvertisementController::class, 'byBrand']);
 Route::get('/advertisement/{id}', [AdvertisementController::class, 'show']);
 
-// --- FAVORITOS (ÁREA PERSONAL) ---
+// Perfiles públicos y sus valoraciones
+Route::get('/users/{id}', [UserController::class, 'show']);
+Route::get('/users/{id}/advertisements', [UserController::class, 'advertisements']);
+Route::get('/users/{id}/reviews', [ReviewController::class, 'index']); // Ver las estrellas de alguien
+
+// Reportes (Tipos)
+Route::get('/report-types', [ReportController::class, 'getTypes']);
+
+// --- RUTAS PROTEGIDAS (REQUIEREN LOGIN / SANCTUM) ---
+
 Route::middleware('auth:sanctum')->group(function () {
+
+    // 1. Gestión del Perfil Propio
+    Route::get('/user', [AuthController::class, 'user']);
+    Route::put('/user/profile', [AuthController::class, 'updateProfile']);
+    Route::put('/user/password', [AuthController::class, 'updatePassword']);
+
+    // 2. Mis Anuncios (Vendedor)
+    Route::get('/my-advertisements', [MyAdvertisementsController::class, 'index']);
+    Route::post('/my-advertisements', [MyAdvertisementsController::class, 'store']);
+    Route::get('/my-advertisements/{id}', [MyAdvertisementsController::class, 'show']);
+    Route::put('/my-advertisements/{id}', [MyAdvertisementsController::class, 'update']);
+    Route::delete('/my-advertisements/{id}', [MyAdvertisementsController::class, 'destroy']);
+
+    // 3. Favoritos y Reportes
     Route::get('/favorites', [AdvertisementController::class, 'favorites']);
     Route::post('/favorites/{id}', [AdvertisementController::class, 'addFavorite']);
     Route::delete('/favorites/{id}', [AdvertisementController::class, 'removeFavorite']);
-});
-
-// --- REPORTES (DENUNCIAS PÚBLICAS) ---
-Route::get('/report-types', [ReportController::class, 'getTypes']);
-
-Route::middleware('auth:sanctum')->group(function () {
     Route::post('/reports', [ReportController::class, 'store']);
-});
 
-// --- PANEL DE ADMINISTRACIÓN (FUNCIONALIDAD AVANZADA) ---
-// Estas rutas solo son accesibles para usuarios autenticados (Admin)
-Route::middleware('auth:sanctum')->group(function () {
-    
-    // 1. Gestión de Reportes
-    Route::get('/admin/reports-priority', [ReportController::class, 'getPriorityReports']);
-
-    // 2. Gestión de Usuarios (Moderación)
-    Route::get('/admin/users', [AdminUserController::class, 'index']); // Listar y buscar
-    Route::patch('/admin/users/{id}/role', [AdminUserController::class, 'updateRole']); // Modificar rol
-    Route::delete('/admin/users/{id}', [AdminUserController::class, 'destroy']); // Eliminar usuario
-
-    // 3. Gestión de Anuncios (Moderación)
-    Route::get('/admin/ads', [AdminAdController::class, 'index']); // Listar anuncios con la Vista SQL
-    Route::patch('/admin/ads/{id}/state', [AdminAdController::class, 'updateState']); // Cambiar estado del anuncio
-    Route::delete('/advertisement/{id}', [AdvertisementController::class, 'destroy']); // Borrado físico (ya la tenías)
-});
-
-// Ruta Ping para evitar el Cold Start
-Route::get('/ping', function () {
-    return response()->json([
-        'status' => 'ok', 
-        'message' => '¡El servidor está despierto!'
-    ], 200);
-});
-
-// Public user endpoints + reviews
-Route::get('/users/{id}', [UserController::class, 'show']);
-Route::get('/users/{id}/advertisements', [UserController::class, 'advertisements']);
-Route::get('/users/{id}/reviews', [ReviewController::class, 'index']);
-
-Route::middleware('auth:sanctum')->group(function () {
+    // 4. VALORACIONES (REVIEWS)
+    // Esta es la ruta que usa ChatInterface.tsx
+    Route::post('/reviews', [ReviewController::class, 'store']); 
+    // Por si el perfil necesita saber si puede mostrar el botón de valorar
     Route::get('/users/{id}/can-review', [ReviewController::class, 'canReview']);
-    Route::post('/users/{id}/reviews', [ReviewController::class, 'store']);
-});
 
-// api.php
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/conversations', [ChatController::class, 'index']); // Listado
-    Route::post('/conversations', [ChatController::class, 'startConversation']); // Crear
+    // 5. CHAT EN TIEMPO REAL Y GESTIÓN DE VENTA
+    Route::get('/conversations', [ChatController::class, 'index']);
+    Route::post('/conversations', [ChatController::class, 'startConversation']);
     Route::get('/conversations/{id}', [ChatController::class, 'getMessages']);
-    Route::post('/conversations/{id}/messages', [ChatController::class, 'sendMessage']); // Enviar
+    Route::post('/conversations/{id}/messages', [ChatController::class, 'sendMessage']);
+    Route::delete('/conversations/{id}', [ChatController::class, 'destroy']);
+    
+    // Lógica de negocio de la transacción
+    Route::post('/conversations/{id}/reserve', [ChatController::class, 'reserve']);
+    Route::post('/conversations/{id}/sell', [ChatController::class, 'confirmSale']);
+
+    // 6. PANEL DE ADMINISTRACIÓN (Solo Admin)
+    Route::get('/admin/reports-priority', [ReportController::class, 'getPriorityReports']);
+    Route::get('/admin/users', [AdminUserController::class, 'index']);
+    Route::patch('/admin/users/{id}/role', [AdminUserController::class, 'updateRole']);
+    Route::delete('/admin/users/{id}', [AdminUserController::class, 'destroy']);
+    Route::get('/admin/ads', [AdminAdController::class, 'index']);
+    Route::patch('/admin/ads/{id}/state', [AdminAdController::class, 'updateState']);
+    Route::delete('/advertisement/{id}', [AdvertisementController::class, 'destroy']);
 });
 
-Route::get('/conversations', [ChatController::class, 'index'])->middleware('auth:sanctum');
+
+// Ping de salud
+Route::get('/ping', function () {
+    return response()->json(['status' => 'ok', 'message' => '¡El servidor está despierto!'], 200);
+});

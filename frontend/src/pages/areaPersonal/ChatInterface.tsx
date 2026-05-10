@@ -1,22 +1,22 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { createClient } from '@supabase/supabase-js';
-import { API_BASE_URL, SUPABASE_URL, SUPABASE_ANON_KEY } from "../../config"; 
+import { API_BASE_URL, SUPABASE_URL, SUPABASE_ANON_KEY, APP_NAME } from "../../config"; 
 import { 
-  Send, ArrowLeft, Car, MessageSquare, Search, Clock
+  Send, ArrowLeft, Car, MessageSquare, Search, 
+  MoreVertical, Trash2, Ban, CheckCircle2, CalendarClock, Star 
 } from 'lucide-react';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// --- INTERFACES ---
 interface Message {
   id: number;
-  sender_id: number;
+  sender_id: number | string | null; 
   content: string;
   created_at: string;
+  is_read?: boolean; 
 }
 
-// NUEVA INTERFAZ PLANA (Coincide con tu Vista SQL)
 interface ConversationFlat {
   id: number;
   advertisement_id: number;
@@ -30,171 +30,244 @@ interface ConversationFlat {
   model_name: string;
   buyer_name: string;
   seller_name: string;
+  chat_status?: 'active' | 'sold' | 'disabled';
+  ad_status?: 'disponible' | 'reservado' | 'vendido'; 
+  unread_count?: number; 
   messages?: Message[];
 }
 
 const ChatInterface: React.FC = () => {
-  // Estados Globales
   const [conversations, setConversations] = useState<ConversationFlat[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loadingList, setLoadingList] = useState(true);
   
-  // Estados del Chat Activo
   const [activeChatId, setActiveChatId] = useState<number | null>(null);
-  const [activeChatData, setActiveChatData] = useState<ConversationFlat | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loadingChat, setLoadingChat] = useState(false);
+  const [showOptions, setShowOptions] = useState(false);
 
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const token = localStorage.getItem('auth_token');
-  const currentUserId = Number(localStorage.getItem('user_id'));
+
+  // --- ESTADOS PARA VALORACIÓN ---
+  const [rating, setRating] = useState(0);
+  const [reviewComment, setReviewComment] = useState('');
+  const [loadingReview, setLoadingReview] = useState(false);
+  const [hasReviewed, setHasReviewed] = useState(false);
+
+  const activeChatData = conversations.find(c => c.id === activeChatId) || null;
+  const isCurrentUserSeller = currentUserId !== null && activeChatData && String(currentUserId) === String(activeChatData.seller_id);
+
+  // 1. Identificación del usuario
+  useEffect(() => {
+    let storedId = localStorage.getItem('user_id');
+    if (!storedId) {
+      const storedUserStr = localStorage.getItem('user');
+      if (storedUserStr) {
+        try { storedId = JSON.parse(storedUserStr).id; } catch(e) {}
+      }
+    }
+    if (storedId) {
+      setCurrentUserId(String(storedId));
+    } else if (token) {
+      axios.get(`${API_BASE_URL}/user`, { headers: { Authorization: `Bearer ${token}` } })
+        .then(res => {
+          if (res.data && res.data.id) {
+            setCurrentUserId(String(res.data.id));
+            localStorage.setItem('user_id', res.data.id);
+          }
+        });
+    }
+  }, [token]);
 
   const fetchConversations = async () => {
+    setLoadingList(true);
     try {
       const response = await axios.get(`${API_BASE_URL}/conversations`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setConversations(response.data);
+    } catch (err) { console.error(err); } finally { setLoadingList(false); }
+  };
+
+  // --- FUNCIÓN: MARCAR COMO LEÍDO (Con corrección de race condition) ---
+  const markAsRead = async (chatId: number) => {
+    // 1. Ocultamos el globo rojo localmente al instante para evitar el parpadeo
+    setConversations(prev => prev.map(c => 
+      c.id === chatId ? { ...c, unread_count: 0 } : c
+    ));
+    
+    try {
+      // 2. Avisamos al servidor
+      await axios.post(`${API_BASE_URL}/conversations/${chatId}/read`, {}, { 
+        headers: { Authorization: `Bearer ${token}` } 
+      });
+      
+      // 3. Cuando el servidor guarda, recargamos la lista para sincronizar con Supabase
+      fetchConversations();
     } catch (err) {
-      console.error("Error cargando conversaciones", err);
-    } finally {
-      setLoadingList(false);
+      console.error("No se pudo marcar como leído", err);
     }
   };
 
-  // 1. Cargar la lista inicial y SUSCRIBIRSE a la tabla de conversaciones
+  // 2. Suscripción GLOBAL para NOTIFICACIONES (Globos rojos)
   useEffect(() => {
     if (token) {
       fetchConversations();
 
-      // Realtime para la lista izquierda (Sube el chat si hay nuevos mensajes)
-      const listChannel = supabase
-        .channel('public:conversations')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'conversations' }, () => {
-          fetchConversations(); 
-        })
+      // Escuchar cambios en la tabla de conversaciones
+      const convChannel = supabase.channel('global-conv-changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'conversations' }, () => fetchConversations())
         .subscribe();
 
-      return () => { supabase.removeChannel(listChannel); };
+      // Escuchar CUALQUIER mensaje nuevo para actualizar contadores en el listado
+      const msgChannel = supabase.channel('global-msg-changes')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => fetchConversations())
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(convChannel);
+        supabase.removeChannel(msgChannel);
+      };
     }
   }, [token]);
 
-  // 2. Cargar mensajes y SUSCRIBIRSE a la tabla de mensajes del chat activo
+  // 3. Carga de mensajes del chat activo
   useEffect(() => {
     if (!activeChatId || !token) return;
-
     setLoadingChat(true);
+    setRating(0);
+    setReviewComment('');
+    setHasReviewed(false);
 
-    const fetchMessages = async () => {
-      try {
-        const response = await axios.get(`${API_BASE_URL}/conversations/${activeChatId}`, { 
-          headers: { Authorization: `Bearer ${token}` } 
-        });
-        setActiveChatData(response.data);
-        setMessages(response.data.messages || []);
-      } catch (err) {
-        console.error("Error al cargar el chat", err);
-      } finally {
+    axios.get(`${API_BASE_URL}/conversations/${activeChatId}`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(res => {
+        setMessages(res.data.messages || []);
         setLoadingChat(false);
-      }
-    };
+        // MARCAMOS COMO LEÍDO AL ABRIR EL CHAT
+        markAsRead(activeChatId);
+      });
 
-    fetchMessages();
-
-    // Realtime para los mensajes de texto
-    const chatChannel = supabase
-      .channel(`chat-${activeChatId}`)
+    const chatChannel = supabase.channel(`chat-${activeChatId}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `conversation_id=eq.${activeChatId}` },
         (payload) => {
-          const incomingMessage = payload.new as Message;
-          setMessages((prev) => {
-            if (prev.some((msg) => msg.id === incomingMessage.id)) return prev;
-            return [...prev, incomingMessage];
-          });
+          const incoming = payload.new as Message;
+          setMessages(prev => prev.some(m => m.id === incoming.id) ? prev : [...prev, incoming]);
+          
+          // Si nos llega un mensaje de la otra persona y estamos viendo el chat, se marca como leído
+          if (String(incoming.sender_id) !== String(currentUserId)) {
+            markAsRead(activeChatId);
+          }
         }
       ).subscribe();
-
     return () => { supabase.removeChannel(chatChannel); };
-  }, [activeChatId, token]);
+  }, [activeChatId, token, currentUserId]);
 
-  // Autoscroll hacia abajo al recibir mensajes
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages]);
 
-  // 3. Enviar un mensaje
+  // --- ACCIONES ---
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMessage.trim() || !activeChatId) return;
-
+    const msg = newMessage;
+    setNewMessage('');
     try {
-      const response = await axios.post(`${API_BASE_URL}/conversations/${activeChatId}/messages`, {
-        content: newMessage
-      }, { headers: { Authorization: `Bearer ${token}` } });
-
-      setMessages((prev) => [...prev, response.data]);
-      setNewMessage('');
-    } catch (err) {
-      console.error("Error al enviar", err);
-    }
+      const res = await axios.post(`${API_BASE_URL}/conversations/${activeChatId}/messages`, { content: msg }, { headers: { Authorization: `Bearer ${token}` } });
+      setMessages(prev => [...prev, res.data]);
+    } catch (err) { setNewMessage(msg); }
   };
 
-  // Filtrado de la búsqueda actualizado a variables planas
-  const filteredChats = conversations.filter(chat => 
-    chat.advertisement_title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    chat.buyer_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    chat.seller_name?.toLowerCase().includes(searchTerm.toLowerCase())
+  const handleDeleteChat = async () => {
+    if (!activeChatId || !window.confirm("¿Seguro que quieres eliminar este chat permanentemente?")) return;
+    try {
+      await axios.delete(`${API_BASE_URL}/conversations/${activeChatId}`, { headers: { Authorization: `Bearer ${token}` } });
+      setConversations(prev => prev.filter(c => c.id !== activeChatId));
+      setActiveChatId(null);
+    } catch (err) { alert("Error al eliminar el chat."); }
+  };
+
+  const handleReserve = async () => {
+    if (!activeChatId || !window.confirm("¿Reservar vehículo?")) return;
+    await axios.post(`${API_BASE_URL}/conversations/${activeChatId}/reserve`, {}, { headers: { Authorization: `Bearer ${token}` } });
+    fetchConversations();
+  };
+
+  const handleConfirmSale = async () => {
+    if (!activeChatId || !window.confirm("¿Confirmar venta final?")) return;
+    await axios.post(`${API_BASE_URL}/conversations/${activeChatId}/sell`, {}, { headers: { Authorization: `Bearer ${token}` } });
+    fetchConversations();
+  };
+
+  const submitReview = async () => {
+    if (!rating || !activeChatData) return;
+    setLoadingReview(true);
+    try {
+      await axios.post(`${API_BASE_URL}/reviews`, {
+        advertisement_id: activeChatData.advertisement_id,
+        rating,
+        comment: reviewComment
+      }, { headers: { Authorization: `Bearer ${token}` } });
+      setHasReviewed(true);
+      alert("¡Valoración enviada!");
+    } catch (err) { alert("Error al enviar valoración."); } finally { setLoadingReview(false); }
+  };
+
+  const filteredChats = conversations.filter(c => 
+    c.brand_name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    c.buyer_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    c.seller_name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (loadingList) return <div className="h-screen bg-black flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-red-600"></div></div>;
-
   return (
-    <div className="flex h-[calc(100vh-64px)] bg-black text-white overflow-hidden">
+    <div className="flex h-[calc(100vh-64px)] bg-[#0a0a0a] text-zinc-100 overflow-hidden font-sans">
       
-      {/* PANEL IZQUIERDO: LISTA DE CHATS */}
-      <div className={`${activeChatId ? 'hidden md:flex' : 'flex'} w-full md:w-96 flex-col border-r border-zinc-800 bg-zinc-950`}>
-        <div className="p-4 border-b border-zinc-800">
-          <h2 className="text-2xl font-black italic uppercase mb-4">Mensajes</h2>
+      {/* PANEL IZQUIERDO: LISTA */}
+      <div className={`${activeChatId ? 'hidden md:flex' : 'flex'} w-full md:w-96 shrink-0 flex-col border-r border-zinc-800 bg-[#111]`}>
+        <div className="p-4 bg-[#1a1a1a] border-b border-zinc-800">
+          <h2 className="text-2xl font-black italic uppercase mb-4 text-white">Mensajes</h2>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={18} />
-            <input 
-              type="text" placeholder="Buscar chat..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-zinc-900 border border-zinc-800 rounded-xl focus:ring-2 focus:ring-red-600 outline-none transition-all text-sm"
-            />
+            <input type="text" placeholder="Buscar..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 bg-zinc-900 border border-zinc-700 rounded-xl outline-none text-sm" />
           </div>
         </div>
-
+        
         <div className="flex-1 overflow-y-auto">
-          {filteredChats.length === 0 ? (
-            <div className="text-center p-8 text-zinc-500 text-sm">No hay mensajes disponibles.</div>
+          {/* USO DE LA VARIABLE loadingList PARA ARREGLAR EL ERROR TS6133 */}
+          {loadingList ? (
+            <div className="p-8 text-center text-zinc-500 text-sm animate-pulse italic">
+              Cargando chats...
+            </div>
           ) : (
             filteredChats.map((chat) => {
-              const isSeller = currentUserId === chat.seller_id;
-              const otherUserName = isSeller ? chat.buyer_name : chat.seller_name;
-              const isActive = chat.id === activeChatId;
+              const otherName = String(currentUserId) === String(chat.seller_id) ? chat.buyer_name : chat.seller_name;
+              
+              // TRUCO APLICADO: Si es el chat activo, forzamos a 0 el globo rojo
+              const unread = chat.id === activeChatId ? 0 : (chat.unread_count || 0);
 
               return (
-                <div 
-                  key={chat.id}
-                  onClick={() => setActiveChatId(chat.id)}
-                  className={`p-4 border-b border-zinc-800/50 cursor-pointer transition-all flex gap-4 items-center ${isActive ? 'bg-zinc-800/80 border-l-4 border-l-red-600' : 'hover:bg-zinc-900'}`}
-                >
-                  <div className="h-12 w-12 shrink-0 rounded-full bg-zinc-800 flex items-center justify-center text-red-600 font-bold text-lg">
-                    {otherUserName?.charAt(0).toUpperCase()}
+                <div key={chat.id} onClick={() => setActiveChatId(chat.id)}
+                  className={`p-4 border-b border-zinc-800/50 cursor-pointer flex gap-4 items-center ${chat.id === activeChatId ? 'bg-zinc-800/80 border-l-4 border-l-red-600' : 'hover:bg-zinc-900'}`}>
+                  <div className="h-12 w-12 rounded-full bg-zinc-800 flex items-center justify-center text-red-500 font-bold border border-zinc-700 shadow-sm relative">
+                    {otherName?.charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-center mb-1">
-                      <h3 className="font-bold text-zinc-100 truncate">{otherUserName}</h3>
-                      <span className="text-[10px] text-zinc-500 flex items-center gap-1">
-                        <Clock size={10} />
-                        {new Date(chat.updated_at).toLocaleDateString()}
-                      </span>
+                      <h3 className="font-bold truncate text-[15px]">{otherName}</h3>
                     </div>
-                    <p className="text-xs text-zinc-400 truncate flex items-center gap-1">
-                      <Car size={12} className="text-red-600"/> 
-                      {chat.brand_name} {chat.model_name}
-                    </p>
+                    <div className="flex justify-between items-center">
+                      <p className="text-xs text-zinc-400 truncate flex items-center gap-1"><Car size={12} className="text-red-500"/> {chat.brand_name} {chat.model_name}</p>
+                      {unread > 0 && (
+                        <div className="bg-red-600 text-white text-[10px] font-bold h-5 w-5 rounded-full flex items-center justify-center shadow-lg animate-pulse">
+                          {unread}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               );
@@ -203,65 +276,126 @@ const ChatInterface: React.FC = () => {
         </div>
       </div>
 
-      {/* PANEL DERECHO: ÁREA DE CHAT */}
-      <div className={`${!activeChatId ? 'hidden md:flex' : 'flex'} flex-1 flex-col bg-zinc-900`}>
-        {!activeChatId ? (
-          <div className="flex-1 flex flex-col items-center justify-center text-zinc-500">
-            <MessageSquare size={64} className="text-zinc-800 mb-4" />
-            <h2 className="text-xl font-bold text-zinc-300">Selecciona un chat</h2>
-            <p className="text-sm mt-2 max-w-sm text-center">Haz clic en una conversación de la izquierda para empezar a negociar.</p>
-          </div>
-        ) : loadingChat ? (
-          <div className="flex-1 flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-red-600"></div></div>
-        ) : (
-          <>
-            <div className="bg-zinc-950 p-4 border-b border-zinc-800 flex items-center gap-4">
-              <button onClick={() => setActiveChatId(null)} className="md:hidden text-zinc-400 hover:text-white">
-                <ArrowLeft size={24} />
-              </button>
-              <div className="h-10 w-10 rounded-full bg-red-600 flex items-center justify-center font-bold">
-                {(currentUserId === activeChatData?.seller_id ? activeChatData?.buyer_name : activeChatData?.seller_name)?.charAt(0).toUpperCase()}
+      {/* ÁREA DE CHAT */}
+      <div className={`${!activeChatId ? 'hidden md:flex' : 'flex'} flex-1 flex-col bg-[#0f0f0f] relative`}>
+        {activeChatId && !loadingChat ? (
+          <div className="flex flex-col h-full">
+            {/* CABECERA (INFO DEL VEHÍCULO RESTAURADA) */}
+            <div className="bg-[#1a1a1a] px-4 py-3 border-b border-zinc-800 flex items-center justify-between z-20 shadow-lg">
+              <div className="flex items-center gap-4 min-w-0">
+                <button onClick={() => setActiveChatId(null)} className="md:hidden text-zinc-400"><ArrowLeft size={24} /></button>
+                <div className="h-10 w-10 shrink-0 rounded-full bg-red-600 flex items-center justify-center font-bold text-white shadow-md">
+                  {(String(currentUserId) === String(activeChatData?.seller_id) ? activeChatData?.buyer_name : activeChatData?.seller_name)?.charAt(0).toUpperCase()}
+                </div>
+                <div className="min-w-0">
+                  <h2 className="font-bold truncate text-white text-[15px] leading-tight">
+                    {String(currentUserId) === String(activeChatData?.seller_id) ? activeChatData?.buyer_name : activeChatData?.seller_name}
+                  </h2>
+                  <p className="text-[11px] text-zinc-400 truncate mt-0.5">
+                    Negociando por: <span className="text-zinc-200 font-bold">{activeChatData?.brand_name} {activeChatData?.model_name}</span> 
+                    <span className="ml-2 text-red-500 font-black">{activeChatData?.advertisement_price}€</span>
+                  </p>
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <h2 className="font-bold truncate">
-                  {currentUserId === activeChatData?.seller_id ? activeChatData?.buyer_name : activeChatData?.seller_name}
-                </h2>
-                <p className="text-xs text-zinc-500 truncate flex items-center gap-1 mt-0.5">
-                  Sobre: <span className="text-zinc-300">{activeChatData?.advertisement_title}</span>
-                </p>
+
+              <div className="flex items-center gap-2">
+                <button onClick={handleDeleteChat} className="p-2 text-zinc-500 hover:text-red-500 transition" title="Borrar Chat">
+                  <Trash2 size={20} />
+                </button>
+                <div className="relative">
+                  <button onClick={() => setShowOptions(!showOptions)} className="p-2 text-zinc-400 hover:text-white transition"><MoreVertical size={20} /></button>
+                  {showOptions && (
+                    <div className="absolute right-0 mt-2 w-56 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-1 z-50 overflow-hidden">
+                      {isCurrentUserSeller && activeChatData?.chat_status !== 'disabled' && (
+                        <>
+                          <button onClick={handleReserve} className="w-full px-4 py-3 flex items-center gap-3 text-sm text-zinc-300 hover:bg-zinc-800 text-left"><CalendarClock size={16} /> Reservar vehículo</button>
+                          <button onClick={handleConfirmSale} className="w-full px-4 py-3 flex items-center gap-3 text-sm text-green-500 hover:bg-zinc-800 text-left font-bold"><CheckCircle2 size={16} /> Confirmar venta</button>
+                          <div className="h-px bg-zinc-800 my-1"></div>
+                        </>
+                      )}
+                      <button className="w-full px-4 py-3 flex items-center gap-3 text-sm text-red-500 hover:bg-red-950/20 transition text-left"><Ban size={16} /> Bloquear usuario</button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
-            <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4">
+            {/* MENSAJES */}
+            <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#0a0a0a]">
               {messages.map((msg) => {
-                const isMe = msg.sender_id === currentUserId;
+                const isMe = String(msg.sender_id) === String(currentUserId);
+                const isSystem = !msg.sender_id || String(msg.sender_id) === '0' || String(msg.sender_id) === '2';
+
+                if (isSystem) {
+                  return (
+                    <div key={msg.id} className="flex flex-col items-center my-8 animate-in fade-in zoom-in duration-500">
+                      <span className="text-[9px] text-zinc-500 uppercase font-black tracking-widest mb-2 italic">Notificación de {APP_NAME}</span>
+                      <div className="bg-red-950/30 border border-red-900/40 text-red-200 text-xs px-8 py-4 rounded-2xl text-center max-w-sm shadow-xl italic leading-relaxed">
+                        {msg.content}
+                      </div>
+                    </div>
+                  );
+                }
+
                 return (
-                  <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[75%] p-3 rounded-2xl shadow-sm ${isMe ? 'bg-red-700 rounded-br-none' : 'bg-zinc-800 rounded-bl-none'}`}>
-                      <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
-                      <p className="text-[10px] mt-1 opacity-50 text-right">{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                  <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'} w-full animate-in slide-in-from-bottom-2 duration-300`}>
+                    <div className={`max-w-[75%] px-4 py-2 rounded-2xl ${isMe ? 'bg-red-600 text-white rounded-tr-sm shadow-lg shadow-red-900/20' : 'bg-zinc-800 text-zinc-100 rounded-tl-sm border border-zinc-700 shadow-md'}`}>
+                      <p className="text-[14px] leading-relaxed whitespace-pre-wrap font-medium">{msg.content}</p>
+                      <p className="text-[9px] mt-1 text-right opacity-50 font-bold">{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                     </div>
                   </div>
                 );
               })}
             </div>
 
-            <div className="p-4 bg-zinc-950 border-t border-zinc-800">
-              <form onSubmit={handleSendMessage} className="flex gap-2">
-                <input 
-                  type="text" value={newMessage} onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder="Escribe un mensaje..."
-                  className="flex-1 bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-600 text-sm"
-                />
-                <button type="submit" disabled={!newMessage.trim()} className="bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white p-3 rounded-xl transition-colors">
-                  <Send size={20} />
+            {/* VALORACIÓN */}
+            {activeChatData?.chat_status === 'sold' && String(currentUserId) === String(activeChatData?.buyer_id) && !hasReviewed && (
+              <div className="mx-4 mb-4 p-6 bg-zinc-800 border-2 border-yellow-600/30 rounded-2xl text-center animate-in zoom-in shadow-2xl">
+                <h3 className="text-lg font-black uppercase italic mb-2 text-white">¡Compra finalizada!</h3>
+                <p className="text-zinc-400 text-xs mb-4 uppercase tracking-widest">Valora a {activeChatData?.seller_name} para ayudar a la comunidad</p>
+                <div className="flex justify-center gap-3 mb-5">
+                  {[1, 2, 3, 4, 5].map(s => (
+                    <button key={s} onClick={() => setRating(s)} className={`transition-transform active:scale-90 ${rating >= s ? 'text-yellow-500 drop-shadow-[0_0_8px_rgba(234,179,8,0.5)]' : 'text-zinc-700'}`}>
+                      <Star size={36} fill={rating >= s ? "currentColor" : "none"} />
+                    </button>
+                  ))}
+                </div>
+                <textarea placeholder="Cuéntanos cómo fue todo (opcional)..." value={reviewComment} onChange={e => setReviewComment(e.target.value)} className="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-4 text-white text-sm mb-4 outline-none focus:border-yellow-600 focus:ring-1 focus:ring-yellow-600 transition" />
+                <button onClick={submitReview} disabled={!rating || loadingReview} className="w-full py-4 bg-yellow-600 text-black font-black uppercase tracking-widest rounded-xl transition hover:bg-yellow-500 disabled:opacity-50 shadow-lg">
+                  {loadingReview ? 'Enviando...' : 'Enviar Valoración'}
                 </button>
-              </form>
+              </div>
+            )}
+
+            {/* PIE DE CHAT */}
+            <div className="p-3 bg-[#1a1a1a] border-t border-zinc-800">
+              {activeChatData?.chat_status === 'disabled' ? (
+                <div className="flex justify-center">
+                  <button onClick={handleDeleteChat} className="bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-3.5 px-8 rounded-xl border border-zinc-700 transition w-full max-w-md shadow-lg italic tracking-wide uppercase text-xs">
+                    Coche vendido a otro usuario - Eliminar Chat
+                  </button>
+                </div>
+              ) : (
+                <form onSubmit={handleSendMessage} className="flex gap-2 items-end">
+                  <textarea value={newMessage} onChange={e => setNewMessage(e.target.value)} placeholder="Escribe tu mensaje..." rows={1}
+                    className="flex-1 bg-zinc-900 border border-zinc-700 rounded-2xl px-4 py-3.5 outline-none text-sm resize-none focus:border-red-600 transition shadow-inner" />
+                  <button type="submit" disabled={!newMessage.trim()} className="bg-red-600 h-50px w-50px rounded-full flex items-center justify-center shrink-0 hover:bg-red-500 transition disabled:opacity-50 shadow-xl">
+                    <Send size={22} className="ml-1" />
+                  </button>
+                </form>
+              )}
             </div>
-          </>
+          </div>
+        ) : (
+          <div className="flex-1 flex flex-col items-center justify-center text-zinc-500 p-8 text-center">
+            <div className="h-24 w-24 bg-zinc-900 rounded-full flex items-center justify-center mb-6 border border-zinc-800 shadow-2xl">
+              <MessageSquare size={40} className="text-zinc-700" />
+            </div>
+            <h3 className="font-black uppercase italic text-zinc-400 text-xl tracking-tighter">Buzón de Negociación</h3>
+            <p className="max-w-xs text-xs mt-2 leading-relaxed">Selecciona un chat lateral para empezar a hablar con el vendedor o gestionar tu compra.</p>
+          </div>
         )}
       </div>
-
     </div>
   );
 };
