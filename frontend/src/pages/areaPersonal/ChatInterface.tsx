@@ -51,7 +51,6 @@ const ChatInterface: React.FC = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const token = localStorage.getItem('auth_token');
 
-  // --- ESTADOS PARA VALORACIÓN ---
   const [rating, setRating] = useState(0);
   const [reviewComment, setReviewComment] = useState('');
   const [loadingReview, setLoadingReview] = useState(false);
@@ -61,7 +60,6 @@ const ChatInterface: React.FC = () => {
   const activeChatData = conversations.find(c => c.id === activeChatId) || null;
   const isCurrentUserSeller = currentUserId !== null && activeChatData && String(currentUserId) === String(activeChatData.seller_id);
 
-  // 1. Identificación del usuario
   useEffect(() => {
     let storedId = localStorage.getItem('user_id');
     if (!storedId) {
@@ -93,35 +91,27 @@ const ChatInterface: React.FC = () => {
     } catch (err) { console.error(err); } finally { setLoadingList(false); }
   };
 
-  // --- FUNCIÓN: MARCAR COMO LEÍDO ---
   const markAsRead = async (chatId: number) => {
     setConversations(prev => prev.map(c => 
       c.id === chatId ? { ...c, unread_count: 0 } : c
     ));
-    
     try {
       await axios.post(`${API_BASE_URL}/conversations/${chatId}/read`, {}, { 
         headers: { Authorization: `Bearer ${token}` } 
       });
       fetchConversations();
-    } catch (err) {
-      console.error("No se pudo marcar como leído", err);
-    }
+    } catch (err) { console.error("No se pudo marcar como leído", err); }
   };
 
-  // 2. Suscripción GLOBAL para NOTIFICACIONES
   useEffect(() => {
     if (token) {
       fetchConversations();
-
       const convChannel = supabase.channel('global-conv-changes')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'conversations' }, () => fetchConversations())
         .subscribe();
-
       const msgChannel = supabase.channel('global-msg-changes')
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => fetchConversations())
         .subscribe();
-
       return () => {
         supabase.removeChannel(convChannel);
         supabase.removeChannel(msgChannel);
@@ -129,7 +119,6 @@ const ChatInterface: React.FC = () => {
     }
   }, [token]);
 
-  // 3. Carga de mensajes del chat activo
   useEffect(() => {
     if (!activeChatId || !token) return;
     setLoadingChat(true);
@@ -150,10 +139,7 @@ const ChatInterface: React.FC = () => {
         (payload) => {
           const incoming = payload.new as Message;
           setMessages(prev => prev.some(m => m.id === incoming.id) ? prev : [...prev, incoming]);
-          
-          if (String(incoming.sender_id) !== String(currentUserId)) {
-            markAsRead(activeChatId);
-          }
+          if (String(incoming.sender_id) !== String(currentUserId)) markAsRead(activeChatId);
         }
       ).subscribe();
     return () => { supabase.removeChannel(chatChannel); };
@@ -163,21 +149,15 @@ const ChatInterface: React.FC = () => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages]);
 
-  // --- ACCIONES ---
-
   const handleSendMessage = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!newMessage.trim() || !activeChatId) return;
-    
     const msgContent = newMessage;
     setNewMessage(''); 
-    
     try {
       const res = await axios.post(`${API_BASE_URL}/conversations/${activeChatId}/messages`, { content: msgContent }, { headers: { Authorization: `Bearer ${token}` } });
       setMessages(prev => prev.some(m => m.id === res.data.id) ? prev : [...prev, res.data]);
-    } catch (err) { 
-      setNewMessage(msgContent);
-    }
+    } catch (err) { setNewMessage(msgContent); }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -197,15 +177,30 @@ const ChatInterface: React.FC = () => {
   };
 
   const handleReserve = async () => {
-    if (!activeChatId || !window.confirm("¿Reservar vehículo?")) return;
-    await axios.post(`${API_BASE_URL}/conversations/${activeChatId}/reserve`, {}, { headers: { Authorization: `Bearer ${token}` } });
-    fetchConversations();
+    if (!activeChatId || !window.confirm("¿Reservar vehículo para este comprador?")) return;
+    try {
+      await axios.post(`${API_BASE_URL}/conversations/${activeChatId}/reserve`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      setShowOptions(false);
+      fetchConversations();
+    } catch (err) { alert("Error al reservar."); }
+  };
+
+  const handleCancelReserve = async () => {
+    if (!activeChatId || !window.confirm("¿Cancelar la reserva y volver a ponerlo disponible?")) return;
+    try {
+      await axios.post(`${API_BASE_URL}/conversations/${activeChatId}/cancel-reserve`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      setShowOptions(false);
+      fetchConversations();
+    } catch (err) { alert("Error al cancelar la reserva."); }
   };
 
   const handleConfirmSale = async () => {
-    if (!activeChatId || !window.confirm("¿Confirmar venta final?")) return;
-    await axios.post(`${API_BASE_URL}/conversations/${activeChatId}/sell`, {}, { headers: { Authorization: `Bearer ${token}` } });
-    fetchConversations();
+    if (!activeChatId || !window.confirm("¿Confirmar venta final? Esto cerrará el resto de chats.")) return;
+    try {
+      await axios.post(`${API_BASE_URL}/conversations/${activeChatId}/sell`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      setShowOptions(false);
+      fetchConversations();
+    } catch (err) { alert("Error al confirmar venta."); }
   };
 
   const submitReview = async () => {
@@ -244,9 +239,7 @@ const ChatInterface: React.FC = () => {
         
         <div className="flex-1 overflow-y-auto">
           {loadingList ? (
-            <div className="p-8 text-center text-zinc-500 text-sm animate-pulse italic">
-              Cargando chats...
-            </div>
+            <div className="p-8 text-center text-zinc-500 text-sm animate-pulse italic">Cargando chats...</div>
           ) : (
             filteredChats.map((chat) => {
               const otherName = String(currentUserId) === String(chat.seller_id) ? chat.buyer_name : chat.seller_name;
@@ -307,11 +300,30 @@ const ChatInterface: React.FC = () => {
                 <div className="relative">
                   <button onClick={() => setShowOptions(!showOptions)} className="p-2 text-zinc-400 hover:text-white transition"><MoreVertical size={20} /></button>
                   {showOptions && (
-                    <div className="absolute right-0 mt-2 w-56 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-1 z-50 overflow-hidden">
+                    <div className="absolute right-0 mt-2 w-64 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-1 z-50 overflow-hidden animate-in fade-in zoom-in duration-200">
                       {isCurrentUserSeller && activeChatData?.chat_status !== 'disabled' && (
                         <>
-                          <button onClick={handleReserve} className="w-full px-4 py-3 flex items-center gap-3 text-sm text-zinc-300 hover:bg-zinc-800 text-left"><CalendarClock size={16} /> Reservar vehículo</button>
-                          <button onClick={handleConfirmSale} className="w-full px-4 py-3 flex items-center gap-3 text-sm text-green-500 hover:bg-zinc-800 text-left font-bold"><CheckCircle2 size={16} /> Confirmar venta</button>
+                          {/* BOTÓN RESERVAR: Solo si está disponible */}
+                          {activeChatData?.ad_status === 'disponible' && (
+                            <button onClick={handleReserve} className="w-full px-4 py-3 flex items-center gap-3 text-sm text-zinc-300 hover:bg-zinc-800 text-left">
+                              <CalendarClock size={16} /> Reservar vehículo
+                            </button>
+                          )}
+
+                          {/* BOTÓN CANCELAR RESERVA: Solo si está reservado */}
+                          {activeChatData?.ad_status === 'reservado' && (
+                            <button onClick={handleCancelReserve} className="w-full px-4 py-3 flex items-center gap-3 text-sm text-yellow-500 hover:bg-zinc-800 text-left">
+                              <X size={16} /> Cancelar reserva
+                            </button>
+                          )}
+
+                          {/* BOTÓN VENTA: Solo si no está vendido todavía */}
+                          {activeChatData?.ad_status !== 'vendido' && (
+                            <button onClick={handleConfirmSale} className="w-full px-4 py-3 flex items-center gap-3 text-sm text-green-500 hover:bg-zinc-800 text-left font-bold border-t border-zinc-800/50">
+                              <CheckCircle2 size={16} /> Confirmar venta final
+                            </button>
+                          )}
+
                           <div className="h-px bg-zinc-800 my-1"></div>
                         </>
                       )}
@@ -342,7 +354,7 @@ const ChatInterface: React.FC = () => {
                 return (
                   <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'} w-full animate-in slide-in-from-bottom-2 duration-300`}>
                     <div className={`max-w-[85%] md:max-w-[75%] px-4 py-2 rounded-2xl ${isMe ? 'bg-red-600 text-white rounded-tr-sm shadow-md' : 'bg-zinc-800 text-zinc-100 rounded-tl-sm border border-zinc-700 shadow-md'}`}>
-                      <p className="text-[14px] leading-relaxed whitespace-pre-wrap font-medium break-words">{msg.content}</p>
+                      <p className="text-[14px] leading-relaxed whitespace-pre-wrap font-medium wrap-break-words">{msg.content}</p>
                       <p className="text-[9px] mt-1 text-right opacity-50 font-bold">{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                     </div>
                   </div>
@@ -353,15 +365,7 @@ const ChatInterface: React.FC = () => {
             {/* VALORACIÓN */}
             {activeChatData?.chat_status === 'sold' && String(currentUserId) === String(activeChatData?.buyer_id) && !hasReviewed && !dismissedReview && (
               <div className="mx-4 mb-4 p-6 bg-zinc-800 border-2 border-yellow-600/30 rounded-2xl text-center animate-in zoom-in shadow-2xl relative">
-                
-                <button 
-                  onClick={() => setDismissedReview(true)} 
-                  className="absolute top-4 right-4 text-zinc-500 hover:text-white transition-colors"
-                  title="Cerrar sin valorar"
-                >
-                  <X size={20} />
-                </button>
-
+                <button onClick={() => setDismissedReview(true)} className="absolute top-4 right-4 text-zinc-500 hover:text-white transition-colors"><X size={20} /></button>
                 <h3 className="text-lg font-black uppercase italic mb-2 text-white">¡Compra finalizada!</h3>
                 <p className="text-zinc-400 text-xs mb-4 uppercase tracking-widest mr-6 ml-6">Valora a {activeChatData?.seller_name} para ayudar a la comunidad</p>
                 <div className="flex justify-center gap-3 mb-5">
@@ -388,16 +392,9 @@ const ChatInterface: React.FC = () => {
                 </div>
               ) : (
                 <form onSubmit={handleSendMessage} className="flex gap-2 md:gap-3 items-end max-w-4xl mx-auto w-full">
-                  <textarea 
-                    value={newMessage} 
-                    onChange={e => setNewMessage(e.target.value)} 
-                    onKeyDown={handleKeyDown}
-                    placeholder="Escribe tu mensaje..." 
-                    rows={1}
+                  <textarea value={newMessage} onChange={e => setNewMessage(e.target.value)} onKeyDown={handleKeyDown} placeholder="Escribe tu mensaje..." rows={1}
                     style={{ minHeight: '48px', maxHeight: '120px' }}
-                    className="flex-1 bg-zinc-900 border border-zinc-700 rounded-2xl px-4 py-3 outline-none text-sm resize-none focus:border-red-600 transition shadow-inner" 
-                  />
-                  {/* BOTÓN ARREGLADO CON FLEX-NONE */}
+                    className="flex-1 bg-zinc-900 border border-zinc-700 rounded-2xl px-4 py-3 outline-none text-sm resize-none focus:border-red-600 transition shadow-inner" />
                   <button type="submit" disabled={!newMessage.trim()} className="bg-red-600 text-white w-12 h-12 flex-none rounded-full flex items-center justify-center hover:bg-red-500 transition disabled:opacity-50 shadow-md ml-1">
                     <Send size={20} className="ml-1" />
                   </button>

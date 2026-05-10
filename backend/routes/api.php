@@ -79,9 +79,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/conversations/{id}', [ChatController::class, 'getMessages']);
     Route::post('/conversations/{id}/messages', [ChatController::class, 'sendMessage']);
     Route::delete('/conversations/{id}', [ChatController::class, 'destroy']);
+
+    // Marcar mensajes como leídos
+    Route::post('/conversations/{id}/read', [ChatController::class, 'markAsRead']);
     
     // Lógica de negocio de la transacción
     Route::post('/conversations/{id}/reserve', [ChatController::class, 'reserve']);
+    Route::post('/conversations/{id}/cancel-reserve', [ChatController::class, 'cancelReserve']);
     Route::post('/conversations/{id}/sell', [ChatController::class, 'confirmSale']);
 
     // 6. PANEL DE ADMINISTRACIÓN (Solo Admin)

@@ -202,4 +202,31 @@ class ChatController extends Controller
 
         return response()->json(['message' => 'Venta finalizada con éxito']);
     }
+
+    // En ChatController.php
+
+public function cancelReserve(int $id) {
+    $userId = Auth::id();
+    $conversation = Conversation::findOrFail($id);
+    
+    if ($conversation->seller_id !== $userId) return response()->json(['error' => 'No autorizado'], 403);
+
+    $ad = Advertisement::find($conversation->advertisement_id);
+    
+    // Solo cancelamos si estaba reservado
+    if ($ad->status === 'reservado') {
+        $ad->status = 'disponible';
+        $ad->save();
+
+        Message::create([
+            'conversation_id' => $id,
+            'sender_id' => 2, // ID de Sistema
+            'content' => "La reserva ha sido cancelada. El vehículo vuelve a estar disponible."
+        ]);
+
+        return response()->json(['message' => 'Reserva cancelada']);
+    }
+
+    return response()->json(['error' => 'El vehículo no está reservado'], 400);
+}
 }
