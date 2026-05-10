@@ -56,7 +56,7 @@ const ChatInterface: React.FC = () => {
   const [reviewComment, setReviewComment] = useState('');
   const [loadingReview, setLoadingReview] = useState(false);
   const [hasReviewed, setHasReviewed] = useState(false);
-  const [dismissedReview, setDismissedReview] = useState(false); // NUEVO: Saber si cerró la ventana
+  const [dismissedReview, setDismissedReview] = useState(false); 
 
   const activeChatData = conversations.find(c => c.id === activeChatId) || null;
   const isCurrentUserSeller = currentUserId !== null && activeChatData && String(currentUserId) === String(activeChatData.seller_id);
@@ -136,7 +136,7 @@ const ChatInterface: React.FC = () => {
     setRating(0);
     setReviewComment('');
     setHasReviewed(false);
-    setDismissedReview(false); // Reiniciamos por si entra a otro chat vendido
+    setDismissedReview(false); 
 
     axios.get(`${API_BASE_URL}/conversations/${activeChatId}`, { headers: { Authorization: `Bearer ${token}` } })
       .then(res => {
@@ -342,7 +342,7 @@ const ChatInterface: React.FC = () => {
                 return (
                   <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'} w-full animate-in slide-in-from-bottom-2 duration-300`}>
                     <div className={`max-w-[85%] md:max-w-[75%] px-4 py-2 rounded-2xl ${isMe ? 'bg-red-600 text-white rounded-tr-sm shadow-md' : 'bg-zinc-800 text-zinc-100 rounded-tl-sm border border-zinc-700 shadow-md'}`}>
-                      <p className="text-[14px] leading-relaxed whitespace-pre-wrap font-medium wrap-break-words">{msg.content}</p>
+                      <p className="text-[14px] leading-relaxed whitespace-pre-wrap font-medium break-words">{msg.content}</p>
                       <p className="text-[9px] mt-1 text-right opacity-50 font-bold">{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                     </div>
                   </div>
@@ -350,7 +350,7 @@ const ChatInterface: React.FC = () => {
               })}
             </div>
 
-            {/* VALORACIÓN (Con botón de cerrar "X") */}
+            {/* VALORACIÓN */}
             {activeChatData?.chat_status === 'sold' && String(currentUserId) === String(activeChatData?.buyer_id) && !hasReviewed && !dismissedReview && (
               <div className="mx-4 mb-4 p-6 bg-zinc-800 border-2 border-yellow-600/30 rounded-2xl text-center animate-in zoom-in shadow-2xl relative">
                 
@@ -394,12 +394,12 @@ const ChatInterface: React.FC = () => {
                     onKeyDown={handleKeyDown}
                     placeholder="Escribe tu mensaje..." 
                     rows={1}
-                    style={{ minHeight: '46px', maxHeight: '120px' }}
+                    style={{ minHeight: '48px', maxHeight: '120px' }}
                     className="flex-1 bg-zinc-900 border border-zinc-700 rounded-2xl px-4 py-3 outline-none text-sm resize-none focus:border-red-600 transition shadow-inner" 
                   />
-                  <button type="submit" disabled={!newMessage.trim()} className="bg-red-600 h-46px w-46px rounded-full flex items-center justify-center shrink-0 hover:bg-red-500 transition disabled:opacity-50 shadow-md">
-                    {/* El translate-x-[2px] compensa la forma del icono para que se vea perfectamente centrado */}
-                    <Send size={18} className="translate-x-2px" />
+                  {/* BOTÓN ARREGLADO CON FLEX-NONE */}
+                  <button type="submit" disabled={!newMessage.trim()} className="bg-red-600 text-white w-12 h-12 flex-none rounded-full flex items-center justify-center hover:bg-red-500 transition disabled:opacity-50 shadow-md ml-1">
+                    <Send size={20} className="ml-1" />
                   </button>
                 </form>
               )}
