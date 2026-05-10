@@ -3,33 +3,33 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Conversation;       
-use App\Models\Message;            
-use App\Models\Advertisement;      
-use App\Models\ConversationView;   
+use App\Models\Conversation;
+use App\Models\Message;
+use App\Models\Advertisement;
+use App\Models\ConversationView;
+use App\Models\Rent;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class ChatController extends Controller
 {
-    /**
-     * Lista todas las conversaciones del usuario actual.
-     * Usa la Vista SQL para obtener datos planos y rápidos.
-     */
+    // ID del usuario "Sistema" para los mensajes automáticos.
+    // Usa el ID del admin (1). Asegúrate de que este usuario existe en tu BD.
+    const SYSTEM_USER_ID = 1;
+
+    /** Lista todas las conversaciones del usuario actual. */
     public function index()
     {
         $userId = Auth::id();
 
-        // Obtenemos los chats usando la vista SQL
         $conversations = ConversationView::where('buyer_id', $userId)
             ->orWhere('seller_id', $userId)
             ->orderBy('updated_at', 'desc')
             ->get();
 
-        // Calculamos los mensajes sin leer para CADA chat
         foreach ($conversations as $chat) {
             $chat->unread_count = Message::where('conversation_id', $chat->id)
-                ->where('sender_id', '!=', $userId) // Mensajes que NO enviaste tú
+                ->where('sender_id', '!=', $userId)
                 ->where('is_read', false)
                 ->count();
         }
@@ -37,14 +37,12 @@ class ChatController extends Controller
         return response()->json($conversations);
     }
 
-    /**
-     * Inicia una nueva conversación o recupera una existente.
-     */
-    public function startConversation(Request $request) 
+    /** Inicia una nueva conversación o recupera una existente. */
+    public function startConversation(Request $request)
     {
         $request->validate([
             'advertisement_id' => 'required|exists:advertisements,id',
-            'seller_id' => 'required|exists:users,id',
+            'seller_id'        => 'required|exists:users,id',
         ]);
 
         $authUserId = Auth::id();
@@ -53,19 +51,61 @@ class ChatController extends Controller
             return response()->json(['message' => 'No puedes hablar contigo mismo'], 400);
         }
 
+        $ad = Advertisement::findOrFail($request->advertisement_id);
+
+        // ── BLOQUEO PARA ANUNCIOS DE COMPRAVENTA RESERVADOS (lógica anterior) ──
+        if ($ad->ad_state_id === 2) {
+            $existingConv = Conversation::where([
+                'advertisement_id' => $request->advertisement_id,
+                'buyer_id'         => $authUserId,
+            ])->first();
+
+            if (!$existingConv) {
+                return response()->json([
+                    'message' => 'Este anuncio está reservado y no acepta nuevos contactos.'
+                ], 409);
+            }
+
+            return response()->json($existingConv);
+        }
+
+        // ── BLOQUEO PARA ANUNCIOS DE ALQUILER YA RESERVADOS ──
+        // Si el anuncio es de alquiler (is_rented = true) y ya tiene un
+        // alquiler activo, solo el arrendatario puede iniciar/recuperar chat.
+        if ($ad->is_rented) {
+            $activeRent = Rent::where('advertisement_id', $ad->id)
+                ->where('end_date', '>=', Carbon::today())
+                ->first();
+
+            if ($activeRent) {
+                // El arrendatario puede recuperar su conversación
+                if ($activeRent->renter_id === $authUserId) {
+                    $conv = Conversation::firstOrCreate([
+                        'advertisement_id' => $ad->id,
+                        'buyer_id'         => $authUserId,
+                        'seller_id'        => $request->seller_id,
+                    ]);
+                    return response()->json($conv);
+                }
+
+                // Cualquier otro usuario: bloqueado
+                return response()->json([
+                    'message' => 'Este vehículo ya está alquilado. No puedes contactar con el propietario por este anuncio.'
+                ], 409);
+            }
+        }
+
+        // Caso normal: crear o recuperar la conversación
         $conversation = Conversation::firstOrCreate([
             'advertisement_id' => $request->advertisement_id,
-            'buyer_id' => $authUserId,
-            'seller_id' => $request->seller_id
+            'buyer_id'         => $authUserId,
+            'seller_id'        => $request->seller_id,
         ]);
 
         return response()->json($conversation);
     }
 
-    /**
-     * Obtiene los mensajes de un chat específico.
-     * Carga la información del vehículo y participantes desde la Vista.
-     */
+    /** Obtiene los mensajes de un chat específico. */
     public function getMessages(int $id)
     {
         $userId = Auth::id();
@@ -79,154 +119,243 @@ class ChatController extends Controller
             return response()->json(['message' => 'Acceso denegado'], 403);
         }
 
-        // ¡LA MAGIA! Al abrir el chat, marcamos los mensajes del otro como "leídos"
         Message::where('conversation_id', $id)
             ->where('sender_id', '!=', $userId)
             ->where('is_read', false)
             ->update(['is_read' => true]);
 
-        // Obtenemos los mensajes ordenados por fecha
         $messages = Message::where('conversation_id', $id)
             ->orderBy('created_at', 'asc')
             ->get();
 
         return response()->json([
             'conversation' => $conversation,
-            'messages' => $messages
+            'messages'     => $messages,
         ]);
     }
 
-    /**
-     * Guarda un nuevo mensaje en la base de datos.
-     */
+    /** Guarda un nuevo mensaje en la base de datos. */
     public function sendMessage(Request $request, int $id)
     {
         $request->validate(['content' => 'required|string']);
 
+        // No permitir enviar mensajes en chats deshabilitados
+        $conv = Conversation::findOrFail($id);
+        if ($conv->status === 'disabled') {
+            return response()->json(['message' => 'Este chat está deshabilitado'], 403);
+        }
+
         $message = Message::create([
             'conversation_id' => $id,
-            'sender_id' => Auth::id(),
-            // Evitamos conflicto con la propiedad protegida de la clase Request
-            'content' => $request->input('content'),
+            'sender_id'       => Auth::id(),
+            'content'         => $request->input('content'),
         ]);
 
-        // Actualizamos el timestamp de la conversación para que suba en la lista
         Conversation::where('id', $id)->update(['updated_at' => now()]);
 
         return response()->json($message);
     }
 
+    /** Elimina una conversación y sus mensajes. */
     public function destroy(int $id)
     {
-        // 1. Buscamos el chat usando el modelo original (NO la vista)
         $conversation = Conversation::find($id);
 
         if (!$conversation) {
             return response()->json(['message' => 'Conversación no encontrada'], 404);
         }
 
-        // 2. SEGURIDAD: Comprobamos que el usuario que intenta borrarla participe en ella
         $userId = Auth::id();
         if ($conversation->buyer_id !== $userId && $conversation->seller_id !== $userId) {
             return response()->json(['message' => 'No tienes permiso para borrar este chat'], 403);
         }
 
-        // 3. Borramos los mensajes primero (para no dejar basura en la BD)
         Message::where('conversation_id', $conversation->id)->delete();
-
-        // 4. Borramos la conversación
         $conversation->delete();
 
-        return response()->json(['message' => 'Chat y mensajes eliminados correctamente'], 200);
+        return response()->json(['message' => 'Chat y mensajes eliminados correctamente']);
     }
 
-    // --- FUNCIÓN 1: RESERVAR VEHÍCULO ---
-    public function reserve(int $id) {
+    /** Marca como leídos los mensajes del otro usuario en esta conversación. */
+    public function markAsRead(int $id)
+    {
+        Message::where('conversation_id', $id)
+            ->where('sender_id', '!=', Auth::id())
+            ->where('is_read', false)
+            ->update(['is_read' => true]);
+
+        return response()->json(['message' => 'Mensajes marcados como leídos']);
+    }
+
+    // =========================================================================
+    // LÓGICA DE RESERVA (COMPRAVENTA)
+    // =========================================================================
+
+    /**
+     * El VENDEDOR reserva el anuncio para el comprador de esta conversación.
+     */
+    public function reserve(int $id)
+    {
         $userId = Auth::id();
         $conversation = Conversation::findOrFail($id);
-        
-        if ($conversation->seller_id !== $userId) return response()->json(['error' => 'No autorizado'], 403);
 
-        // 1. Cambiamos el estado del anuncio a reservado
-        $ad = Advertisement::find($conversation->advertisement_id);
-        $ad->status = 'reservado';
+        if ($conversation->seller_id !== $userId) {
+            return response()->json(['error' => 'No autorizado'], 403);
+        }
+
+        $ad = Advertisement::with(['vehicle.model.brand'])->findOrFail($conversation->advertisement_id);
+
+        if ($ad->ad_state_id === 2) {
+            return response()->json(['error' => 'El anuncio ya está reservado'], 400);
+        }
+
+        $reservedUntil  = now()->addDays(14);
+        $vehicleName    = $ad->vehicle->model->brand->name . ' ' . $ad->vehicle->model->name;
+        $buyerConvView  = ConversationView::find($id);
+        $buyerName      = $buyerConvView?->buyer_name ?? 'el comprador';
+
+        // 1. Actualizar el anuncio
+        $ad->ad_state_id       = 2; // Reservado
+        $ad->reserved_buyer_id = $conversation->buyer_id;
+        $ad->reserved_until    = $reservedUntil;
         $ad->save();
 
-        // 2. OPCIONAL: Marcar esta conversación como 'sold' o similar para identificarla
-        // Aunque esté reservado, el chat sigue 'active'.
+        // 2. Marcar esta conversación como reservada
+        $conversation->status = 'reserved';
+        $conversation->save();
+
+        // 3. Mensaje DETALLADO para el comprador que tiene la reserva
+        $fechaReserva = now()->format('d/m/Y \a \l\a\s H:i');
+        $fechaExpira  = $reservedUntil->format('d/m/Y');
 
         Message::create([
             'conversation_id' => $id,
-            'sender_id' => 2, 
-            'content' => "¡Buenas noticias! El vendedor ha reservado el vehículo para ti. Podéis concretar los detalles finales por aquí."
+            'sender_id'       => self::SYSTEM_USER_ID,
+            'content'         =>
+                "🎉 ¡Reserva confirmada!\n\n" .
+                "El vendedor ha reservado este vehículo para ti.\n\n" .
+                "🚗 Vehículo: {$vehicleName}\n" .
+                "👤 Reservado para: {$buyerName}\n" .
+                "📅 Fecha de reserva: {$fechaReserva}\n" .
+                "⏳ Caduca el: {$fechaExpira}\n\n" .
+                "Cuando hayáis completado la transacción, ve a la ficha del anuncio y pulsa «He comprado este coche» para cerrarla.",
         ]);
 
-        return response()->json(['message' => 'Vehículo reservado']);
+        // 4. Avisar brevemente a los OTROS compradores con chat activo
+        $otherConversations = Conversation::where('advertisement_id', $ad->id)
+            ->where('id', '!=', $id)
+            ->where('status', 'active')
+            ->get();
+
+        foreach ($otherConversations as $other) {
+            Message::create([
+                'conversation_id' => $other->id,
+                'sender_id'       => self::SYSTEM_USER_ID,
+                'content'         =>
+                    "⚠️ Anuncio reservado.\n\n" .
+                    "Este vehículo ha sido reservado para otro usuario. " .
+                    "Si la compra no se completa antes del {$fechaExpira}, volverá a estar disponible.",
+            ]);
+        }
+
+        return response()->json(['message' => 'Vehículo reservado correctamente']);
     }
 
-    // --- FUNCIÓN 2: CONFIRMAR VENTA Y CERRAR OTROS CHATS ---
-    public function confirmSale(int $id) {
+    /**
+     * El VENDEDOR cancela la reserva y el anuncio vuelve a Disponible.
+     */
+    public function cancelReserve(int $id)
+    {
         $userId = Auth::id();
         $conversation = Conversation::findOrFail($id);
-        if ($conversation->seller_id !== $userId) return response()->json(['error' => 'No autorizado'], 403);
 
-        // 1. Actualizamos el anuncio
-        $ad = Advertisement::find($conversation->advertisement_id);
-        $ad->status = 'vendido';
+        if ($conversation->seller_id !== $userId) {
+            return response()->json(['error' => 'No autorizado'], 403);
+        }
+
+        $ad = Advertisement::findOrFail($conversation->advertisement_id);
+
+        if ($ad->ad_state_id !== 2) {
+            return response()->json(['error' => 'El anuncio no está reservado'], 400);
+        }
+
+        // Limpiar reserva
+        $ad->ad_state_id       = 1; // Disponible
+        $ad->reserved_buyer_id = null;
+        $ad->reserved_until    = null;
         $ad->save();
 
-        // 2. IMPORTANTE: Marcar ESTE chat como 'sold' para diferenciarlo de los 'disabled'
+        $conversation->status = 'active';
+        $conversation->save();
+
+        Message::create([
+            'conversation_id' => $id,
+            'sender_id'       => self::SYSTEM_USER_ID,
+            'content'         =>
+                "❌ Reserva cancelada.\n\n" .
+                "El vendedor ha cancelado la reserva. El vehículo vuelve a estar disponible para todos.",
+        ]);
+
+        // Notificar también a los otros compradores
+        $others = Conversation::where('advertisement_id', $ad->id)
+            ->where('id', '!=', $id)
+            ->get();
+
+        foreach ($others as $other) {
+            Message::create([
+                'conversation_id' => $other->id,
+                'sender_id'       => self::SYSTEM_USER_ID,
+                'content'         => "✅ La reserva anterior ha sido cancelada. ¡El vehículo ya está disponible de nuevo!",
+            ]);
+        }
+
+        return response()->json(['message' => 'Reserva cancelada']);
+    }
+
+    /**
+     * El VENDEDOR confirma la venta desde el chat (flujo alternativo).
+     */
+    public function confirmSale(int $id)
+    {
+        $userId = Auth::id();
+        $conversation = Conversation::findOrFail($id);
+
+        if ($conversation->seller_id !== $userId) {
+            return response()->json(['error' => 'No autorizado'], 403);
+        }
+
+        $ad = Advertisement::findOrFail($conversation->advertisement_id);
+
+        $ad->ad_state_id       = 3; // Vendido
+        $ad->reserved_buyer_id = null;
+        $ad->reserved_until    = null;
+        $ad->save();
+
         $conversation->status = 'sold';
         $conversation->save();
 
         Message::create([
             'conversation_id' => $id,
-            'sender_id' => 2,
-            'content' => "¡Venta confirmada! El vendedor ha marcado el vehículo como vendido para ti. ¡Disfrútalo!"
+            'sender_id'       => self::SYSTEM_USER_ID,
+            'content'         => "🏁 ¡Venta confirmada! El vendedor ha cerrado la operación. ¡Que lo disfrutes!",
         ]);
 
-        // 3. Bloquear el resto de chats
-        $others = Conversation::where('advertisement_id', $ad->id)->where('id', '!=', $id)->get();
+        // Deshabilitar el resto de chats
+        $others = Conversation::where('advertisement_id', $ad->id)
+            ->where('id', '!=', $id)
+            ->get();
 
-        foreach ($others as $otherChat) {
-            /** @var Conversation $otherChat */
-            $otherChat->status = 'disabled';
-            $otherChat->save();
+        foreach ($others as $other) {
+            $other->status = 'disabled';
+            $other->save();
 
             Message::create([
-                'conversation_id' => $otherChat->id,
-                'sender_id' => 2,
-                'content' => "Lo sentimos, este vehículo ha sido vendido a otro usuario. El chat ha sido deshabilitado."
+                'conversation_id' => $other->id,
+                'sender_id'       => self::SYSTEM_USER_ID,
+                'content'         => "Lo sentimos, este vehículo ha sido vendido a otro usuario. El chat ha sido deshabilitado.",
             ]);
         }
 
-        return response()->json(['message' => 'Venta finalizada con éxito']);
+        return response()->json(['message' => 'Venta confirmada']);
     }
-
-    // En ChatController.php
-
-public function cancelReserve(int $id) {
-    $userId = Auth::id();
-    $conversation = Conversation::findOrFail($id);
-    
-    if ($conversation->seller_id !== $userId) return response()->json(['error' => 'No autorizado'], 403);
-
-    $ad = Advertisement::find($conversation->advertisement_id);
-    
-    // Solo cancelamos si estaba reservado
-    if ($ad->status === 'reservado') {
-        $ad->status = 'disponible';
-        $ad->save();
-
-        Message::create([
-            'conversation_id' => $id,
-            'sender_id' => 2, // ID de Sistema
-            'content' => "La reserva ha sido cancelada. El vehículo vuelve a estar disponible."
-        ]);
-
-        return response()->json(['message' => 'Reserva cancelada']);
-    }
-
-    return response()->json(['error' => 'El vehículo no está reservado'], 400);
-}
 }
