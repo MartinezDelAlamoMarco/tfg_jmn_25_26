@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 import { API_BASE_URL, SUPABASE_URL, SUPABASE_ANON_KEY, APP_NAME } from "../../config"; 
 import { 
   Send, ArrowLeft, Car, MessageSquare, Search, 
-  MoreVertical, Trash2, Ban, CheckCircle2, CalendarClock, Star 
+  MoreVertical, Trash2, Ban, CheckCircle2, CalendarClock, Star, X 
 } from 'lucide-react';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -56,6 +56,7 @@ const ChatInterface: React.FC = () => {
   const [reviewComment, setReviewComment] = useState('');
   const [loadingReview, setLoadingReview] = useState(false);
   const [hasReviewed, setHasReviewed] = useState(false);
+  const [dismissedReview, setDismissedReview] = useState(false); // NUEVO: Saber si cerró la ventana
 
   const activeChatData = conversations.find(c => c.id === activeChatId) || null;
   const isCurrentUserSeller = currentUserId !== null && activeChatData && String(currentUserId) === String(activeChatData.seller_id);
@@ -92,37 +93,31 @@ const ChatInterface: React.FC = () => {
     } catch (err) { console.error(err); } finally { setLoadingList(false); }
   };
 
-  // --- FUNCIÓN: MARCAR COMO LEÍDO (Con corrección de race condition) ---
+  // --- FUNCIÓN: MARCAR COMO LEÍDO ---
   const markAsRead = async (chatId: number) => {
-    // 1. Ocultamos el globo rojo localmente al instante para evitar el parpadeo
     setConversations(prev => prev.map(c => 
       c.id === chatId ? { ...c, unread_count: 0 } : c
     ));
     
     try {
-      // 2. Avisamos al servidor
       await axios.post(`${API_BASE_URL}/conversations/${chatId}/read`, {}, { 
         headers: { Authorization: `Bearer ${token}` } 
       });
-      
-      // 3. Cuando el servidor guarda, recargamos la lista para sincronizar con Supabase
       fetchConversations();
     } catch (err) {
       console.error("No se pudo marcar como leído", err);
     }
   };
 
-  // 2. Suscripción GLOBAL para NOTIFICACIONES (Globos rojos)
+  // 2. Suscripción GLOBAL para NOTIFICACIONES
   useEffect(() => {
     if (token) {
       fetchConversations();
 
-      // Escuchar cambios en la tabla de conversaciones
       const convChannel = supabase.channel('global-conv-changes')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'conversations' }, () => fetchConversations())
         .subscribe();
 
-      // Escuchar CUALQUIER mensaje nuevo para actualizar contadores en el listado
       const msgChannel = supabase.channel('global-msg-changes')
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => fetchConversations())
         .subscribe();
@@ -141,12 +136,12 @@ const ChatInterface: React.FC = () => {
     setRating(0);
     setReviewComment('');
     setHasReviewed(false);
+    setDismissedReview(false); // Reiniciamos por si entra a otro chat vendido
 
     axios.get(`${API_BASE_URL}/conversations/${activeChatId}`, { headers: { Authorization: `Bearer ${token}` } })
       .then(res => {
         setMessages(res.data.messages || []);
         setLoadingChat(false);
-        // MARCAMOS COMO LEÍDO AL ABRIR EL CHAT
         markAsRead(activeChatId);
       });
 
@@ -156,7 +151,6 @@ const ChatInterface: React.FC = () => {
           const incoming = payload.new as Message;
           setMessages(prev => prev.some(m => m.id === incoming.id) ? prev : [...prev, incoming]);
           
-          // Si nos llega un mensaje de la otra persona y estamos viendo el chat, se marca como leído
           if (String(incoming.sender_id) !== String(currentUserId)) {
             markAsRead(activeChatId);
           }
@@ -171,15 +165,26 @@ const ChatInterface: React.FC = () => {
 
   // --- ACCIONES ---
 
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSendMessage = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (!newMessage.trim() || !activeChatId) return;
-    const msg = newMessage;
-    setNewMessage('');
+    
+    const msgContent = newMessage;
+    setNewMessage(''); 
+    
     try {
-      const res = await axios.post(`${API_BASE_URL}/conversations/${activeChatId}/messages`, { content: msg }, { headers: { Authorization: `Bearer ${token}` } });
-      setMessages(prev => [...prev, res.data]);
-    } catch (err) { setNewMessage(msg); }
+      const res = await axios.post(`${API_BASE_URL}/conversations/${activeChatId}/messages`, { content: msgContent }, { headers: { Authorization: `Bearer ${token}` } });
+      setMessages(prev => prev.some(m => m.id === res.data.id) ? prev : [...prev, res.data]);
+    } catch (err) { 
+      setNewMessage(msgContent);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault(); 
+      handleSendMessage();
+    }
   };
 
   const handleDeleteChat = async () => {
@@ -233,12 +238,11 @@ const ChatInterface: React.FC = () => {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={18} />
             <input type="text" placeholder="Buscar..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-zinc-900 border border-zinc-700 rounded-xl outline-none text-sm" />
+              className="w-full pl-10 pr-4 py-2.5 bg-zinc-900 border border-zinc-700 rounded-xl outline-none text-sm focus:border-red-600 transition-colors" />
           </div>
         </div>
         
         <div className="flex-1 overflow-y-auto">
-          {/* USO DE LA VARIABLE loadingList PARA ARREGLAR EL ERROR TS6133 */}
           {loadingList ? (
             <div className="p-8 text-center text-zinc-500 text-sm animate-pulse italic">
               Cargando chats...
@@ -246,14 +250,12 @@ const ChatInterface: React.FC = () => {
           ) : (
             filteredChats.map((chat) => {
               const otherName = String(currentUserId) === String(chat.seller_id) ? chat.buyer_name : chat.seller_name;
-              
-              // TRUCO APLICADO: Si es el chat activo, forzamos a 0 el globo rojo
               const unread = chat.id === activeChatId ? 0 : (chat.unread_count || 0);
 
               return (
                 <div key={chat.id} onClick={() => setActiveChatId(chat.id)}
                   className={`p-4 border-b border-zinc-800/50 cursor-pointer flex gap-4 items-center ${chat.id === activeChatId ? 'bg-zinc-800/80 border-l-4 border-l-red-600' : 'hover:bg-zinc-900'}`}>
-                  <div className="h-12 w-12 rounded-full bg-zinc-800 flex items-center justify-center text-red-500 font-bold border border-zinc-700 shadow-sm relative">
+                  <div className="h-12 w-12 rounded-full bg-zinc-800 flex items-center justify-center text-red-500 font-bold border border-zinc-700 shadow-sm relative shrink-0">
                     {otherName?.charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -261,9 +263,9 @@ const ChatInterface: React.FC = () => {
                       <h3 className="font-bold truncate text-[15px]">{otherName}</h3>
                     </div>
                     <div className="flex justify-between items-center">
-                      <p className="text-xs text-zinc-400 truncate flex items-center gap-1"><Car size={12} className="text-red-500"/> {chat.brand_name} {chat.model_name}</p>
+                      <p className="text-xs text-zinc-400 truncate flex items-center gap-1"><Car size={12} className="text-red-500 shrink-0"/> {chat.brand_name} {chat.model_name}</p>
                       {unread > 0 && (
-                        <div className="bg-red-600 text-white text-[10px] font-bold h-5 w-5 rounded-full flex items-center justify-center shadow-lg animate-pulse">
+                        <div className="bg-red-600 text-white text-[10px] font-bold h-5 w-5 rounded-full flex items-center justify-center shadow-lg animate-pulse shrink-0 ml-2">
                           {unread}
                         </div>
                       )}
@@ -280,10 +282,10 @@ const ChatInterface: React.FC = () => {
       <div className={`${!activeChatId ? 'hidden md:flex' : 'flex'} flex-1 flex-col bg-[#0f0f0f] relative`}>
         {activeChatId && !loadingChat ? (
           <div className="flex flex-col h-full">
-            {/* CABECERA (INFO DEL VEHÍCULO RESTAURADA) */}
-            <div className="bg-[#1a1a1a] px-4 py-3 border-b border-zinc-800 flex items-center justify-between z-20 shadow-lg">
-              <div className="flex items-center gap-4 min-w-0">
-                <button onClick={() => setActiveChatId(null)} className="md:hidden text-zinc-400"><ArrowLeft size={24} /></button>
+            {/* CABECERA */}
+            <div className="bg-[#1a1a1a] px-3 md:px-4 py-3 border-b border-zinc-800 flex items-center justify-between z-20 shadow-md">
+              <div className="flex items-center gap-3 min-w-0">
+                <button onClick={() => setActiveChatId(null)} className="md:hidden text-zinc-400 p-1 -ml-1 hover:text-white transition-colors"><ArrowLeft size={22} /></button>
                 <div className="h-10 w-10 shrink-0 rounded-full bg-red-600 flex items-center justify-center font-bold text-white shadow-md">
                   {(String(currentUserId) === String(activeChatData?.seller_id) ? activeChatData?.buyer_name : activeChatData?.seller_name)?.charAt(0).toUpperCase()}
                 </div>
@@ -293,12 +295,12 @@ const ChatInterface: React.FC = () => {
                   </h2>
                   <p className="text-[11px] text-zinc-400 truncate mt-0.5">
                     Negociando por: <span className="text-zinc-200 font-bold">{activeChatData?.brand_name} {activeChatData?.model_name}</span> 
-                    <span className="ml-2 text-red-500 font-black">{activeChatData?.advertisement_price}€</span>
+                    <span className="ml-1 text-red-500 font-black">{activeChatData?.advertisement_price}€</span>
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 md:gap-2 shrink-0">
                 <button onClick={handleDeleteChat} className="p-2 text-zinc-500 hover:text-red-500 transition" title="Borrar Chat">
                   <Trash2 size={20} />
                 </button>
@@ -339,8 +341,8 @@ const ChatInterface: React.FC = () => {
 
                 return (
                   <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'} w-full animate-in slide-in-from-bottom-2 duration-300`}>
-                    <div className={`max-w-[75%] px-4 py-2 rounded-2xl ${isMe ? 'bg-red-600 text-white rounded-tr-sm shadow-lg shadow-red-900/20' : 'bg-zinc-800 text-zinc-100 rounded-tl-sm border border-zinc-700 shadow-md'}`}>
-                      <p className="text-[14px] leading-relaxed whitespace-pre-wrap font-medium">{msg.content}</p>
+                    <div className={`max-w-[85%] md:max-w-[75%] px-4 py-2 rounded-2xl ${isMe ? 'bg-red-600 text-white rounded-tr-sm shadow-md' : 'bg-zinc-800 text-zinc-100 rounded-tl-sm border border-zinc-700 shadow-md'}`}>
+                      <p className="text-[14px] leading-relaxed whitespace-pre-wrap font-medium wrap-break-words">{msg.content}</p>
                       <p className="text-[9px] mt-1 text-right opacity-50 font-bold">{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                     </div>
                   </div>
@@ -348,11 +350,20 @@ const ChatInterface: React.FC = () => {
               })}
             </div>
 
-            {/* VALORACIÓN */}
-            {activeChatData?.chat_status === 'sold' && String(currentUserId) === String(activeChatData?.buyer_id) && !hasReviewed && (
-              <div className="mx-4 mb-4 p-6 bg-zinc-800 border-2 border-yellow-600/30 rounded-2xl text-center animate-in zoom-in shadow-2xl">
+            {/* VALORACIÓN (Con botón de cerrar "X") */}
+            {activeChatData?.chat_status === 'sold' && String(currentUserId) === String(activeChatData?.buyer_id) && !hasReviewed && !dismissedReview && (
+              <div className="mx-4 mb-4 p-6 bg-zinc-800 border-2 border-yellow-600/30 rounded-2xl text-center animate-in zoom-in shadow-2xl relative">
+                
+                <button 
+                  onClick={() => setDismissedReview(true)} 
+                  className="absolute top-4 right-4 text-zinc-500 hover:text-white transition-colors"
+                  title="Cerrar sin valorar"
+                >
+                  <X size={20} />
+                </button>
+
                 <h3 className="text-lg font-black uppercase italic mb-2 text-white">¡Compra finalizada!</h3>
-                <p className="text-zinc-400 text-xs mb-4 uppercase tracking-widest">Valora a {activeChatData?.seller_name} para ayudar a la comunidad</p>
+                <p className="text-zinc-400 text-xs mb-4 uppercase tracking-widest mr-6 ml-6">Valora a {activeChatData?.seller_name} para ayudar a la comunidad</p>
                 <div className="flex justify-center gap-3 mb-5">
                   {[1, 2, 3, 4, 5].map(s => (
                     <button key={s} onClick={() => setRating(s)} className={`transition-transform active:scale-90 ${rating >= s ? 'text-yellow-500 drop-shadow-[0_0_8px_rgba(234,179,8,0.5)]' : 'text-zinc-700'}`}>
@@ -368,7 +379,7 @@ const ChatInterface: React.FC = () => {
             )}
 
             {/* PIE DE CHAT */}
-            <div className="p-3 bg-[#1a1a1a] border-t border-zinc-800">
+            <div className="p-3 md:p-4 bg-[#1a1a1a] border-t border-zinc-800 pb-safe">
               {activeChatData?.chat_status === 'disabled' ? (
                 <div className="flex justify-center">
                   <button onClick={handleDeleteChat} className="bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-3.5 px-8 rounded-xl border border-zinc-700 transition w-full max-w-md shadow-lg italic tracking-wide uppercase text-xs">
@@ -376,19 +387,27 @@ const ChatInterface: React.FC = () => {
                   </button>
                 </div>
               ) : (
-                <form onSubmit={handleSendMessage} className="flex gap-2 items-end">
-                  <textarea value={newMessage} onChange={e => setNewMessage(e.target.value)} placeholder="Escribe tu mensaje..." rows={1}
-                    className="flex-1 bg-zinc-900 border border-zinc-700 rounded-2xl px-4 py-3.5 outline-none text-sm resize-none focus:border-red-600 transition shadow-inner" />
-                  <button type="submit" disabled={!newMessage.trim()} className="bg-red-600 h-50px w-50px rounded-full flex items-center justify-center shrink-0 hover:bg-red-500 transition disabled:opacity-50 shadow-xl">
-                    <Send size={22} className="ml-1" />
+                <form onSubmit={handleSendMessage} className="flex gap-2 md:gap-3 items-end max-w-4xl mx-auto w-full">
+                  <textarea 
+                    value={newMessage} 
+                    onChange={e => setNewMessage(e.target.value)} 
+                    onKeyDown={handleKeyDown}
+                    placeholder="Escribe tu mensaje..." 
+                    rows={1}
+                    style={{ minHeight: '46px', maxHeight: '120px' }}
+                    className="flex-1 bg-zinc-900 border border-zinc-700 rounded-2xl px-4 py-3 outline-none text-sm resize-none focus:border-red-600 transition shadow-inner" 
+                  />
+                  <button type="submit" disabled={!newMessage.trim()} className="bg-red-600 h-46px w-46px rounded-full flex items-center justify-center shrink-0 hover:bg-red-500 transition disabled:opacity-50 shadow-md">
+                    {/* El translate-x-[2px] compensa la forma del icono para que se vea perfectamente centrado */}
+                    <Send size={18} className="translate-x-2px" />
                   </button>
                 </form>
               )}
             </div>
           </div>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-zinc-500 p-8 text-center">
-            <div className="h-24 w-24 bg-zinc-900 rounded-full flex items-center justify-center mb-6 border border-zinc-800 shadow-2xl">
+          <div className="flex-1 flex flex-col items-center justify-center text-zinc-500 p-8 text-center bg-[#0a0a0a]">
+            <div className="h-24 w-24 bg-zinc-900/50 rounded-full flex items-center justify-center mb-6 border border-zinc-800/50 shadow-xl">
               <MessageSquare size={40} className="text-zinc-700" />
             </div>
             <h3 className="font-black uppercase italic text-zinc-400 text-xl tracking-tighter">Buzón de Negociación</h3>
