@@ -78,7 +78,7 @@ class RentController extends Controller
                 'conversation_id' => $renterConv->id,
                 'sender_id'       => self::SYSTEM_USER_ID,
                 'content'         =>
-                    "✅ ¡Reserva de alquiler confirmada!\n\n" .
+                "✅ ¡Reserva de alquiler confirmada!\n\n" .
                     "🚗 Vehículo: {$vehicleName}\n" .
                     "📅 Recogida: {$fechaInicio}\n" .
                     "📅 Devolución: {$fechaFin}\n" .
@@ -86,20 +86,22 @@ class RentController extends Controller
                     "Contacta con el propietario para concretar el lugar y hora de entrega.",
             ]);
 
-            // Deshabilitar y avisar a TODOS los demás chats de este anuncio
+            Conversation::where('advertisement_id', $ad->id)
+                ->where('id', '!=', $renterConv->id)
+                ->update(['status' => 'disabled']);
+
+            // 2. Obtenemos las conversaciones para enviar los mensajes de notificación
             $otherConvs = Conversation::where('advertisement_id', $ad->id)
                 ->where('id', '!=', $renterConv->id)
                 ->get();
 
             foreach ($otherConvs as $other) {
-                $other->status = 'disabled';
-                $other->save();
-
+                // Ya no necesitas llamar a $other->save() aquí, ya se actualizaron arriba.
                 Message::create([
                     'conversation_id' => $other->id,
                     'sender_id'       => self::SYSTEM_USER_ID,
                     'content'         =>
-                        "⚠️ Anuncio no disponible.\n\n" .
+                    "⚠️ Anuncio no disponible.\n\n" .
                         "Este vehículo ya ha sido reservado por otro usuario. " .
                         "El chat ha sido deshabilitado.",
                 ]);
@@ -119,5 +121,47 @@ class RentController extends Controller
             ->get();
 
         return response()->json($rents);
+    }
+
+    /**
+     * Devuelve los rangos de fechas ya reservados para un anuncio.
+     */
+    public function getBookedDates(int $advertisement_id)
+    {
+        $booked = Rent::where('advertisement_id', $advertisement_id)
+            ->where('end_date', '>=', now()->format('Y-m-d'))
+            ->select('start_date', 'end_date')
+            ->get();
+
+        return response()->json($booked);
+    }
+
+    /**
+     * Obtener las reservas activas de un cliente específico para un anuncio
+     */
+    public function getChatRents(int $adId, int $renterId)
+    {
+        $rents = Rent::where('advertisement_id', $adId)
+            ->where('renter_id', $renterId)
+            ->where('end_date', '>=', now()->format('Y-m-d'))
+            ->orderBy('start_date', 'asc')
+            ->get();
+
+        return response()->json($rents);
+    }
+
+    /**
+     * Cancelar una reserva específica
+     */
+    public function destroy(int $id)
+    {
+        $rent = Rent::findOrFail($id);
+
+        // Opcional: Verificar que el que borra es el dueño del coche o el admin
+        // if ($rent->advertisement->vehicle->owner_id !== Auth::id()) { ... }
+
+        $rent->delete();
+
+        return response()->json(['message' => 'Reserva cancelada correctamente']);
     }
 }
