@@ -12,7 +12,7 @@ interface Advertisement {
   description: string;
   description_en?: string;
   views: number;
-  status: string; // <-- AÑADIDO: Para 'disponible', 'reservado', 'vendido'
+  status: string;
   state?: { name: string };
   province?: { name: string };
   images: { image_url: string; is_main: boolean }[];
@@ -48,10 +48,11 @@ const VehicleDetail = () => {
   const token = localStorage.getItem("auth_token");
   const userRole = localStorage.getItem("user_role");
   
-  // ESTADO ROBUSTO PARA EL ID DEL USUARIO
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
-  // 1. OBTENER EL ID DEL USUARIO ACTUAL (A PRUEBA DE FALLOS)
+  // --- NUEVO ESTADO: Guardamos el perfil real del vendedor ---
+  const [ownerProfile, setOwnerProfile] = useState<any>(null);
+
   useEffect(() => {
     let storedId = localStorage.getItem('user_id');
     
@@ -76,11 +77,9 @@ const VehicleDetail = () => {
     }
   }, [token]);
 
-  // Extraemos el propietario de forma segura
   const owner = (advertisement as any)?.user || (advertisement as any)?.seller || (advertisement as any)?.vehicle?.owner;
   const ownerId = advertisement?.vehicle?.owner_id || (advertisement as any)?.user_id || owner?.id;
 
-  // COMPROBACIÓN ESTRICTA COMO TEXTO
   const isOwner = currentUserId !== null && ownerId !== undefined && String(currentUserId) === String(ownerId);
 
   useEffect(() => {
@@ -126,6 +125,15 @@ const VehicleDetail = () => {
     window.addEventListener("favorites:updated", onFavsUpdated as EventListener);
     return () => window.removeEventListener("favorites:updated", onFavsUpdated as EventListener);
   }, [id, token, t]);
+
+  // --- NUEVA PETICIÓN: Cargamos las estrellas reales del usuario ---
+  useEffect(() => {
+    if (ownerId) {
+      axios.get(`${API_BASE_URL}/users/${ownerId}`)
+        .then(res => setOwnerProfile(res.data))
+        .catch(err => console.error("Error al obtener el perfil del vendedor", err));
+    }
+  }, [ownerId]);
 
   const handleDeleteAd = async () => {
     if (window.confirm(t('my_ads.delete_confirm', "⚠️ ¿Estás seguro de que quieres ELIMINAR este anuncio definitivamente?"))) {
@@ -213,7 +221,6 @@ const VehicleDetail = () => {
           <div className="space-y-4">
             <div className="aspect-video bg-zinc-800 rounded-2xl border border-zinc-700 flex items-center justify-center shadow-2xl overflow-hidden relative">
               
-              {/* --- ETIQUETAS DE ESTADO (NUEVO) --- */}
               {advertisement.status === 'reservado' && (
                 <div className="absolute top-4 left-4 z-10 bg-orange-600 text-white text-[10px] font-black px-3 py-1 rounded shadow-lg uppercase tracking-widest animate-pulse">
                   ⚠️ Reservado
@@ -259,10 +266,14 @@ const VehicleDetail = () => {
                   </div>
                   <div className="flex-1">
                     <div className="font-bold text-lg">{owner.name || 'Vendedor'}</div>
-                    <div className="flex items-center gap-2 text-sm text-zinc-400 mt-1">
-                      <StarRating value={Math.round(owner.average_rating || 0)} size={14} />
-                      <span>{Number(owner.average_rating || 0).toFixed(1)}</span>
-                    </div>
+                    {/* --- MOSTRANDO LAS ESTRELLAS REALES --- */}
+                    {ownerProfile && ownerProfile.average_rating !== undefined && (
+                      <div className="flex items-center gap-2 text-sm text-zinc-400 mt-1">
+                        <StarRating value={Math.round(ownerProfile.average_rating || 0)} size={14} />
+                        <span className="text-white font-bold">{Number(ownerProfile.average_rating || 0).toFixed(1)}</span>
+                        <span>({ownerProfile.reviews_count || 0})</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </Link>
@@ -339,7 +350,6 @@ const VehicleDetail = () => {
           </div>
         </div>
 
-        {/* Descripción y Ficha Técnica */}
         <div className="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 bg-zinc-800 p-8 rounded-2xl border border-zinc-700 shadow-xl">
             <h2 className="text-2xl font-black mb-6 border-b border-zinc-700 pb-2 uppercase italic">Descripción</h2>

@@ -88,6 +88,10 @@ Route::middleware('auth:sanctum')->group(function () {
     // Lógica de negocio de la transacción
     Route::post('/conversations/{id}/reserve', [ChatController::class, 'reserve']);
     Route::post('/conversations/{id}/cancel-reserve', [ChatController::class, 'cancelReserve']);
+    Route::post('/conversations/{id}/extend-reserve', [ChatController::class, 'extendReserve']);
+    Route::get('/advertisements/{id}/booked-dates', [RentController::class, 'getBookedDates']);
+    Route::get('/conversations/{adId}/{renterId}/rents', [RentController::class, 'getChatRents']);
+    Route::delete('/rents/{id}', [RentController::class, 'destroy']);
     Route::post('/conversations/{id}/sell', [ChatController::class, 'confirmSale']);
 
     // 6. ALQUILERES

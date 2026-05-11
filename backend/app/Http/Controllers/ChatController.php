@@ -70,8 +70,6 @@ class ChatController extends Controller
         }
 
         // ── BLOQUEO PARA ANUNCIOS DE ALQUILER YA RESERVADOS ──
-        // Si el anuncio es de alquiler (is_rented = true) y ya tiene un
-        // alquiler activo, solo el arrendatario puede iniciar/recuperar chat.
         if ($ad->is_rented) {
             $activeRent = Rent::where('advertisement_id', $ad->id)
                 ->where('end_date', '>=', Carbon::today())
@@ -214,8 +212,9 @@ class ChatController extends Controller
         $buyerConvView  = ConversationView::find($id);
         $buyerName      = $buyerConvView?->buyer_name ?? 'el comprador';
 
-        // 1. Actualizar el anuncio
+        // 1. Actualizar el anuncio (SINCRONIZANDO ad_state_id Y status)
         $ad->ad_state_id       = 2; // Reservado
+        $ad->status            = 'reservado';
         $ad->reserved_buyer_id = $conversation->buyer_id;
         $ad->reserved_until    = $reservedUntil;
         $ad->save();
@@ -232,13 +231,13 @@ class ChatController extends Controller
             'conversation_id' => $id,
             'sender_id'       => self::SYSTEM_USER_ID,
             'content'         =>
-                "🎉 ¡Reserva confirmada!\n\n" .
+            "🎉 ¡Reserva confirmada!\n\n" .
                 "El vendedor ha reservado este vehículo para ti.\n\n" .
                 "🚗 Vehículo: {$vehicleName}\n" .
                 "👤 Reservado para: {$buyerName}\n" .
                 "📅 Fecha de reserva: {$fechaReserva}\n" .
                 "⏳ Caduca el: {$fechaExpira}\n\n" .
-                "Cuando hayáis completado la transacción, ve a la ficha del anuncio y pulsa «He comprado este coche» para cerrarla.",
+                "Cuando hayáis completado la transacción, el vendedor pulsará «Confirmar venta final» en este menú para cerrar el trato.",
         ]);
 
         // 4. Avisar brevemente a los OTROS compradores con chat activo
@@ -252,7 +251,7 @@ class ChatController extends Controller
                 'conversation_id' => $other->id,
                 'sender_id'       => self::SYSTEM_USER_ID,
                 'content'         =>
-                    "⚠️ Anuncio reservado.\n\n" .
+                "⚠️ Anuncio reservado.\n\n" .
                     "Este vehículo ha sido reservado para otro usuario. " .
                     "Si la compra no se completa antes del {$fechaExpira}, volverá a estar disponible.",
             ]);
@@ -279,8 +278,9 @@ class ChatController extends Controller
             return response()->json(['error' => 'El anuncio no está reservado'], 400);
         }
 
-        // Limpiar reserva
+        // Limpiar reserva (SINCRONIZANDO ad_state_id Y status)
         $ad->ad_state_id       = 1; // Disponible
+        $ad->status            = 'disponible';
         $ad->reserved_buyer_id = null;
         $ad->reserved_until    = null;
         $ad->save();
@@ -292,7 +292,7 @@ class ChatController extends Controller
             'conversation_id' => $id,
             'sender_id'       => self::SYSTEM_USER_ID,
             'content'         =>
-                "❌ Reserva cancelada.\n\n" .
+            "❌ Reserva cancelada.\n\n" .
                 "El vendedor ha cancelado la reserva. El vehículo vuelve a estar disponible para todos.",
         ]);
 
@@ -313,6 +313,45 @@ class ChatController extends Controller
     }
 
     /**
+     * El VENDEDOR amplía el tiempo de reserva.
+     */
+    public function extendReserve(Request $request, int $id)
+    {
+        $request->validate([
+            'reserved_until' => 'required|date|after:now',
+        ]);
+
+        $userId = Auth::id();
+        $conversation = Conversation::findOrFail($id);
+
+        if ($conversation->seller_id !== $userId) {
+            return response()->json(['error' => 'No autorizado'], 403);
+        }
+
+        $ad = Advertisement::findOrFail($conversation->advertisement_id);
+
+        if ($ad->ad_state_id !== 2) {
+            return response()->json(['error' => 'El anuncio no está reservado'], 400);
+        }
+
+        // Actualizamos la fecha
+        $newDate = Carbon::parse($request->reserved_until);
+        $ad->reserved_until = $newDate;
+        $ad->save();
+
+        // Avisamos en el chat de la ampliación
+        $fechaExpira = $newDate->format('d/m/Y \a \l\a\s H:i');
+
+        Message::create([
+            'conversation_id' => $id,
+            'sender_id'       => self::SYSTEM_USER_ID,
+            'content'         => "⏳ ¡Tiempo de reserva ampliado!\n\nEl vendedor ha extendido la reserva de este vehículo.\n\nNueva fecha límite: {$fechaExpira}.",
+        ]);
+
+        return response()->json(['message' => 'Reserva ampliada correctamente']);
+    }
+
+    /**
      * El VENDEDOR confirma la venta desde el chat (flujo alternativo).
      */
     public function confirmSale(int $id)
@@ -327,7 +366,9 @@ class ChatController extends Controller
         $ad = Advertisement::findOrFail($conversation->advertisement_id);
 
         $ad->ad_state_id       = 3; // Vendido
-        $ad->reserved_buyer_id = null;
+        $ad->status            = 'vendido';
+        // --- AQUÍ ESTÁ EL CAMBIO: Mantenemos el ID del comprador para el registro ---
+        $ad->reserved_buyer_id = $conversation->buyer_id;
         $ad->reserved_until    = null;
         $ad->save();
 
@@ -340,15 +381,17 @@ class ChatController extends Controller
             'content'         => "🏁 ¡Venta confirmada! El vendedor ha cerrado la operación. ¡Que lo disfrutes!",
         ]);
 
-        // Deshabilitar el resto de chats
+        Conversation::where('advertisement_id', $ad->id)
+            ->where('id', '!=', $id)
+            ->update(['status' => 'disabled']);
+
+        // Una vez hecho el update, si quieres mandar los mensajes de sistema, 
+        // entonces sí haces el get() solo para los mensajes:
         $others = Conversation::where('advertisement_id', $ad->id)
             ->where('id', '!=', $id)
             ->get();
 
         foreach ($others as $other) {
-            $other->status = 'disabled';
-            $other->save();
-
             Message::create([
                 'conversation_id' => $other->id,
                 'sender_id'       => self::SYSTEM_USER_ID,
