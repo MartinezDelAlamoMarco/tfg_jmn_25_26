@@ -1,0 +1,11 @@
+#!/usr/bin/env sh
+
+echo "Checking frontend..."
+cd frontend
+npm run check || exit 1
+
+#echo "Checking backend..."
+#cd ../backend
+#php artisan test || exit 1
+
+echo "All checks passed!"
