@@ -3,7 +3,7 @@ import axios from "axios";
 import { API_BASE_URL, APP_NAME } from "../../config";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Funnel, FunnelPlus, ListFilter, ListFilterPlus } from "lucide-react";
+import { ListFilter, ListFilterPlus } from "lucide-react";
 
 interface Advertisement {
   id: number;
