@@ -5,12 +5,13 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\MyAdvertisementsController;
 use App\Http\Controllers\MasterDataController;
-use App\Http\Controllers\ReportController; 
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AdminAdController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\RentController;  // ← NUEVO
 use Illuminate\Support\Facades\Route;
 
 // --- RUTAS PÚBLICAS ---
@@ -40,7 +41,7 @@ Route::get('/advertisement/{id}', [AdvertisementController::class, 'show']);
 // Perfiles públicos y sus valoraciones
 Route::get('/users/{id}', [UserController::class, 'show']);
 Route::get('/users/{id}/advertisements', [UserController::class, 'advertisements']);
-Route::get('/users/{id}/reviews', [ReviewController::class, 'index']); // Ver las estrellas de alguien
+Route::get('/users/{id}/reviews', [ReviewController::class, 'index']);
 
 // Reportes (Tipos)
 Route::get('/report-types', [ReportController::class, 'getTypes']);
@@ -61,6 +62,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/my-advertisements/{id}', [MyAdvertisementsController::class, 'update']);
     Route::delete('/my-advertisements/{id}', [MyAdvertisementsController::class, 'destroy']);
 
+    // Confirmación de compra por parte del comprador (desde VehicleDetail)
+    Route::post('/advertisements/{id}/buyer-confirm', [AdvertisementController::class, 'buyerConfirm']);
+
     // 3. Favoritos y Reportes
     Route::get('/favorites', [AdvertisementController::class, 'favorites']);
     Route::post('/favorites/{id}', [AdvertisementController::class, 'addFavorite']);
@@ -68,9 +72,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/reports', [ReportController::class, 'store']);
 
     // 4. VALORACIONES (REVIEWS)
-    // Esta es la ruta que usa ChatInterface.tsx
-    Route::post('/reviews', [ReviewController::class, 'store']); 
-    // Por si el perfil necesita saber si puede mostrar el botón de valorar
+    Route::post('/reviews', [ReviewController::class, 'store']);
     Route::get('/users/{id}/can-review', [ReviewController::class, 'canReview']);
 
     // 5. CHAT EN TIEMPO REAL Y GESTIÓN DE VENTA
@@ -82,13 +84,17 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Marcar mensajes como leídos
     Route::post('/conversations/{id}/read', [ChatController::class, 'markAsRead']);
-    
+
     // Lógica de negocio de la transacción
     Route::post('/conversations/{id}/reserve', [ChatController::class, 'reserve']);
     Route::post('/conversations/{id}/cancel-reserve', [ChatController::class, 'cancelReserve']);
     Route::post('/conversations/{id}/sell', [ChatController::class, 'confirmSale']);
 
-    // 6. PANEL DE ADMINISTRACIÓN (Solo Admin)
+    // 6. ALQUILERES
+    Route::post('/rents', [RentController::class, 'store']);
+    Route::get('/my-rents', [RentController::class, 'myRents']);
+
+    // 7. PANEL DE ADMINISTRACIÓN (Solo Admin)
     Route::get('/admin/reports-priority', [ReportController::class, 'getPriorityReports']);
     Route::get('/admin/users', [AdminUserController::class, 'index']);
     Route::patch('/admin/users/{id}/role', [AdminUserController::class, 'updateRole']);
@@ -97,7 +103,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/admin/ads/{id}/state', [AdminAdController::class, 'updateState']);
     Route::delete('/advertisement/{id}', [AdvertisementController::class, 'destroy']);
 });
-
 
 // Ping de salud
 Route::get('/ping', function () {
