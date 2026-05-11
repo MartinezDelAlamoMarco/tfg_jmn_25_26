@@ -11,7 +11,7 @@ use App\Services\GoogleDriveService;
 class AdminUserController extends Controller
 {
     // Cuenta protegida para el TFG
-    const SUPER_ADMIN_EMAIL = 'admin@redlinemotors.com';
+    const SUPER_ADMIN_EMAIL = 'admin@nujamamotors.com';
     
     protected GoogleDriveService $driveService;
 

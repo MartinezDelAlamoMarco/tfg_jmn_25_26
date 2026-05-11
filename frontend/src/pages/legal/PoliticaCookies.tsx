@@ -12,7 +12,7 @@ import {
   Scale, 
   Mail 
 } from "lucide-react";
-import { APP_NAME } from "../../config";
+import { APP_NAME, SUPER_ADMIN_EMAIL } from "../../config";
 
 export default function PoliticaCookies() {
   const { t } = useTranslation();
@@ -106,7 +106,7 @@ export default function PoliticaCookies() {
             </div>
           </article>
 
-          {/* 5. Cookies Usadas (Adaptado a TFG Redline Motors) */}
+          {/* 5. Cookies Usadas (Adaptado a TFG Nujama Motors) */}
           <article>
             <div className="flex items-center gap-3 mb-4">
               <List className="text-red-600" size={24} />
@@ -211,7 +211,7 @@ export default function PoliticaCookies() {
               <p className="text-white font-bold">{APP_NAME} S.L.</p>
               <p className="text-zinc-400 mt-2">Rivas-Vaciamadrid, Madrid, España</p>
               <p className="text-zinc-400">Web: https://tfg-frontend-h7hs.onrender.com</p>
-              <p className="text-zinc-400">Email: admin@redlinemotors.com</p>
+              <p className="text-zinc-400">Email: {SUPER_ADMIN_EMAIL}</p>
             </div>
           </article>
 

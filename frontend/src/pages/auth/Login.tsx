@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
-import { API_BASE_URL } from "../../config";
+import { API_BASE_URL, APP_NAME } from "../../config";
 import LoadingScreen from "../../components/LoadingScreen"; // Importamos tu nuevo componente
 import { Eye, EyeOff } from "lucide-react";
 import { useTranslation } from "react-i18next"; // <-- IMPRESCINDIBLE
 
 const Login = () => {
   const { t } = useTranslation(); // <-- IMPRESCINDIBLE
+  const autoPart = APP_NAME.slice(0, 6);
+  const marketPart = APP_NAME.slice(6);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoggingIn, setIsLoggingIn] = useState(false); // Estado para la ruletita
@@ -106,7 +109,8 @@ const Login = () => {
         <div className="bg-zinc-800 rounded-2xl shadow-2xl p-8 border border-zinc-700">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-white mb-2 italic uppercase tracking-tighter">
-              Redline <span className="text-red-600">Motors</span>
+              {autoPart}
+            <span className="text-red-700">{marketPart}</span>
             </h1>
             <p className="text-zinc-400">{t('login.sign_in_title', "Inicia sesión en tu cuenta")}</p> {/* <-- MODIFICADO CON t() */}
           </div>

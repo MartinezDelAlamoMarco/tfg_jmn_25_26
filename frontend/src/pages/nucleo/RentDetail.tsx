@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { Link, useParams, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { API_BASE_URL } from "../../config";
 import { useTranslation } from "react-i18next";
@@ -43,6 +43,7 @@ const RentDetail = () => {
   const isEnglish = i18n.language.startsWith("en");
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [advertisement, setAdvertisement] = useState<Advertisement | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -200,7 +201,7 @@ const RentDetail = () => {
             </div>
 
             {ownerDetails && (
-              <Link to={`/usuario/${ownerId}`} className="mt-4 block bg-zinc-800 p-4 rounded-lg border border-zinc-700 hover:bg-zinc-700 transition-all shadow-lg">
+              <Link to={`/usuario/${ownerId}`} state={{ from: location.pathname + location.search }} className="mt-4 block bg-zinc-800 p-4 rounded-lg border border-zinc-700 hover:bg-zinc-700 transition-all shadow-lg">
                 <div className="flex items-center gap-4">
                   <div className="h-14 w-14 rounded-full bg-zinc-900 flex items-center justify-center text-xl font-bold uppercase overflow-hidden">
                     {ownerDetails.avatar_url ? <img src={ownerDetails.avatar_url} className="w-full h-full object-cover" /> : <span>{ownerDetails.name ? ownerDetails.name[0] : 'U'}</span>}
@@ -226,7 +227,7 @@ const RentDetail = () => {
               </div>
               <h1 className="text-4xl font-black mb-2 uppercase tracking-tight">{advertisement?.vehicle?.model?.brand?.name} {advertisement?.vehicle?.model?.name}</h1>
               <p className="text-zinc-400 text-lg mb-6 flex items-center"><span className="mr-2">📍</span> {advertisement?.province?.name || "España"}</p>
-              <div className="flex items-end mb-8 gap-2"><div className="text-5xl font-black text-white">{Number(advertisement?.price).toLocaleString("es-ES")} <span className="text-red-700">€</span></div><span className="text-zinc-500 font-bold uppercase italic pb-1">/ día</span></div>
+              <div className="flex items-end mb-8 gap-2"><div className="text-5xl font-black text-white">{Number(advertisement?.price).toLocaleString("es-ES")} €</div><span className="text-zinc-500 font-bold uppercase italic pb-1">/ día</span></div>
 
               {userRole === 'admin' ? (
                   <div className="mt-4 bg-red-950/30 p-6 rounded-xl border border-red-900 mb-8 text-center">
@@ -311,26 +312,81 @@ const RentDetail = () => {
       </div>
 
       <style>{`
-        .custom-rdp { --rdp-accent-color: #b91c1c; --rdp-background-color: #b91c1c; color: #fff; }
-        .rdp-day_range_start, .rdp-day_range_end { background-color: #b91c1c !important; color: white !important; border-radius: 50% !important; }
-        
-        /* EL ARREGLO DE LOS NÚMEROS DEL MEDIO */
-        .rdp-day_range_middle { 
-          background-color: rgba(185, 28, 28, 0.15) !important; 
-          color: #b91c1c !important; 
-          border-radius: 0 !important;
-        }
-        /* Forzamos que el texto sea rojo oscuro en los días seleccionados que no son los extremos */
-        .rdp-day_selected:not(.rdp-day_range_start):not(.rdp-day_range_end) {
-          color: #b91c1c !important;
-          font-weight: 800 !important;
-        }
+  .custom-rdp {
+    --rdp-accent-color: #b91c1c;
+    --rdp-accent-background-color: rgba(185, 28, 28, 0.18);
+    
+    --rdp-day_button-border-radius: 12px;
 
-        .rdp-button:hover:not([disabled]):not(.rdp-day_selected) { background-color: #3f3f46 !important; }
-        .rdp-day_disabled { opacity: 0.15; text-decoration: line-through; pointer-events: none; }
-        .rdp-nav_button { color: #ef4444; }
-        .rdp-head_cell { color: #71717a; font-size: 0.7rem; font-weight: 900; text-transform: uppercase; }
-      `}</style>
+    color: white;
+  }
+
+  /* DÍAS NORMALES */
+  .custom-rdp .rdp-day_button {
+    color: white;
+    transition: all 0.2s ease;
+  }
+
+  /* HOVER */
+  .custom-rdp .rdp-day_button:hover:not([disabled]):not(.rdp-selected) {
+    background-color: #3f3f46;
+    transform: scale(1.05);
+  }
+
+  /* DÍAS SELECCIONADOS */
+  .custom-rdp .rdp-selected .rdp-day_button {
+    background-color: #b91c1c !important;
+    color: white !important;
+    font-weight: 800;
+  }
+
+  /* DÍAS EN MEDIO DEL RANGO */
+  .custom-rdp .rdp-range_middle {
+    background: rgba(185, 28, 28, 0.15) !important;
+  }
+
+  .custom-rdp .rdp-range_middle .rdp-day_button {
+    background: transparent !important;
+    color: #fca5a5 !important;
+    font-weight: 700;
+  }
+
+  /* INICIO Y FIN DEL RANGO */
+  .custom-rdp .rdp-range_start .rdp-day_button,
+  .custom-rdp .rdp-range_end .rdp-day_button {
+    background-color: #b91c1c !important;
+    color: white !important;
+    border-radius: 9999px !important;
+  }
+
+  /* DÍAS DESHABILITADOS */
+  .custom-rdp .rdp-disabled {
+    opacity: 0.2;
+    text-decoration: line-through;
+    pointer-events: none;
+  }
+
+  /* CABECERA */
+  .custom-rdp .rdp-weekday {
+    color: #71717a;
+    font-size: 0.7rem;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+
+  /* BOTONES NAVEGACIÓN */
+  .custom-rdp .rdp-chevron {
+    fill: #ef4444;
+  }
+
+  /* MES/TÍTULO */
+  .custom-rdp .rdp-caption_label {
+    color: white;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+`}</style>
     </div>
   );
 };

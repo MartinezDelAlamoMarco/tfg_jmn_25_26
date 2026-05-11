@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { API_BASE_URL } from "../../config";
 import { Heart, MessageCircle } from "lucide-react";
@@ -38,6 +38,7 @@ const VehicleDetail = () => {
 
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const [advertisement, setAdvertisement] = useState<Advertisement | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -253,9 +254,10 @@ const VehicleDetail = () => {
 
             {owner && (
               <Link
-                to={`/usuario/${owner.id}`}
-                className="mt-4 block bg-zinc-800 p-4 rounded-lg border border-zinc-700 hover:bg-zinc-700 transition-all"
-              >
+                  to={`/usuario/${owner.id}`}
+                  state={{ from: location.pathname + location.search }}
+                  className="mt-4 block bg-zinc-800 p-4 rounded-lg border border-zinc-700 hover:bg-zinc-700 transition-all"
+                >
                 <div className="flex items-center gap-4">
                   <div className="h-14 w-14 rounded-full bg-zinc-900 flex items-center justify-center text-xl font-bold uppercase overflow-hidden">
                     {owner.avatar_url ? (
@@ -296,7 +298,7 @@ const VehicleDetail = () => {
               </h1>
               
               <div className="text-5xl font-black text-white mb-8 mt-4">
-                {Number(advertisement.price).toLocaleString("es-ES")} <span className="text-red-700">€</span>
+                {Number(advertisement.price).toLocaleString("es-ES")} €
               </div>
 
               <div className="grid grid-cols-2 gap-4 mb-8">

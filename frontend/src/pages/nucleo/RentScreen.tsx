@@ -3,6 +3,7 @@ import axios from "axios";
 import { API_BASE_URL } from "../../config";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next"; // <-- AÑADIDO IMPORT DE TRADUCCIÓN
+import { ListFilter, ListFilterPlus } from "lucide-react";
 
 interface Advertisement {
   id: number;
@@ -189,67 +190,98 @@ const RentScreen = () => {
         {/* --- SECCIÓN DE FILTROS --- */}
         <div className="bg-zinc-800 rounded-2xl p-6 mb-12 border border-zinc-700 shadow-2xl">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold">{t('filters.search_filters', 'Filtros de Búsqueda')}</h2> {/* <-- MODIFICADO CON t() */}
-            <div className="space-x-4">
+            <h2 className="text-xl font-bold">{t('filters.search_filters', 'Filtros de Búsqueda')}</h2>
+            <div className="flex items-center space-x-4">
               <button
                 onClick={clearFilters}
-                className="text-sm text-zinc-400 hover:text-white underline"
+                className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-white underline"
               >
-                {t('filters.clear', 'Limpiar filtros')} {/* <-- MODIFICADO CON t() */}
+                {t('filters.clear', 'Limpiar filtros')}
               </button>
               <button
                 onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                className="text-sm bg-zinc-700 hover:bg-zinc-600 px-4 py-2 rounded transition"
+                className="text-sm bg-zinc-700 hover:bg-zinc-600 px-4 py-2 rounded transition flex items-center gap-2"
               >
-                {showAdvancedFilters
-                  ? t('filters.hide', "Ocultar avanzados") /* <-- MODIFICADO CON t() */
-                  : t('filters.advanced', "Filtros avanzados ⬇")} {/* <-- MODIFICADO CON t() */}
+                {showAdvancedFilters ? (
+                  <>
+                  {t('filters.hide', "Ocultar avanzados")}
+                  <ListFilter size={16} />
+                  </>
+                ) : (
+                  <>
+                    {t('filters.advanced', "Filtros avanzados")}
+                    <ListFilterPlus size={16} />
+                  </>
+                )}
               </button>
             </div>
           </div>
 
           {/* Filtros Básicos */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-            <select
-              name="brand"
-              value={filters.brand}
-              onChange={handleFilterChange}
-              className="w-full px-4 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white outline-none focus:border-red-500"
-            >
-              <option value="">{t('filters.all_brands', 'Todas las marcas')}</option> {/* <-- MODIFICADO CON t() */}
-              {availableBrands.map((b) => (
-                <option key={b} value={b}>
-                  {b}
-                </option>
-              ))}
-            </select>
-            <select
-              name="model"
-              value={filters.model}
-              onChange={handleFilterChange}
-              disabled={!filters.brand}
-              className="w-full px-4 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white outline-none disabled:opacity-50"
-            >
-              <option value="">{t('filters.all_models', 'Todos los modelos')}</option> {/* <-- MODIFICADO CON t() */}
-              {availableModels.map((m) => (
-                <option key={m} value={m}>
-                  {m}
-                </option>
-              ))}
-            </select>
-            <select
-              name="province"
-              value={filters.province}
-              onChange={handleFilterChange}
-              className="w-full px-4 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white outline-none focus:border-red-500"
-            >
-              <option value="">{t('filters.any_province', 'Cualquier provincia')}</option> {/* <-- MODIFICADO CON t() */}
-              {availableProvinces.map((p) => (
-                <option key={p} value={p}>
-                  {p}
-                </option>
-              ))}
-            </select>
+            <div className="relative">
+              <select
+                name="brand"
+                value={filters.brand}
+                onChange={handleFilterChange}
+                className="w-full px-4 pr-10 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white outline-none appearance-none transition-all duration-200 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
+              >
+                <option value="">{t('filters.all_brands', 'Todas las marcas')}</option> {/* <-- MODIFICADO CON t() */}
+                {availableBrands.map((b) => (
+                  <option key={b} value={b}>
+                    {b}
+                  </option>
+                ))}
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-zinc-400">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
+
+            <div className="relative">
+              <select
+                name="model"
+                value={filters.model}
+                onChange={handleFilterChange}
+                disabled={!filters.brand}
+                className="w-full px-4 pr-10 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white outline-none appearance-none disabled:opacity-50 transition-all duration-200 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
+              >
+                <option value="">{t('filters.all_models', 'Todos los modelos')}</option> {/* <-- MODIFICADO CON t() */}
+                {availableModels.map((m) => (
+                  <option key={m} value={m}>
+                    {m}
+                  </option>
+                ))}
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-zinc-400">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
+
+            <div className="relative">
+              <select
+                name="province"
+                value={filters.province}
+                onChange={handleFilterChange}
+                className="w-full px-4 pr-10 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white outline-none appearance-none transition-all duration-200 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
+              >
+                <option value="">{t('filters.any_province', 'Cualquier provincia')}</option> {/* <-- MODIFICADO CON t() */}
+                {availableProvinces.map((p) => (
+                  <option key={p} value={p}>
+                    {p}
+                  </option>
+                ))}
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-zinc-400">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
           </div>
 
           {/* Filtros Avanzados Colapsables */}
@@ -306,60 +338,88 @@ const RentScreen = () => {
                 className="w-full px-4 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white outline-none"
               />
 
-              <select
-                name="fuel"
-                value={filters.fuel}
-                onChange={handleFilterChange}
-                className="w-full px-4 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white outline-none"
-              >
-                <option value="">{t('common.fuel', 'Combustible')}</option> {/* <-- MODIFICADO CON t() */}
-                {availableFuels.map((f) => (
-                  <option key={f} value={f}>
-                    {f}
-                  </option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  name="fuel"
+                  value={filters.fuel}
+                  onChange={handleFilterChange}
+                  className="w-full px-4 pr-10 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white outline-none appearance-none transition-all duration-200 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
+                >
+                  <option value="">{t('common.fuel', 'Combustible')}</option> {/* <-- MODIFICADO CON t() */}
+                  {availableFuels.map((f) => (
+                    <option key={f} value={f}>
+                      {f}
+                    </option>
+                  ))}
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-zinc-400">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
 
-              <select
-                name="transmission"
-                value={filters.transmission}
-                onChange={handleFilterChange}
-                className="w-full px-4 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white outline-none"
-              >
-                <option value="">{t('common.transmission', 'Transmisión')}</option> {/* <-- MODIFICADO CON t() */}
-                {availableTransmissions.map((t) => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  name="transmission"
+                  value={filters.transmission}
+                  onChange={handleFilterChange}
+                  className="w-full px-4 pr-10 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white outline-none appearance-none transition-all duration-200 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
+                >
+                  <option value="">{t('common.transmission', 'Transmisión')}</option> {/* <-- MODIFICADO CON t() */}
+                  {availableTransmissions.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-zinc-400">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
 
-              <select
-                name="color"
-                value={filters.color}
-                onChange={handleFilterChange}
-                className="w-full px-4 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white outline-none"
-              >
-                <option value="">{t('common.color', 'Color')}</option> {/* <-- MODIFICADO CON t() */}
-                {availableColors.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  name="color"
+                  value={filters.color}
+                  onChange={handleFilterChange}
+                  className="w-full px-4 pr-10 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white outline-none appearance-none transition-all duration-200 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
+                >
+                  <option value="">{t('common.color', 'Color')}</option> {/* <-- MODIFICADO CON t() */}
+                  {availableColors.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-zinc-400">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
 
-              <select
-                name="doors"
-                value={filters.doors}
-                onChange={handleFilterChange}
-                className="w-full px-4 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white outline-none"
-              >
-                <option value="">{t('filters.doors_qty', 'Nº Puertas')}</option> {/* <-- MODIFICADO CON t() */}
-                <option value="2">{t('filters.doors_2', '2 puertas')}</option> {/* <-- MODIFICADO CON t() */}
-                <option value="3">{t('filters.doors_3', '3 puertas')}</option> {/* <-- MODIFICADO CON t() */}
-                <option value="4">{t('filters.doors_4', '4 puertas')}</option> {/* <-- MODIFICADO CON t() */}
-                <option value="5">{t('filters.doors_5', '5 puertas')}</option> {/* <-- MODIFICADO CON t() */}
-              </select>
+              <div className="relative">
+                <select
+                  name="doors"
+                  value={filters.doors}
+                  onChange={handleFilterChange}
+                  className="w-full px-4 pr-10 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white outline-none appearance-none transition-all duration-200 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
+                >
+                  <option value="">{t('filters.doors_qty', 'Nº Puertas')}</option> {/* <-- MODIFICADO CON t() */}
+                  <option value="2">{t('filters.doors_2', '2 puertas')}</option> {/* <-- MODIFICADO CON t() */}
+                  <option value="3">{t('filters.doors_3', '3 puertas')}</option> {/* <-- MODIFICADO CON t() */}
+                  <option value="4">{t('filters.doors_4', '4 puertas')}</option> {/* <-- MODIFICADO CON t() */}
+                  <option value="5">{t('filters.doors_5', '5 puertas')}</option> {/* <-- MODIFICADO CON t() */}
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-zinc-400">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
             </div>
           )}
         </div>

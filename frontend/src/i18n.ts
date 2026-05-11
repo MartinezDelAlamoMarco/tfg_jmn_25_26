@@ -38,7 +38,7 @@ const resources = {
       },
       filters: {
         search_filters: "Filtros de Búsqueda",
-        advanced: "Filtros avanzados ⬇",
+        advanced: "Filtros avanzados",
         hide: "Ocultar avanzados",
         brand: "Marca",
         model: "Modelo",
@@ -550,7 +550,7 @@ const resources = {
       },
       filters: {
         search_filters: "Search Filters",
-        advanced: "Advanced Filters ⬇",
+        advanced: "Advanced Filters",
         hide: "Hide advanced",
         brand: "Brand",
         model: "Model",

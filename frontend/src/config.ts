@@ -5,7 +5,9 @@ export const API_BASE_URL: string = 'https://tfg-jmn-25-26.onrender.com/api';
 //export const API_BASE_URL = 'http://127.0.0.1:8000/api';
 
 export const APP_NAME: string = 'NujamaMotors';
-export const SUPER_ADMIN_EMAIL: string = "admin@redlinemotors.com";
+export const COMPANY_NAME: string = 'Nujama Motors';
+export const DOMAIN: string = 'nujamamotors.com';
+export const SUPER_ADMIN_EMAIL: string = `admin@${DOMAIN}`;
 
 // --- CREDENCIALES DE SUPABASE ---
 export const SUPABASE_URL: string = import.meta.env.VITE_SUPABASE_URL;

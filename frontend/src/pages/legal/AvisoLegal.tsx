@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { ChevronLeft, ShieldCheck, Scale, Globe, Copyright } from "lucide-react";
-import { APP_NAME } from "../../config";
+import { APP_NAME, COMPANY_NAME, DOMAIN, SUPER_ADMIN_EMAIL } from "../../config";
 
 export default function AvisoLegal() {
   const { t } = useTranslation();
@@ -47,12 +47,12 @@ export default function AvisoLegal() {
               </h2>
             </div>
             <ul className="space-y-3 bg-zinc-900 p-6 rounded-lg border border-zinc-800 border-l-4 border-l-red-600">
-              <li><strong className="text-white">{t('legal.notice.domain', 'Dominio')}:</strong> redlinemotors.com</li>
+              <li><strong className="text-white">{t('legal.notice.domain', 'Dominio')}:</strong> {DOMAIN}</li>
               <li><strong className="text-white">{t('legal.notice.trade_name', 'Nombre Comercial')}:</strong> {APP_NAME}</li>
-              <li><strong className="text-white">{t('legal.notice.company_name', 'Razón Social')}:</strong> Redline Motors S.L. (Proyecto TFG)</li>
+              <li><strong className="text-white">{t('legal.notice.company_name', 'Razón Social')}:</strong> {COMPANY_NAME} S.L. (Proyecto TFG)</li>
               <li><strong className="text-white">NIF:</strong> B12345678</li>
               <li><strong className="text-white">{t('legal.notice.address', 'Dirección')}:</strong> Rivas-Vaciamadrid, Madrid, España</li>
-              <li><strong className="text-white">E-mail:</strong> admin@redlinemotors.com</li>
+              <li><strong className="text-white">E-mail:</strong> {SUPER_ADMIN_EMAIL}</li>
             </ul>
           </article>
 

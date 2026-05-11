@@ -215,25 +215,32 @@ export default function Navbar() {
 
           {/* Enlaces Desktop */}
           <div className="hidden md:flex items-center space-x-6">
-            <Link to="/" className="text-zinc-300 hover:text-white transition-colors font-medium">{t('navbar.home', 'Inicio')}</Link>
-            <Link to="/alquileres" className="text-zinc-300 hover:text-white transition-colors font-medium">{t('navbar.rents', 'Alquileres')}</Link>
+            <Link to="/" className={`relative transition-all duration-300 ${location.pathname === '/' ? 'text-red-500 font-bold' : 'text-zinc-300 hover:text-red-500 font-medium'} after:absolute after:-bottom-1 after:left-0 after:h-[2px] after:w-full after:bg-red-500 after:transition-transform after:duration-300 after:origin-center ${location.pathname === '/' ? 'after:scale-x-100' : 'after:scale-x-0 hover:after:scale-x-100'}`}>
+              {t('navbar.home', 'Inicio')}
+            </Link>
+            
+            <Link to="/alquileres" className={`relative transition-all duration-300 ${location.pathname === '/alquileres' ? 'text-red-500 font-bold' : 'text-zinc-300 hover:text-red-500 font-medium'} after:absolute after:-bottom-1 after:left-0 after:h-[2px] after:w-full after:bg-red-500 after:transition-transform after:duration-300 after:origin-center ${location.pathname === '/alquileres' ? 'after:scale-x-100' : 'after:scale-x-0 hover:after:scale-x-100'}`}>
+              {t('navbar.rents', 'Alquileres')}
+            </Link>
 
             {!token ? (
               <div className="flex items-center gap-4 border-l border-zinc-700 pl-4">
-                <Link to="/login" className="text-white hover:text-red-700 transition-colors font-medium">{t('navbar.login', 'Iniciar Sesión')}</Link>
+                <Link to="/login" className={`relative transition-all duration-300 ${location.pathname === '/login' ? 'text-red-700 font-bold' : 'text-white hover:text-red-700 font-medium'} after:absolute after:-bottom-1 after:left-0 after:h-[2px] after:w-full after:bg-red-700 after:transition-transform after:duration-300 after:origin-center ${location.pathname === '/login' ? 'after:scale-x-100' : 'after:scale-x-0 hover:after:scale-x-100'}`}>
+                  {t('navbar.login', 'Iniciar Sesión')}
+                </Link>
                 <Link to="/register" className="bg-red-700 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">{t('navbar.register', 'Registrarse')}</Link>
               </div>
             ) : (
               <div className="flex items-center gap-4 border-l border-zinc-700 pl-4">
                 
-                <Link to="/favoritos" className="text-zinc-300 hover:text-red-500 transition-colors font-medium flex items-center gap-2 mr-2">
-                  <Heart size={18} />
+                <Link to="/favoritos" className={`relative flex items-center gap-2 mr-2 transition-all duration-300 ${location.pathname === '/favoritos' ? 'text-red-500 font-bold' : 'text-zinc-300 hover:text-red-500 font-medium'} after:absolute after:-bottom-1 after:left-0 after:h-[2px] after:w-full after:bg-red-500 after:transition-transform after:duration-300 after:origin-center ${location.pathname === '/favoritos' ? 'after:scale-x-100' : 'after:scale-x-0 hover:after:scale-x-100'}`}>
+                  <Heart size={18} fill={location.pathname === '/favoritos' ? 'currentColor' : 'none'} />
                   {t('navbar.favorites', 'Favoritos')}
                 </Link>
 
                 {/* BOTÓN DE MENSAJES DESKTOP (CON NOTIFICACIÓN FLOTANTE) */}
-                <Link to="/mis-mensajes" className="relative text-zinc-300 hover:text-white transition-colors font-medium flex items-center gap-2 mr-2">
-                  <MessageSquare size={18} />
+                <Link to="/mis-mensajes" className={`relative flex items-center gap-2 mr-2 transition-all duration-300 ${location.pathname === '/mis-mensajes' ? 'text-red-500 font-bold' : 'text-zinc-300 hover:text-red-500 font-medium'} after:absolute after:-bottom-1 after:left-0 after:h-[2px] after:w-full after:bg-red-500 after:transition-transform after:duration-300 after:origin-center ${location.pathname === '/mis-mensajes' ? 'after:scale-x-100' : 'after:scale-x-0 hover:after:scale-x-100'}`}>
+                  <MessageSquare size={18} fill={location.pathname === '/mis-mensajes' ? 'currentColor' : 'none'} />
                   Mensajes
                   {totalUnread > 0 && (
                     <span className="absolute -top-2 -right-3 bg-red-600 text-white text-[10px] font-bold h-4 w-4 flex items-center justify-center rounded-full shadow-lg shadow-red-900/50 animate-bounce">
@@ -261,16 +268,16 @@ export default function Navbar() {
                   {isProfileDropdownOpen && (
                     <div className="absolute right-0 mt-2 w-48 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl py-2 z-50 animate-in fade-in zoom-in duration-150">
                       
-                      {/* ENLACE A MI PERFIL PÚBLICO - RUTA CORREGIDA */}
-                      <Link to={`/usuario/${user.id}`} onClick={closeMenus} className="flex items-center gap-3 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors">
+                      {/* ENLACE A MI PERFIL PÚBLICO - RUTA CORREGIDA (incluye estado 'from') */}
+                      <Link to={`/mi-perfil-publico`} state={{ from: location.pathname + location.search }} onClick={closeMenus} className={`flex items-center gap-3 px-4 py-2 text-sm transition-colors ${location.pathname === `/usuario/${user.id}` ? 'bg-zinc-800 text-white font-bold' : 'text-zinc-300 hover:bg-zinc-800 hover:text-white'}`}>
                         <User size={16} className="text-red-500" /> {t('navbar.public_profile', 'Mi Perfil Público')}
                       </Link>
 
-                      <Link to="/mis-anuncios" onClick={closeMenus} className="flex items-center gap-3 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors">
+                      <Link to="/mis-anuncios" onClick={closeMenus} className={`flex items-center gap-3 px-4 py-2 text-sm transition-colors ${location.pathname === '/mis-anuncios' ? 'bg-zinc-800 text-white font-bold' : 'text-zinc-300 hover:bg-zinc-800 hover:text-white'}`}>
                         <LayoutDashboard size={16} /> {t('navbar.my_ads', 'Mis Anuncios')}
                       </Link>
                       
-                      <Link to="/perfil" onClick={closeMenus} className="flex items-center gap-3 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors">
+                      <Link to="/perfil" onClick={closeMenus} className={`flex items-center gap-3 px-4 py-2 text-sm transition-colors ${location.pathname === '/perfil' ? 'bg-zinc-800 text-white font-bold' : 'text-zinc-300 hover:bg-zinc-800 hover:text-white'}`}>
                         <User size={16} /> {t('navbar.profile', 'Gestionar Perfil')}
                       </Link>
                       
@@ -344,8 +351,8 @@ export default function Navbar() {
       {isMobileMenuOpen && (
         <div className="md:hidden bg-zinc-900 border-t border-zinc-800 shadow-xl pb-6">
           <div className="px-4 pt-4 space-y-2">
-            <Link to="/" onClick={closeMenus} className="block px-2 py-2 text-zinc-300 font-medium hover:text-white">{t('navbar.home', 'Inicio')}</Link>
-            <Link to="/alquileres" onClick={closeMenus} className="block px-2 py-2 text-zinc-300 font-medium hover:text-white">{t('navbar.rents', 'Alquileres')}</Link>
+            <Link to="/" onClick={closeMenus} className={`block px-2 py-2 transition-all ${location.pathname === '/' ? 'text-white font-bold underline decoration-white decoration-2 underline-offset-4' : 'text-zinc-300 font-medium hover:text-white'}`}>{t('navbar.home', 'Inicio')}</Link>
+            <Link to="/alquileres" onClick={closeMenus} className={`block px-2 py-2 transition-all ${location.pathname === '/alquileres' ? 'text-white font-bold underline decoration-white decoration-2 underline-offset-4' : 'text-zinc-300 font-medium hover:text-white'}`}>{t('navbar.rents', 'Alquileres')}</Link>
             
             {token && userRole === 'admin' && (
               <Link to="/admin/panel" onClick={closeMenus} className="flex items-center gap-2 px-2 py-2 text-red-500 font-bold">
@@ -357,8 +364,8 @@ export default function Navbar() {
             
             {!token ? (
               <div className="flex flex-col space-y-2 pt-2">
-                <Link to="/login" onClick={closeMenus} className="block px-2 py-2 text-white font-medium hover:text-red-500">{t('navbar.login', 'Iniciar Sesión')}</Link>
-                <Link to="/register" onClick={closeMenus} className="block px-2 py-2 text-red-500 font-medium">{t('navbar.register', 'Registrarse')}</Link>
+                <Link to="/login" onClick={closeMenus} className={`block px-2 py-2 transition-all ${location.pathname === '/login' ? 'text-white font-bold underline decoration-white decoration-2 underline-offset-4' : 'text-white font-medium hover:text-red-500'}`}>{t('navbar.login', 'Iniciar Sesión')}</Link>
+                <Link to="/register" onClick={closeMenus} className={`block px-2 py-2 transition-all ${location.pathname === '/register' ? 'text-red-400 font-bold underline decoration-red-400 decoration-2 underline-offset-4' : 'text-red-500 font-medium'}`}>{t('navbar.register', 'Registrarse')}</Link>
               </div>
             ) : (
               <div className="flex flex-col space-y-2 pt-2">
@@ -366,17 +373,17 @@ export default function Navbar() {
                   {t('navbar.hello', 'Hola')}, <span className="text-white font-semibold">{user.name}</span>
                 </div>
                 
-                {/* ENLACE A MI PERFIL PÚBLICO MÓVIL - RUTA CORREGIDA */}
-                <Link to={`/usuario/${user.id}`} onClick={closeMenus} className="flex items-center gap-3 px-2 py-2 text-zinc-300 hover:text-white">
+                {/* ENLACE A MI PERFIL PÚBLICO MÓVIL - AÑADE estado 'from' */}
+                <Link to={`/usuario/${user.id}`} state={{ from: location.pathname + location.search }} onClick={closeMenus} className={`flex items-center gap-3 px-2 py-2 transition-all ${location.pathname === `/usuario/${user.id}` ? 'text-white font-bold underline decoration-white decoration-2 underline-offset-4' : 'text-zinc-300 hover:text-white'}`}>
                   <User size={18} className="text-red-500" /> {t('navbar.public_profile', 'Mi Perfil Público')}
                 </Link>
 
-                <Link to="/favoritos" onClick={closeMenus} className="flex items-center gap-3 px-2 py-2 text-zinc-300 hover:text-white">
+                <Link to="/favoritos" onClick={closeMenus} className={`flex items-center gap-3 px-2 py-2 transition-all ${location.pathname === '/favoritos' ? 'text-white font-bold underline decoration-white decoration-2 underline-offset-4' : 'text-zinc-300 hover:text-white'}`}>
                   <Heart size={18} /> {t('navbar.favorites', 'Favoritos')}
                 </Link>
                 
                 {/* BOTÓN DE MENSAJES MÓVIL (CON NOTIFICACIÓN) */}
-                <Link to="/mis-mensajes" onClick={closeMenus} className="flex items-center justify-between px-2 py-2 text-zinc-300 hover:text-white">
+                <Link to="/mis-mensajes" onClick={closeMenus} className={`flex items-center justify-between px-2 py-2 transition-all ${location.pathname === '/mis-mensajes' ? 'text-white font-bold underline decoration-white decoration-2 underline-offset-4' : 'text-zinc-300 hover:text-white'}`}>
                   <div className="flex items-center gap-3">
                     <MessageSquare size={18} /> Mensajes
                   </div>
@@ -387,10 +394,10 @@ export default function Navbar() {
                   )}
                 </Link>
 
-                <Link to="/mis-anuncios" onClick={closeMenus} className="flex items-center gap-3 px-2 py-2 text-zinc-300 hover:text-white">
+                <Link to="/mis-anuncios" onClick={closeMenus} className={`flex items-center gap-3 px-2 py-2 transition-all ${location.pathname === '/mis-anuncios' ? 'text-white font-bold underline decoration-white decoration-2 underline-offset-4' : 'text-zinc-300 hover:text-white'}`}>
                   <LayoutDashboard size={18} /> {t('navbar.my_ads', 'Mis Anuncios')}
                 </Link>
-                <Link to="/perfil" onClick={closeMenus} className="flex items-center gap-3 px-2 py-2 text-zinc-300 hover:text-white">
+                <Link to="/perfil" onClick={closeMenus} className={`flex items-center gap-3 px-2 py-2 transition-all ${location.pathname === '/perfil' ? 'text-white font-bold underline decoration-white decoration-2 underline-offset-4' : 'text-zinc-300 hover:text-white'}`}>
                   <User size={18} /> {t('navbar.profile', 'Gestionar Perfil')}
                 </Link>
                 
