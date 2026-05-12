@@ -19,7 +19,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['https://tfg-frontend-h7hs.onrender.com', 'http://localhost:5173'],
+    'allowed_origins' => ['https://www.nujamamotors.com/', 'http://localhost:3000/'],
 
     'allowed_origins_patterns' => [],
 
