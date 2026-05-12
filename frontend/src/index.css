@@ -3,3 +3,81 @@
 body {
   @apply bg-gradient-to-br from-zinc-800 to-zinc-900 text-zinc-100 font-sans leading-relaxed m-0 p-0 min-h-screen;
 }
+
+/* ============================================
+   MODO CLARO - Sobrescribe clases zinc oscuras
+   ============================================ */
+
+/* Fondo del body */
+html.light body {
+  background: linear-gradient(to bottom right, #f4f4f5, #e4e4e7) !important;
+  color: #18181b !important;
+}
+
+/* Backgrounds */
+html.light .bg-zinc-950 { background-color: #f4f4f5 !important; }
+html.light .bg-zinc-900 { background-color: #f4f4f5 !important; }
+html.light .bg-zinc-800 { background-color: #e4e4e7 !important; }
+html.light .bg-zinc-700 { background-color: #d4d4d8 !important; }
+html.light .bg-zinc-600 { background-color: #a1a1aa !important; }
+html.light .bg-black    { background-color: #e4e4e7 !important; }
+
+/* Textos */
+html.light .text-white   { color: #18181b !important; }
+html.light .text-zinc-100 { color: #27272a !important; }
+html.light .text-zinc-200 { color: #3f3f46 !important; }
+html.light .text-zinc-300 { color: #52525b !important; }
+html.light .text-zinc-400 { color: #71717a !important; }
+html.light .text-zinc-500 { color: #a1a1aa !important; }
+html.light .text-zinc-600 { color: #52525b !important; }
+
+/* Bordes */
+html.light .border-zinc-800 { border-color: #d4d4d8 !important; }
+html.light .border-zinc-700 { border-color: #a1a1aa !important; }
+html.light .border-zinc-600 { border-color: #a1a1aa !important; }
+html.light .border-zinc-500 { border-color: #71717a !important; }
+
+/* Navbar y Footer (siempre con su propio fondo) */
+html.light nav.bg-zinc-900  { background-color: #ffffff !important; border-color: #e4e4e7 !important; }
+html.light footer.bg-zinc-900 { background-color: #f4f4f5 !important; }
+
+/* Inputs y selects */
+html.light input.bg-zinc-800,
+html.light input.bg-zinc-900,
+html.light select.bg-zinc-800,
+html.light select.bg-zinc-900 {
+  background-color: #ffffff !important;
+  color: #18181b !important;
+  border-color: #a1a1aa !important;
+}
+
+/* Dropdowns del navbar */
+html.light .bg-zinc-900.rounded-xl {
+  background-color: #ffffff !important;
+  border-color: #e4e4e7 !important;
+}
+
+/* Hover states */
+html.light .hover\:bg-zinc-800:hover { background-color: #d4d4d8 !important; }
+html.light .hover\:bg-zinc-700:hover { background-color: #e4e4e7 !important; }
+
+/* Título: "Nuja" en oscuro en modo claro */
+html.light h1 .text-white,
+html.light h1 { color: #18181b !important; }
+
+/* Sugerencias buscador */
+html.light .bg-zinc-800.rounded-xl { background-color: #ffffff !important; }
+
+/* Tarjetas de vehículos */
+html.light .bg-zinc-800.rounded-xl,
+html.light .rounded-xl.bg-zinc-800 { background-color: #ffffff !important; }
+
+/* Imágenes de fondo de tarjetas */
+html.light .bg-zinc-900.rounded-lg { background-color: #e4e4e7 !important; }
+
+/* Badges y etiquetas */
+html.light .bg-zinc-700.text-zinc-300 { background-color: #d4d4d8 !important; color: #52525b !important; }
+
+/* Separadores */
+html.light hr.border-zinc-800 { border-color: #e4e4e7 !important; }
+html.light hr.border-zinc-700 { border-color: #d4d4d8 !important; }

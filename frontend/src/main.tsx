@@ -4,6 +4,11 @@ import './index.css'
 import App from './App.tsx'
 import './i18n';
 
+// Aplicar el tema guardado antes de renderizar para evitar flash
+if (localStorage.getItem("theme") === "light") {
+  document.documentElement.classList.add("light");
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />
