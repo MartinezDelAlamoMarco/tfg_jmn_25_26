@@ -15,30 +15,34 @@ html.light body {
 }
 
 /* Backgrounds */
-html.light .bg-zinc-950 { background-color: #f4f4f5 !important; }
+html.light .bg-zinc-950 { background-color: #ececee !important; }
 html.light .bg-zinc-900 { background-color: #f4f4f5 !important; }
+html.light .bg-zinc-900\/80 { background-color: rgba(240,240,242,0.9) !important; }
+html.light .bg-zinc-900\/50 { background-color: rgba(240,240,242,0.6) !important; }
 html.light .bg-zinc-800 { background-color: #e4e4e7 !important; }
+html.light .bg-zinc-800\/80 { background-color: rgba(212,212,216,0.8) !important; }
 html.light .bg-zinc-700 { background-color: #d4d4d8 !important; }
 html.light .bg-zinc-600 { background-color: #a1a1aa !important; }
 html.light .bg-black    { background-color: #e4e4e7 !important; }
 
 /* Textos */
-html.light .text-white   { color: #18181b !important; }
+html.light .text-white    { color: #18181b !important; }
 html.light .text-zinc-100 { color: #27272a !important; }
 html.light .text-zinc-200 { color: #3f3f46 !important; }
 html.light .text-zinc-300 { color: #52525b !important; }
 html.light .text-zinc-400 { color: #71717a !important; }
 html.light .text-zinc-500 { color: #a1a1aa !important; }
 html.light .text-zinc-600 { color: #52525b !important; }
+html.light .text-zinc-700 { color: #71717a !important; }
 
 /* Bordes */
 html.light .border-zinc-800 { border-color: #d4d4d8 !important; }
-html.light .border-zinc-700 { border-color: #a1a1aa !important; }
+html.light .border-zinc-700 { border-color: #c4c4c8 !important; }
 html.light .border-zinc-600 { border-color: #a1a1aa !important; }
 html.light .border-zinc-500 { border-color: #71717a !important; }
 
-/* Navbar y Footer (siempre con su propio fondo) */
-html.light nav.bg-zinc-900  { background-color: #ffffff !important; border-color: #e4e4e7 !important; }
+/* Navbar y Footer */
+html.light nav.bg-zinc-900    { background-color: #ffffff !important; border-color: #e4e4e7 !important; }
 html.light footer.bg-zinc-900 { background-color: #f4f4f5 !important; }
 
 /* Inputs y selects */
@@ -51,6 +55,14 @@ html.light select.bg-zinc-900 {
   border-color: #a1a1aa !important;
 }
 
+/* Textarea */
+html.light textarea.bg-zinc-900,
+html.light textarea.bg-zinc-800 {
+  background-color: #ffffff !important;
+  color: #18181b !important;
+  border-color: #c4c4c8 !important;
+}
+
 /* Dropdowns del navbar */
 html.light .bg-zinc-900.rounded-xl {
   background-color: #ffffff !important;
@@ -60,20 +72,23 @@ html.light .bg-zinc-900.rounded-xl {
 /* Hover states */
 html.light .hover\:bg-zinc-800:hover { background-color: #d4d4d8 !important; }
 html.light .hover\:bg-zinc-700:hover { background-color: #e4e4e7 !important; }
+html.light .hover\:bg-zinc-900:hover { background-color: #e8e8eb !important; }
 
 /* Título: "Nuja" en oscuro en modo claro */
 html.light h1 .text-white,
 html.light h1 { color: #18181b !important; }
 
-/* Sugerencias buscador */
-html.light .bg-zinc-800.rounded-xl { background-color: #ffffff !important; }
-
-/* Tarjetas de vehículos */
+/* Sugerencias buscador y tarjetas */
 html.light .bg-zinc-800.rounded-xl,
 html.light .rounded-xl.bg-zinc-800 { background-color: #ffffff !important; }
 
 /* Imágenes de fondo de tarjetas */
 html.light .bg-zinc-900.rounded-lg { background-color: #e4e4e7 !important; }
+
+/* Contenedor de imagen del anuncio (badge en esquina) */
+html.light .aspect-video.bg-zinc-800,
+html.light .aspect-video.bg-zinc-900,
+html.light .aspect-video.bg-zinc-950 { background-color: #e4e4e7 !important; }
 
 /* Badges y etiquetas */
 html.light .bg-zinc-700.text-zinc-300 { background-color: #d4d4d8 !important; color: #52525b !important; }
@@ -81,3 +96,45 @@ html.light .bg-zinc-700.text-zinc-300 { background-color: #d4d4d8 !important; co
 /* Separadores */
 html.light hr.border-zinc-800 { border-color: #e4e4e7 !important; }
 html.light hr.border-zinc-700 { border-color: #d4d4d8 !important; }
+
+/* ============================================
+   CHAT INTERFACE
+   (ChatInterface.tsx ya usa clases Tailwind puras,
+    las reglas globales de arriba son suficientes.
+    Este bloque cubre detalles específicos del chat.)
+   ============================================ */
+
+/* Color de texto raíz del chat */
+html.light .chat-root { color: #18181b !important; }
+
+/* Sidebar activo */
+html.light .chat-root .border-l-red-600 { border-left-color: #dc2626 !important; }
+
+/* Burbuja de mensaje recibido */
+html.light .chat-root .bg-zinc-800.rounded-2xl {
+  background-color: #e8e8eb !important;
+  border-color: #d4d4d8 !important;
+  color: #18181b !important;
+}
+html.light .chat-root .bg-zinc-800.rounded-2xl .opacity-60 { color: #71717a !important; }
+
+/* Notificación del sistema */
+html.light .chat-root .bg-zinc-900.rounded-2xl {
+  background-color: #f0f0f2 !important;
+  border-color: rgba(185,28,28,0.3) !important;
+}
+
+/* Overlays de confirmación */
+html.light .chat-root .bg-black\/90 { background-color: rgba(244,244,245,0.97) !important; }
+html.light .chat-root .bg-black\/70 { background-color: rgba(244,244,245,0.88) !important; }
+
+/* Paneles modales internos (gestión de reservas, extensión) */
+html.light .chat-root .bg-zinc-900.rounded-3xl { background-color: #ffffff !important; }
+html.light .chat-root .bg-zinc-900.border.border-zinc-800 { background-color: #f9f9f9 !important; }
+
+/* Tarjeta de valoración */
+html.light .chat-root .bg-zinc-800.border-2 {
+  background-color: #f0f0f2 !important;
+  border-color: rgba(202,138,4,0.4) !important;
+}
+html.light .chat-root .text-zinc-700 { color: #c4c4c8 !important; }
