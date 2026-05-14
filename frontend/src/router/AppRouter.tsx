@@ -52,12 +52,10 @@ export default function AppRouter() {
           <Route path="/perfil" element={<Profile />} />
           <Route path="/mi-perfil-publico" element={<UserProfile />} />
           <Route path="/usuario/:id" element={<UserProfile />} />
-          <Route path="/anuncios/:id/reportar" element={<ReportAdvertisement />} />
+          <Route path="/reportar/:id" element={<ReportAdvertisement />} />
           <Route path="/admin/panel" element={<AdminDashboard />} />
           <Route path="/buscar" element={<SearchScreen />} />
           <Route path="/mis-mensajes" element={<ChatInterface />} />
-
-
           <Route path="/aviso-legal" element={<AvisoLegal />} />
           <Route path="/politica-cookies" element={<PoliticaCookies />} />
           <Route path="/politica-privacidad" element={<PoliticaPrivacidad />} />

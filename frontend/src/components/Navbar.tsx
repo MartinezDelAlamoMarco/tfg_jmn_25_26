@@ -212,7 +212,7 @@ export default function Navbar() {
 
           <div className="hidden md:flex items-center space-x-6">
             <Link to="/" className={`relative transition-all duration-300 ${location.pathname === '/' ? 'text-red-500 font-bold' : 'text-zinc-300 hover:text-red-500 font-medium'} after:absolute after:-bottom-1 after:left-0 after:h-2px after:w-full after:bg-red-500 after:transition-transform after:duration-300 after:origin-center ${location.pathname === '/' ? 'after:scale-x-100' : 'after:scale-x-0 hover:after:scale-x-100'}`}>
-              {t('navbar.home', 'Inicio')}
+              {t('navbar.home', 'Compras')}
             </Link>
             
             <Link to="/alquileres" className={`relative transition-all duration-300 ${location.pathname === '/alquileres' ? 'text-red-500 font-bold' : 'text-zinc-300 hover:text-red-500 font-medium'} after:absolute after:-bottom-1 after:left-0 after:h-2px after:w-full after:bg-red-500 after:transition-transform after:duration-300 after:origin-center ${location.pathname === '/alquileres' ? 'after:scale-x-100' : 'after:scale-x-0 hover:after:scale-x-100'}`}>

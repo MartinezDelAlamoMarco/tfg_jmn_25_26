@@ -190,7 +190,7 @@ const resources = {
         error_updating: "Error al actualizar el anuncio.", 
       },
       navbar: {
-        home: "Inicio",
+        home: "Compras",
         rents: "Alquileres",
         search_placeholder: "Buscar vehículos en venta o alquiler...",
         see_all: "Ver todos los resultados",
@@ -782,7 +782,7 @@ const resources = {
         error_updating: "Error updating the ad.",
       },
       navbar: {
-        home: "Home",
+        home: "Sales",
         rents: "Rentals",
         search_placeholder: "Search vehicles for sale or rent...",
         see_all: "See all results",
