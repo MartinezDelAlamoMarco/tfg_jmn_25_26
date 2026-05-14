@@ -350,29 +350,32 @@ const RentDetail = () => {
         </div>
       </div>
 
-      <style>{`
+     <style>{`
   .custom-rdp {
     --rdp-accent-color: #b91c1c;
-    --rdp-accent-background-color: rgba(185, 28, 28, 0.18);
-    
+    --rdp-accent-background-color: #b91c1c;
     --rdp-day_button-border-radius: 12px;
-
-    color: white;
+    
+    /* FONDO CLARO */
+    background-color: white;
+    color: #18181b; /* zinc-900 */
+    border-radius: 16px;
+    padding: 12px;
   }
 
   /* DÍAS NORMALES */
   .custom-rdp .rdp-day_button {
-    color: white;
+    color: #18181b !important;
     transition: all 0.2s ease;
   }
 
-  /* HOVER */
+  /* HOVER EN MODO CLARO */
   .custom-rdp .rdp-day_button:hover:not([disabled]):not(.rdp-selected) {
-    background-color: #3f3f46;
+    background-color: #f4f4f5 !important; /* zinc-100 */
     transform: scale(1.05);
   }
 
-  /* DÍAS SELECCIONADOS */
+  /* DÍAS SELECCIONADOS (INICIO, FIN Y ÚNICOS) */
   .custom-rdp .rdp-selected .rdp-day_button {
     background-color: #b91c1c !important;
     color: white !important;
@@ -381,12 +384,13 @@ const RentDetail = () => {
 
   /* DÍAS EN MEDIO DEL RANGO */
   .custom-rdp .rdp-range_middle {
-    background: rgba(185, 28, 28, 0.15) !important;
+    background-color: #b91c1c !important; /* Fondo rojo para el rango */
+    opacity: 0.8; /* Un poco más suave que los extremos */
   }
 
   .custom-rdp .rdp-range_middle .rdp-day_button {
     background: transparent !important;
-    color: #fca5a5 !important;
+    color: white !important; /* LETRAS BLANCAS EN EL RANGO */
     font-weight: 700;
   }
 
@@ -396,16 +400,18 @@ const RentDetail = () => {
     background-color: #b91c1c !important;
     color: white !important;
     border-radius: 9999px !important;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
   }
 
   /* DÍAS DESHABILITADOS */
   .custom-rdp .rdp-disabled {
-    opacity: 0.2;
+    opacity: 0.25;
     text-decoration: line-through;
     pointer-events: none;
+    color: #a1a1aa !important;
   }
 
-  /* CABECERA */
+  /* CABECERA (Días de la semana) */
   .custom-rdp .rdp-weekday {
     color: #71717a;
     font-size: 0.7rem;
@@ -420,7 +426,7 @@ const RentDetail = () => {
 
   /* MES/TÍTULO */
   .custom-rdp .rdp-caption_label {
-    color: white;
+    color: #18181b !important;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.05em;
