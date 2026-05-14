@@ -512,7 +512,8 @@ const ChatInterface: React.FC = () => {
               placeholder={t("common.search", "Buscar...")}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-zinc-900 border border-zinc-700 rounded-xl outline-none text-base focus:border-red-600 transition-colors"
+              // CAMBIO: Se usa text-[16px] fijo para bloquear el zoom de iOS/Android
+              className="w-full pl-10 pr-4 py-3 bg-zinc-900 border border-zinc-700 rounded-xl outline-none text-[16px] focus:border-red-600 transition-colors"
             />
           </div>
         </div>
@@ -950,9 +951,9 @@ const ChatInterface: React.FC = () => {
               ) : (
                 <form
                   onSubmit={handleSendMessage}
-                  className="flex gap-2 items-end max-w-4xl mx-auto w-full"
+                  className="flex gap-2 items-center max-w-4xl mx-auto w-full"
                 >
-                  {/* CAMBIO 2: text-base evita el zoom en iOS Safari */}
+                  {/* text-[16px] evita el zoom y w-full asegura que no se mueva */}
                   <textarea
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
@@ -966,13 +967,13 @@ const ChatInterface: React.FC = () => {
                     style={{ minHeight: "48px", maxHeight: "120px" }}
                   />
 
-                  {/* CAMBIO 3: flex-none asegura que el botón JAMÁS se encoja por el textarea y se rompa */}
+                  {/* w-12 h-12 con aspect-square y flex-none evita que el botón se deforme */}
                   <button
                     type="submit"
                     disabled={!newMessage.trim()}
-                    className="flex-none w-12 h-12 bg-red-600 text-white rounded-full flex items-center justify-center hover:bg-red-500 transition disabled:opacity-50 shadow-md"
+                    className="flex-none w-12 h-12 aspect-square bg-red-600 text-white rounded-full flex items-center justify-center hover:bg-red-500 transition disabled:opacity-50 shadow-md"
                   >
-                    <Send size={20} />
+                    <Send size={20} className="relative right-1px" />
                   </button>
                 </form>
               )}
