@@ -36,7 +36,7 @@ Route::get('/vehicles', [VehicleController::class, 'index']);
 Route::get('/vehicles/{id}', [VehicleController::class, 'show']);
 Route::get('/advertisements', [AdvertisementController::class, 'index']);
 Route::get('/advertisements/brand/{brand_id}', [AdvertisementController::class, 'byBrand']);
-Route::get('/advertisement/{id}', [AdvertisementController::class, 'show']);
+Route::get('/advertisements/{id}', [AdvertisementController::class, 'show']);
 
 // Perfiles públicos y sus valoraciones
 Route::get('/users/{id}', [UserController::class, 'show']);
@@ -105,7 +105,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/admin/users/{id}', [AdminUserController::class, 'destroy']);
     Route::get('/admin/ads', [AdminAdController::class, 'index']);
     Route::patch('/admin/ads/{id}/state', [AdminAdController::class, 'updateState']);
-    Route::delete('/advertisement/{id}', [AdvertisementController::class, 'destroy']);
+    Route::delete('/advertisements/{id}', [AdvertisementController::class, 'destroy']);
 });
 
 // Ping de salud
