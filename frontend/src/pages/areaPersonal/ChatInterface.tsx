@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { createClient } from "@supabase/supabase-js";
+import { useTranslation } from "react-i18next";
 import {
   API_BASE_URL,
   SUPABASE_URL,
@@ -64,6 +65,7 @@ interface RentRecord {
 }
 
 const ChatInterface: React.FC = () => {
+  const { t } = useTranslation();
   const [conversations, setConversations] = useState<ConversationFlat[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loadingList, setLoadingList] = useState(true);
@@ -74,7 +76,6 @@ const ChatInterface: React.FC = () => {
   const [loadingChat, setLoadingChat] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
 
-  // Estados para gestión de Alquiler
   const [showRentManager, setShowRentManager] = useState(false);
   const [activeUserRents, setActiveUserRents] = useState<RentRecord[]>([]);
   const [loadingRents, setLoadingRents] = useState(false);
@@ -240,7 +241,6 @@ const ChatInterface: React.FC = () => {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages]);
 
-  // GESTIÓN DE RESERVAS DE ALQUILER
   const openRentManager = async () => {
     if (!activeChatData) return;
     setShowRentManager(true);
@@ -259,16 +259,16 @@ const ChatInterface: React.FC = () => {
   };
 
   const cancelRent = async (rentId: number) => {
-    if (!window.confirm("¿Estás seguro de que quieres cancelar esta reserva de alquiler? Las fechas volverán a estar disponibles.")) return;
+    if (!window.confirm(t('chat.cancel_rent_confirm', "¿Estás seguro de que quieres cancelar esta reserva de alquiler? Las fechas volverán a estar disponibles."))) return;
     setIsActionPending(true);
-    setPendingText("Cancelando reserva...");
+    setPendingText(t('chat.canceling_reserve', "Cancelando reserva..."));
     try {
       await axios.delete(`${API_BASE_URL}/rents/${rentId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setActiveUserRents((prev) => prev.filter((r) => r.id !== rentId));
     } catch (err) {
-      alert("Error al cancelar la reserva.");
+      alert(t('chat.cancel_rent_error', "Error al cancelar la reserva."));
     } finally {
       setIsActionPending(false);
     }
@@ -303,7 +303,7 @@ const ChatInterface: React.FC = () => {
   const handleDeleteChat = async () => {
     if (
       !activeChatId ||
-      !window.confirm("¿Seguro que quieres eliminar este chat permanentemente?")
+      !window.confirm(t('chat.delete_chat_confirm', "¿Seguro que quieres eliminar este chat permanentemente?"))
     )
       return;
     try {
@@ -313,7 +313,7 @@ const ChatInterface: React.FC = () => {
       setConversations((prev) => prev.filter((c) => c.id !== activeChatId));
       setActiveChatId(null);
     } catch (err) {
-      alert("Error al eliminar el chat.");
+      alert(t('chat.delete_chat_error', "Error al eliminar el chat."));
     }
   };
 
@@ -332,10 +332,10 @@ const ChatInterface: React.FC = () => {
   const handleReserve = async () => {
     if (
       !activeChatId ||
-      !window.confirm("¿Reservar vehículo para este comprador?")
+      !window.confirm(t('chat.reserve_confirm', "¿Reservar vehículo para este comprador?"))
     )
       return;
-    setPendingText("Reservando vehículo...");
+    setPendingText(t('chat.reserving', "Reservando vehículo..."));
     setIsActionPending(true);
     try {
       await axios.post(
@@ -346,7 +346,7 @@ const ChatInterface: React.FC = () => {
       setShowOptions(false);
       fetchConversations();
     } catch (err) {
-      alert("Error al reservar.");
+      alert(t('chat.reserve_error', "Error al reservar."));
     } finally {
       setIsActionPending(false);
     }
@@ -368,7 +368,7 @@ const ChatInterface: React.FC = () => {
 
   const handleExtendReserve = async () => {
     if (!activeChatId || !extensionDate) return;
-    setPendingText("Ampliando reserva...");
+    setPendingText(t('chat.extending_reserve', "Ampliando reserva..."));
     setIsActionPending(true);
     try {
       await axios.post(
@@ -381,7 +381,7 @@ const ChatInterface: React.FC = () => {
       setShowOptions(false);
       fetchConversations();
     } catch (err) {
-      alert("Error al ampliar la reserva.");
+      alert(t('chat.extend_reserve_error', "Error al ampliar la reserva."));
     } finally {
       setIsActionPending(false);
     }
@@ -390,10 +390,10 @@ const ChatInterface: React.FC = () => {
   const handleCancelReserve = async () => {
     if (
       !activeChatId ||
-      !window.confirm("¿Cancelar la reserva y volver a ponerlo disponible?")
+      !window.confirm(t('chat.cancel_reserve_confirm', "¿Cancelar la reserva y volver a ponerlo disponible?"))
     )
       return;
-    setPendingText("Cancelando reserva...");
+    setPendingText(t('chat.canceling_reserve', "Cancelando reserva..."));
     setIsActionPending(true);
     try {
       await axios.post(
@@ -403,7 +403,7 @@ const ChatInterface: React.FC = () => {
       );
       fetchConversations();
     } catch (err) {
-      alert("Error al cancelar la reserva.");
+      alert(t('chat.cancel_reserve_error', "Error al cancelar la reserva."));
     } finally {
       setIsActionPending(false);
     }
@@ -412,10 +412,10 @@ const ChatInterface: React.FC = () => {
   const handleConfirmSale = async () => {
     if (
       !activeChatId ||
-      !window.confirm("¿Confirmar venta final? Esto cerrará el resto de chats.")
+      !window.confirm(t('chat.confirm_sale_confirm', "¿Confirmar venta final? Esto cerrará el resto de chats."))
     )
       return;
-    setPendingText("Confirmando venta...");
+    setPendingText(t('chat.confirming_sale', "Confirmando venta..."));
     setIsActionPending(true);
     try {
       await axios.post(
@@ -426,7 +426,7 @@ const ChatInterface: React.FC = () => {
       setShowOptions(false);
       fetchConversations();
     } catch (err) {
-      alert("Error al confirmar venta.");
+      alert(t('chat.confirm_sale_error', "Error al confirmar venta."));
     } finally {
       setIsActionPending(false);
     }
@@ -447,10 +447,10 @@ const ChatInterface: React.FC = () => {
       );
 
       setHasReviewed(true);
-      alert("¡Valoración enviada! El chat se cerrará ahora.");
+      alert(t('chat.review_sent', "¡Valoración enviada! El chat se cerrará ahora."));
       await handleFinalizeChat(activeChatId!);
     } catch (err) {
-      alert("Error al enviar valoración.");
+      alert(t('chat.review_error', "Error al enviar valoración."));
     } finally {
       setLoadingReview(false);
     }
@@ -468,17 +468,17 @@ const ChatInterface: React.FC = () => {
       {/* PANEL IZQUIERDA: LISTA */}
       <div className={`${activeChatId ? "hidden md:flex" : "flex"} w-full md:w-96 shrink-0 flex-col border-r border-zinc-800 bg-zinc-900`}>
         <div className="p-4 bg-zinc-900/80 border-b border-zinc-800">
-          <h2 className="text-3xl font-black italic uppercase mb-4 text-white">Mensajes</h2>
+          <h2 className="text-3xl font-black italic uppercase mb-4 text-white">{t('chat.messages_title', 'Mensajes')}</h2>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={20} />
-            <input type="text" placeholder="Buscar..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
+            <input type="text" placeholder={t('common.search', 'Buscar...')} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-3 bg-zinc-900 border border-zinc-700 rounded-xl outline-none text-base focus:border-red-600 transition-colors" />
           </div>
         </div>
 
         <div className="flex-1 overflow-y-auto">
           {loadingList ? (
-            <div className="p-8 text-center text-zinc-500 text-[15px] animate-pulse italic">Cargando chats...</div>
+            <div className="p-8 text-center text-zinc-500 text-[15px] animate-pulse italic">{t('chat.loading_chats', 'Cargando chats...')}</div>
           ) : (
             filteredChats.map((chat) => {
               const otherName = String(currentUserId) === String(chat.seller_id) ? chat.buyer_name : chat.seller_name;
@@ -536,7 +536,7 @@ const ChatInterface: React.FC = () => {
                     {String(currentUserId) === String(activeChatData?.seller_id) ? activeChatData?.buyer_name : activeChatData?.seller_name}
                   </h2>
                   <p className="text-[13px] text-zinc-400 truncate mt-0.5">
-                    {activeChatData?.is_rent ? "Alquiler de: " : "Negociando por: "}
+                    {activeChatData?.is_rent ? t('chat.rent_of', 'Alquiler de: ') : t('chat.negotiating_for', 'Negociando por: ')}
                     <span className="text-zinc-200 font-bold">{activeChatData?.brand_name} {activeChatData?.model_name}</span>
                     <span className="ml-1.5 text-red-500 font-black">{activeChatData?.advertisement_price}€</span>
                   </p>
@@ -544,7 +544,7 @@ const ChatInterface: React.FC = () => {
               </div>
 
               <div className="flex items-center gap-2 md:gap-3 shrink-0">
-                <button onClick={handleDeleteChat} className="p-2.5 text-zinc-500 hover:text-red-500 transition" title="Borrar Chat"><Trash2 size={22} /></button>
+                <button onClick={handleDeleteChat} className="p-2.5 text-zinc-500 hover:text-red-500 transition" title={t('chat.delete_chat_title', "Borrar Chat")}><Trash2 size={22} /></button>
                 <div className="relative">
                   <button onClick={() => setShowOptions(!showOptions)} className="p-2.5 text-zinc-400 hover:text-white transition"><MoreVertical size={22} /></button>
                   {showOptions && (
@@ -554,29 +554,29 @@ const ChatInterface: React.FC = () => {
                           {/* LÓGICA DE ALQUILER */}
                           {activeChatData?.is_rent ? (
                             <button onClick={openRentManager} className="w-full px-5 py-3.5 flex items-center gap-3 text-[15px] text-zinc-300 hover:bg-zinc-800 text-left">
-                              <CalendarDays size={18} /> Gestionar Reservas
+                              <CalendarDays size={18} /> {t('chat.manage_rents', "Gestionar Reservas")}
                             </button>
                           ) : (
                             /* LÓGICA DE VENTA */
                             <>
                               {activeChatData?.ad_status === "disponible" && (
                                 <button onClick={handleReserve} className="w-full px-5 py-3.5 flex items-center gap-3 text-[15px] text-zinc-300 hover:bg-zinc-800 text-left">
-                                  <CalendarClock size={18} /> Reservar vehículo
+                                  <CalendarClock size={18} /> {t('chat.reserve_vehicle', "Reservar vehículo")}
                                 </button>
                               )}
                               {activeChatData?.ad_status === "reservado" && (
                                 <>
                                   <button onClick={openExtensionMenu} className="w-full px-5 py-3.5 flex items-center gap-3 text-[15px] text-blue-400 hover:bg-zinc-800 text-left">
-                                    <CalendarPlus size={18} /> Ampliar reserva
+                                    <CalendarPlus size={18} /> {t('chat.extend_reserve', "Ampliar reserva")}
                                   </button>
                                   <button onClick={handleCancelReserve} className="w-full px-5 py-3.5 flex items-center gap-3 text-[15px] text-orange-500 hover:bg-zinc-800 text-left">
-                                    <X size={18} /> Cancelar reserva
+                                    <X size={18} /> {t('chat.cancel_reserve', "Cancelar reserva")}
                                   </button>
                                 </>
                               )}
                               {activeChatData?.ad_status !== "vendido" && (
                                 <button onClick={handleConfirmSale} className="w-full px-5 py-3.5 flex items-center gap-3 text-[15px] text-green-500 hover:bg-zinc-800 text-left font-bold border-t border-zinc-800/50">
-                                  <CheckCircle2 size={18} /> Confirmar venta final
+                                  <CheckCircle2 size={18} /> {t('chat.confirm_final_sale', "Confirmar venta final")}
                                 </button>
                               )}
                             </>
@@ -584,7 +584,7 @@ const ChatInterface: React.FC = () => {
                           <div className="h-px bg-zinc-800 my-1"></div>
                         </>
                       )}
-                      <button className="w-full px-5 py-3.5 flex items-center gap-3 text-[15px] text-red-500 hover:bg-red-950/20 transition text-left"><Ban size={18} /> Bloquear usuario</button>
+                      <button className="w-full px-5 py-3.5 flex items-center gap-3 text-[15px] text-red-500 hover:bg-red-950/20 transition text-left"><Ban size={18} /> {t('chat.block_user', "Bloquear usuario")}</button>
                     </div>
                   )}
                 </div>
@@ -596,28 +596,28 @@ const ChatInterface: React.FC = () => {
               <div className="absolute inset-0 z-60 bg-black/90 p-6 animate-in slide-in-from-top duration-300">
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="text-2xl font-black uppercase italic text-white flex items-center gap-2">
-                    <CalendarDays className="text-red-600" /> Reservas de {activeChatData?.buyer_name}
+                    <CalendarDays className="text-red-600" /> {t('chat.rents_of', "Reservas de")} {activeChatData?.buyer_name}
                   </h3>
                   <button onClick={() => setShowRentManager(false)} className="text-zinc-400 hover:text-white"><X size={32} /></button>
                 </div>
 
                 <div className="space-y-4 overflow-y-auto max-h-[80%]">
                   {loadingRents ? (
-                    <div className="text-center p-12 text-zinc-500 italic animate-pulse">Cargando reservas...</div>
+                    <div className="text-center p-12 text-zinc-500 italic animate-pulse">{t('chat.loading_rents', "Cargando reservas...")}</div>
                   ) : activeUserRents.length === 0 ? (
-                    <div className="text-center p-12 bg-zinc-900 rounded-2xl text-zinc-500 font-bold border border-zinc-800 italic">No hay reservas activas para este usuario.</div>
+                    <div className="text-center p-12 bg-zinc-900 rounded-2xl text-zinc-500 font-bold border border-zinc-800 italic">{t('chat.no_active_rents', "No hay reservas activas para este usuario.")}</div>
                   ) : (
                     activeUserRents.map((rent) => (
                       <div key={rent.id} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 flex justify-between items-center group hover:border-red-900/50 transition">
                         <div>
-                          <p className="text-xs font-black uppercase text-zinc-500 tracking-widest mb-1">Periodo Reservado</p>
+                          <p className="text-xs font-black uppercase text-zinc-500 tracking-widest mb-1">{t('chat.reserved_period', "Periodo Reservado")}</p>
                           <p className="text-lg font-bold text-white">
-                            Del {new Date(rent.start_date).toLocaleDateString()} al {new Date(rent.end_date).toLocaleDateString()}
+                            {t('chat.from_date', "Del")} {new Date(rent.start_date).toLocaleDateString()} {t('chat.to_date', "al")} {new Date(rent.end_date).toLocaleDateString()}
                           </p>
-                          <p className="text-red-500 font-black mt-1">{rent.total_price}€ total</p>
+                          <p className="text-red-500 font-black mt-1">{rent.total_price}{t('chat.total_currency', "€ total")}</p>
                         </div>
                         <button onClick={() => cancelRent(rent.id)} className="bg-red-600/10 hover:bg-red-600 text-red-600 hover:text-white p-3 rounded-xl transition flex items-center gap-2 font-bold uppercase text-xs">
-                          <Trash2 size={18} /> Cancelar Reserva
+                          <Trash2 size={18} /> {t('chat.cancel_reserve', "Cancelar Reserva")}
                         </button>
                       </div>
                     ))
@@ -631,10 +631,10 @@ const ChatInterface: React.FC = () => {
               <div className="absolute inset-0 z-70 bg-black/90 p-6 flex flex-col items-center justify-center animate-in fade-in duration-300">
                 <div className="bg-zinc-900 border border-zinc-800 p-8 rounded-3xl shadow-2xl w-full max-w-md">
                   <div className="flex justify-between items-center mb-6">
-                    <h3 className="text-xl font-black uppercase italic text-white">Ampliar Reserva</h3>
+                    <h3 className="text-xl font-black uppercase italic text-white">{t('chat.extend_reserve', "Ampliar Reserva")}</h3>
                     <button onClick={() => setShowExtensionInput(false)} className="text-zinc-500 hover:text-white"><X size={24} /></button>
                   </div>
-                  <p className="text-zinc-400 text-sm mb-4">Selecciona la nueva fecha y hora límite para la reserva de este vehículo.</p>
+                  <p className="text-zinc-400 text-sm mb-4">{t('chat.extend_reserve_desc', "Selecciona la nueva fecha y hora límite para la reserva de este vehículo.")}</p>
                   <input 
                     type="datetime-local" 
                     value={extensionDate}
@@ -642,8 +642,8 @@ const ChatInterface: React.FC = () => {
                     className="w-full bg-zinc-800 border border-zinc-700 rounded-xl p-4 text-white mb-6 outline-none focus:border-blue-500 transition"
                   />
                   <div className="flex gap-3">
-                    <button onClick={() => setShowExtensionInput(false)} className="flex-1 py-3 bg-zinc-800 text-white rounded-xl font-bold hover:bg-zinc-700 transition">Cancelar</button>
-                    <button onClick={handleExtendReserve} className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-500 transition shadow-lg">Confirmar</button>
+                    <button onClick={() => setShowExtensionInput(false)} className="flex-1 py-3 bg-zinc-800 text-white rounded-xl font-bold hover:bg-zinc-700 transition">{t('common.cancel', "Cancelar")}</button>
+                    <button onClick={handleExtendReserve} className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-500 transition shadow-lg">{t('common.confirm', "Confirmar")}</button>
                   </div>
                 </div>
               </div>
@@ -658,7 +658,7 @@ const ChatInterface: React.FC = () => {
                 if (isSystem) {
                   return (
                     <div key={msg.id} className="flex flex-col items-center my-8 animate-in fade-in zoom-in duration-500">
-                      <span className="text-[11px] text-zinc-500 uppercase font-black tracking-widest mb-2 italic">Notificación de {APP_NAME}</span>
+                      <span className="text-[11px] text-zinc-500 uppercase font-black tracking-widest mb-2 italic">{t('chat.notification_from', "Notificación de")} {APP_NAME}</span>
                       <div className="bg-zinc-900 border border-red-900/40 text-zinc-200 text-[16px] px-8 py-6 rounded-2xl max-w-480px w-full shadow-2xl leading-relaxed whitespace-pre-wrap mt-1 text-center">
                         {msg.content}
                       </div>
@@ -683,8 +683,8 @@ const ChatInterface: React.FC = () => {
             {activeChatData?.chat_status === "sold" && String(currentUserId) === String(activeChatData?.buyer_id) && !hasReviewed && (
               <div className="mx-4 mb-4 p-8 bg-zinc-800 border-2 border-yellow-600/30 rounded-2xl text-center animate-in zoom-in shadow-2xl relative">
                 <button onClick={() => handleFinalizeChat(activeChatId!)} className="absolute top-5 right-5 text-zinc-500 hover:text-white transition-colors"><X size={24} /></button>
-                <h3 className="text-xl font-black uppercase italic mb-2 text-white">¡Compra finalizada!</h3>
-                <p className="text-zinc-400 text-[14px] mb-5 uppercase tracking-widest mr-8 ml-8">Valora a {activeChatData?.seller_name} para ayudar a la comunidad</p>
+                <h3 className="text-xl font-black uppercase italic mb-2 text-white">{t('chat.purchase_finished', "¡Compra finalizada!")}</h3>
+                <p className="text-zinc-400 text-[14px] mb-5 uppercase tracking-widest mr-8 ml-8">{t('chat.rate_user', "Valora a")} {activeChatData?.seller_name} {t('chat.to_help_community', "para ayudar a la comunidad")}</p>
                 <div className="flex justify-center gap-4 mb-6">
                   {[1, 2, 3, 4, 5].map((s) => (
                     <button key={s} onClick={() => setRating(s)} className={`transition-transform active:scale-90 ${rating >= s ? "text-yellow-500 drop-shadow-[0_0_8px_rgba(234,179,8,0.5)]" : "text-zinc-700"}`}>
@@ -692,10 +692,10 @@ const ChatInterface: React.FC = () => {
                     </button>
                   ))}
                 </div>
-                <textarea placeholder="Cuéntanos cómo fue todo (opcional)..." value={reviewComment} onChange={(e) => setReviewComment(e.target.value)}
+                <textarea placeholder={t('chat.review_placeholder', "Cuéntanos cómo fue todo (opcional)...")} value={reviewComment} onChange={(e) => setReviewComment(e.target.value)}
                   className="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-5 text-white text-base mb-5 outline-none focus:border-yellow-600 focus:ring-1 focus:ring-yellow-600 transition" />
                 <button onClick={submitReview} disabled={!rating || loadingReview} className="w-full py-4 bg-yellow-600 text-black text-[15px] font-black uppercase tracking-widest rounded-xl transition hover:bg-yellow-500 disabled:opacity-50 shadow-lg">
-                  {loadingReview ? "Enviando..." : "Enviar Valoración"}
+                  {loadingReview ? t('common.sending', "Enviando...") : t('chat.submit_review', "Enviar Valoración")}
                 </button>
               </div>
             )}
@@ -705,12 +705,12 @@ const ChatInterface: React.FC = () => {
               {activeChatData?.chat_status === "disabled" ? (
                 <div className="flex justify-center">
                   <button onClick={handleDeleteChat} className="bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-4 px-8 rounded-xl border border-zinc-700 transition w-full max-w-md shadow-lg italic tracking-wide uppercase text-sm">
-                    Coche vendido a otro usuario - Eliminar Chat
+                    {t('chat.car_sold_to_other', "Coche vendido a otro usuario - Eliminar Chat")}
                   </button>
                 </div>
               ) : (
                 <form onSubmit={handleSendMessage} className="flex gap-3 items-end max-w-4xl mx-auto w-full">
-                  <textarea value={newMessage} onChange={(e) => setNewMessage(e.target.value)} onKeyDown={handleKeyDown} placeholder="Escribe tu mensaje..." rows={1}
+                  <textarea value={newMessage} onChange={(e) => setNewMessage(e.target.value)} onKeyDown={handleKeyDown} placeholder={t('chat.write_message', "Escribe tu mensaje...")} rows={1}
                     style={{ minHeight: "52px", maxHeight: "140px" }}
                     className="flex-1 bg-zinc-900 border border-zinc-700 rounded-2xl px-5 py-3.5 outline-none text-[17px] resize-none focus:border-red-600 transition shadow-inner" />
                   <button type="submit" disabled={!newMessage.trim()} className="bg-red-600 text-white w-52px h-52px flex-none rounded-full flex items-center justify-center hover:bg-red-500 transition disabled:opacity-50 shadow-md ml-1">
@@ -725,8 +725,8 @@ const ChatInterface: React.FC = () => {
             <div className="h-28 w-28 bg-zinc-900/50 rounded-full flex items-center justify-center mb-6 border border-zinc-800/50 shadow-xl">
               <MessageSquare size={48} className="text-zinc-700" />
             </div>
-            <h3 className="font-black uppercase italic text-zinc-400 text-2xl tracking-tighter">Buzón de Negociación</h3>
-            <p className="max-w-sm text-[15px] mt-3 leading-relaxed">Selecciona un chat lateral para empezar a hablar con el vendedor o gestionar tu compra.</p>
+            <h3 className="font-black uppercase italic text-zinc-400 text-2xl tracking-tighter">{t('chat.mailbox_title', "Buzón de Negociación")}</h3>
+            <p className="max-w-sm text-[15px] mt-3 leading-relaxed">{t('chat.mailbox_desc', "Selecciona un chat lateral para empezar a hablar con el vendedor o gestionar tu compra.")}</p>
           </div>
         )}
       </div>

@@ -19,7 +19,11 @@ export default function Footer() {
           {/* Columna 1: Logo y Descripción */}
           <div className="space-y-4">
             <Link to="/" className="flex items-center gap-2">
-              <img src={logo} alt={`Logo de ${APP_NAME}`} className="h-10 w-auto object-contain" />
+              <img 
+                src={logo} 
+                alt={t('footer.logo_alt', { app_name: APP_NAME })} 
+                className="h-10 w-auto object-contain" 
+              />
             </Link>
             <p className="text-zinc-400 text-sm leading-relaxed">
               {t('footer.description', 'Tu plataforma inteligente para la gestión y análisis del mercado automovilístico. Compra, vende y alquila con total confianza.')}
@@ -70,7 +74,7 @@ export default function Footer() {
             <ul className="space-y-3 text-sm text-zinc-400">
               <li className="flex items-start gap-3">
                 <MapPin size={18} className="text-red-500 shrink-0" />
-                <span>Rivas-Vaciamadrid, Madrid, España</span>
+                <span>{t('legal.notice.address_val', 'Rivas-Vaciamadrid, Madrid, España')}</span>
               </li>
               <li className="flex items-center gap-3">
                 <Phone size={18} className="text-red-500 shrink-0" />
@@ -91,10 +95,10 @@ export default function Footer() {
         <div className="mt-12 pt-8 border-t border-zinc-800 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-zinc-500">
           <div className="flex items-center gap-2">
             <Car size={14} className="text-zinc-600" />
-            <span>© {currentYear} {APP_NAME}. Todos los derechos reservados.</span>
+            <span>{t('footer.copyright', { year: currentYear, app_name: APP_NAME })}</span>
           </div>
           <div className="flex gap-4">
-             <span className="hover:text-zinc-300 transition-colors cursor-default italic">TFG 2º DAW</span>
+             <span className="hover:text-zinc-300 transition-colors cursor-default italic">{t('footer.tfg', 'TFG 2º DAW')}</span>
           </div>
         </div>
       </div>

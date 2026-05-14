@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Star } from "lucide-react";
+import { useTranslation } from "react-i18next"; 
 
 type Props = {
   value: number;
@@ -9,6 +10,7 @@ type Props = {
 };
 
 export default function StarRating({ value, size = 18, editable = false, onChange }: Props) {
+  const { t } = useTranslation(); 
   const [hover, setHover] = useState<number | null>(null);
 
   const displayActive = (i: number) => {
@@ -28,12 +30,12 @@ export default function StarRating({ value, size = 18, editable = false, onChang
             onMouseEnter={() => setHover(i)}
             onMouseLeave={() => setHover(null)}
             className="p-1 transition-transform active:scale-90"
-            aria-label={`${i} estrellas`}
+            aria-label={t('common.stars_aria', "{{count}} estrellas", { count: i })} 
           >
             <Star 
               size={size} 
               className={isActive ? "text-yellow-400" : "text-zinc-600"} 
-              fill={isActive ? "currentColor" : "none"} // <--- ESTO RELLENA LA ESTRELLA
+              fill={isActive ? "currentColor" : "none"} 
             />
           </button>
         ) : (
@@ -41,7 +43,7 @@ export default function StarRating({ value, size = 18, editable = false, onChang
             key={i} 
             size={size} 
             className={isActive ? "text-yellow-400" : "text-zinc-600"} 
-            fill={isActive ? "currentColor" : "none"} // <--- ESTO RELLENA LA ESTRELLA
+            fill={isActive ? "currentColor" : "none"} 
           />
         );
       })}

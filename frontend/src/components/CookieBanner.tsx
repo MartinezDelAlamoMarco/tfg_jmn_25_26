@@ -65,7 +65,7 @@ export default function CookieBanner() {
           <button 
             onClick={() => setIsVisible(false)}
             className="hidden sm:flex p-2 text-zinc-500 hover:text-white transition-colors ml-2"
-            aria-label="Cerrar"
+            aria-label={t('common.close', 'Cerrar')}
           >
             <X size={20} />
           </button>

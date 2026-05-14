@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { API_BASE_URL } from "../../config";
 import { Link } from "react-router-dom";
-import { useTranslation } from "react-i18next"; // <-- IMPRESCINDIBLE
+import { useTranslation } from "react-i18next";
 
 // Interfaz actualizada para el modelo de datos real de Laravel (anidado)
 interface Advertisement {
@@ -21,7 +21,7 @@ interface Advertisement {
 }
 
 const FavoritesScreen = () => {
-  const { t } = useTranslation(); // <-- IMPRESCINDIBLE
+  const { t, i18n } = useTranslation();
   const [advertisements, setAdvertisements] = useState<Advertisement[]>([]);
   const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -67,7 +67,7 @@ const FavoritesScreen = () => {
       })
       .catch((err) => {
         console.error("Error fetching favorites:", err);
-        setErrorMessage(t('favorites.error_fetch', "Error al obtener vehículos favoritos")); // <-- MODIFICADO CON t()
+        setErrorMessage(t('favorites.error_fetch', "Error al obtener vehículos favoritos"));
       })
       .finally(() => {
         setLoading(false);
@@ -78,7 +78,7 @@ const FavoritesScreen = () => {
   const handleToggleFavorite = async (adId: number) => {
     const tokenLocal = localStorage.getItem("auth_token");
     if (!tokenLocal) {
-      alert(t('favorites.login_required_toggle', "Inicia sesión para marcar favoritos")); // <-- MODIFICADO CON t()
+      alert(t('favorites.login_required_toggle', "Inicia sesión para marcar favoritos"));
       return;
     }
 
@@ -108,7 +108,7 @@ const FavoritesScreen = () => {
       }
     } catch (err) {
       console.error("Error updating favorite:", err);
-      alert(t('favorites.error_toggle', "No se pudo actualizar favoritos")); // <-- MODIFICADO CON t()
+      alert(t('favorites.error_toggle', "No se pudo actualizar favoritos"));
     } finally {
       setLoadingFavs((prev) => {
         const out = { ...prev };
@@ -135,14 +135,14 @@ const FavoritesScreen = () => {
             <div className="col-span-full bg-zinc-800/10 border border-zinc-700 p-8 rounded-xl text-zinc-300 text-center">
               {!token ? (
                 <div>
-                  <p className="mb-2">{t('favorites.login_required_view', "Inicia sesión para ver tus favoritos.")}</p> {/* <-- MODIFICADO CON t() */}
+                  <p className="mb-2">{t('favorites.login_required_view', "Inicia sesión para ver tus favoritos.")}</p>
                   <Link to="/login" className="text-red-700 hover:underline">
-                    {t('navbar.login', "Iniciar sesión")} {/* <-- MODIFICADO CON t() */}
+                    {t('navbar.login', "Iniciar sesión")}
                   </Link>
                 </div>
               ) : (
                 <p className="text-lg font-semibold">
-                  {t('favorites.empty_favorites', "Aún no se han marcado favoritos.")} {/* <-- MODIFICADO CON t() */}
+                  {t('favorites.empty_favorites', "Aún no se han marcado favoritos.")}
                 </p>
               )}
             </div>
@@ -159,12 +159,12 @@ const FavoritesScreen = () => {
                         v.images.find((img) => img.is_main)?.image_url ||
                         v.images[0].image_url
                       }
-                      alt="Coche"
+                      alt={t('create_ad.vehicle', 'Vehículo')}
                       className="w-full h-full object-cover"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-zinc-600">
-                      {t('common.no_photo', "Sin foto")} {/* <-- MODIFICADO CON t() */}
+                      {t('common.no_photo', "Sin foto")}
                     </div>
                   )}
                 </div>
@@ -180,9 +180,9 @@ const FavoritesScreen = () => {
 
                 <div className="flex justify-between items-end mb-6">
                   <p className="text-3xl font-black">
-                    {Number(v.price).toLocaleString("es-ES")} €
+                    {Number(v.price).toLocaleString(i18n.language.startsWith('en') ? 'en-US' : 'es-ES')} €
                   </p>
-                  <p className="text-xs text-zinc-500">{t('details.views', 'Vistas:')} {v.views}</p> {/* <-- MODIFICADO CON t() */}
+                  <p className="text-xs text-zinc-500">{t('details.views', 'Vistas')}: {v.views}</p>
                 </div>
 
                 {token && (
@@ -197,9 +197,9 @@ const FavoritesScreen = () => {
                           <span className="animate-spin inline-block h-4 w-4 border-b-2 border-white rounded-full"></span>
                         </span>
                       ) : favoriteIds.includes(v.id) ? (
-                        t('favorites.remove_favorite', "Quitar favorito") // <-- MODIFICADO CON t()
+                        t('favorites.remove_favorite', "Quitar favorito")
                       ) : (
-                        t('favorites.no_favorites', "Añadir a favoritos") // <-- MODIFICADO CON t()
+                        t('favorites.no_favorites', "Añadir a favoritos")
                       )}
                     </button>
                   </div>
@@ -209,7 +209,7 @@ const FavoritesScreen = () => {
                   to={`/advertisement/${v.id}`}
                   className="mt-auto block w-full text-center py-3 bg-red-700 hover:bg-red-600 rounded-lg font-bold transition"
                 >
-                  {t('home.view_details', "Ver detalles")} {/* <-- MODIFICADO CON t() */}
+                  {t('home.view_details', "Ver detalles")}
                 </Link>
               </div>
             ))

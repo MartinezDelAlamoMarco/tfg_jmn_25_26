@@ -3,7 +3,7 @@ import axios from "axios";
 import { Search, Trash2, ExternalLink, Pencil, ShoppingBag, Key, List } from "lucide-react";
 import { API_BASE_URL } from "../../config";
 import { useNavigate } from "react-router-dom";
-import { useTranslation } from "react-i18next"; // <-- IMPRESCINDIBLE
+import { useTranslation } from "react-i18next";
 
 interface Advertisement {
   id: number;
@@ -18,7 +18,7 @@ interface Advertisement {
 }
 
 export default function AdminAdsPanel() {
-  const { t } = useTranslation(); // <-- IMPRESCINDIBLE
+  const { t, i18n } = useTranslation(); 
   const [ads, setAds] = useState<Advertisement[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
@@ -53,14 +53,14 @@ export default function AdminAdsPanel() {
   });
 
   const deleteAd = async (id: number) => {
-    if (!confirm(t('admin_panel.delete_confirm', "¿Eliminar este anuncio definitivamente?"))) return; // <-- MODIFICADO CON t()
+    if (!confirm(t('admin_panel.delete_confirm', "¿Eliminar este anuncio definitivamente?"))) return; 
     try {
       await axios.delete(`${API_BASE_URL}/advertisements/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchAds();
     } catch (error) {
-      alert(t('admin_panel.delete_error', "Error al eliminar el anuncio")); // <-- MODIFICADO CON t()
+      alert(t('admin_panel.delete_error', "Error al eliminar el anuncio")); 
     }
   };
 
@@ -71,7 +71,7 @@ export default function AdminAdsPanel() {
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-red-500 transition-colors" size={20} />
         <input
           type="text"
-          placeholder={t('admin_panel.search_placeholder', "Buscar por Marca, Modelo o ID...")} // <-- MODIFICADO CON t()
+          placeholder={t('admin_panel.search_placeholder', "Buscar por Marca, Modelo o ID...")} 
           className="w-full bg-zinc-900 border border-zinc-800 rounded-xl py-4 pl-12 pr-4 focus:outline-none focus:border-red-500 text-white transition-all"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -80,9 +80,9 @@ export default function AdminAdsPanel() {
 
       {/* Selector de tipo */}
       <div className="flex gap-2 p-1 bg-zinc-900/50 border border-zinc-800 rounded-xl w-fit">
-        <button onClick={() => setFilterType("all")} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold uppercase transition-all ${filterType === "all" ? "bg-white text-black" : "text-zinc-500 hover:text-white"}`}><List size={14} /> {t('admin_panel.all', "Todos")}</button> {/* <-- MODIFICADO CON t() */}
-        <button onClick={() => setFilterType("sale")} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold uppercase transition-all ${filterType === "sale" ? "bg-green-600 text-white" : "text-zinc-500 hover:text-white"}`}><ShoppingBag size={14} /> {t('admin_panel.sales', "Ventas")}</button> {/* <-- MODIFICADO CON t() */}
-        <button onClick={() => setFilterType("rent")} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold uppercase transition-all ${filterType === "rent" ? "bg-blue-600 text-white" : "text-zinc-500 hover:text-white"}`}><Key size={14} /> {t('admin_panel.rents', "Alquileres")}</button> {/* <-- MODIFICADO CON t() */}
+        <button onClick={() => setFilterType("all")} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold uppercase transition-all ${filterType === "all" ? "bg-white text-black" : "text-zinc-500 hover:text-white"}`}><List size={14} /> {t('admin_panel.all', "Todos")}</button> 
+        <button onClick={() => setFilterType("sale")} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold uppercase transition-all ${filterType === "sale" ? "bg-green-600 text-white" : "text-zinc-500 hover:text-white"}`}><ShoppingBag size={14} /> {t('admin_panel.sales', "Ventas")}</button> 
+        <button onClick={() => setFilterType("rent")} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold uppercase transition-all ${filterType === "rent" ? "bg-blue-600 text-white" : "text-zinc-500 hover:text-white"}`}><Key size={14} /> {t('admin_panel.rents', "Alquileres")}</button> 
       </div>
 
       {/* Tabla de Anuncios */}
@@ -90,11 +90,11 @@ export default function AdminAdsPanel() {
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="border-b border-zinc-800 bg-zinc-900/80 text-xs font-black uppercase text-zinc-500">
-              <th className="p-5">{t('admin_panel.vehicle', "Vehículo")}</th> {/* <-- MODIFICADO CON t() */}
-              <th className="p-5 text-center">{t('admin_panel.type', "Tipo")}</th> {/* <-- MODIFICADO CON t() */}
-              <th className="p-5 text-center">{t('admin_panel.state', "Estado")}</th> {/* <-- MODIFICADO CON t() */}
-              <th className="p-5">{t('admin_panel.price', "Precio")}</th> {/* <-- MODIFICADO CON t() */}
-              <th className="p-5 text-right">{t('admin_panel.actions', "Acciones")}</th> {/* <-- MODIFICADO CON t() */}
+              <th className="p-5">{t('admin_panel.vehicle', "Vehículo")}</th> 
+              <th className="p-5 text-center">{t('admin_panel.type', "Tipo")}</th> 
+              <th className="p-5 text-center">{t('admin_panel.state', "Estado")}</th> 
+              <th className="p-5">{t('admin_panel.price', "Precio")}</th> 
+              <th className="p-5 text-right">{t('admin_panel.actions', "Acciones")}</th> 
             </tr>
           </thead>
           <tbody>
@@ -104,12 +104,12 @@ export default function AdminAdsPanel() {
                 <td colSpan={5} className="p-20 text-center">
                   <div className="flex flex-col items-center gap-3">
                     <div className="w-8 h-8 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
-                    <span className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-500">{t('admin_panel.searching_inventory', "Buscando en Inventario...")}</span> {/* <-- MODIFICADO CON t() */}
+                    <span className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-500">{t('admin_panel.searching_inventory', "Buscando en Inventario...")}</span> 
                   </div>
                 </td>
               </tr>
             ) : filteredAds.length === 0 ? (
-              <tr><td colSpan={5} className="p-10 text-center text-zinc-500 italic">{t('admin_panel.no_ads_found', "No se han encontrado anuncios.")}</td></tr> // <-- MODIFICADO CON t()
+              <tr><td colSpan={5} className="p-10 text-center text-zinc-500 italic">{t('admin_panel.no_ads_found', "No se han encontrado anuncios.")}</td></tr> 
             ) : (
               filteredAds.map(ad => {
                 const imagesArray = Array.isArray(ad.images) ? ad.images : JSON.parse((ad.images as any) || "[]");
@@ -130,7 +130,7 @@ export default function AdminAdsPanel() {
                     </td>
                     <td className="p-5 text-center">
                       <div className={`inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] font-bold uppercase ${ad.is_rent ? 'text-blue-400 bg-blue-400/10' : 'text-green-400 bg-green-400/10'}`}>
-                        {ad.is_rent ? <Key size={10}/> : <ShoppingBag size={10}/>} {ad.is_rent ? t('common.rent', 'Alquiler') : t('common.sale', 'Venta')} {/* <-- MODIFICADO CON t() */}
+                        {ad.is_rent ? <Key size={10}/> : <ShoppingBag size={10}/>} {ad.is_rent ? t('common.rent', 'Alquiler') : t('common.sale', 'Venta')} 
                       </div>
                     </td>
                     <td className="p-5 text-center">
@@ -139,7 +139,7 @@ export default function AdminAdsPanel() {
                       </span>
                     </td>
                     <td className="p-5 font-bold text-white">
-                      {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(ad.price)}
+                      {new Intl.NumberFormat(i18n.language.startsWith('en') ? 'en-US' : 'es-ES', { style: 'currency', currency: 'EUR' }).format(ad.price)}
                     </td>
                     <td className="p-5">
                       <div className="flex justify-end gap-2">

@@ -1,14 +1,14 @@
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { 
-  ChevronLeft, 
   FileSignature, 
   Search, 
   CreditCard, 
   Truck, 
   RotateCcw, 
   ShieldAlert, 
-  Scale 
+  Scale,
+  ChevronLeft
 } from "lucide-react";
 import { APP_NAME, COMPANY_NAME, SUPER_ADMIN_EMAIL } from "../../config";
 
@@ -50,10 +50,10 @@ export default function TerminosCondiciones() {
             </div>
             <div className="bg-zinc-900 p-6 rounded-lg border border-zinc-800 ml-3 pl-9">
               <ul className="space-y-2 text-zinc-400">
-                <li><strong className="text-white">{t('legal.terms.s1_company', 'Razón Social')}:</strong> {COMPANY_NAME} S.L. (Proyecto TFG)</li>
+                <li><strong className="text-white">{t('legal.terms.s1_company', 'Razón Social')}:</strong> {COMPANY_NAME} S.L. {t('legal.notice.project_status', '(Proyecto TFG)')}</li>
                 <li><strong className="text-white">NIF:</strong> B12345678</li>
-                <li><strong className="text-white">{t('legal.terms.s1_address', 'Domicilio')}:</strong> Rivas-Vaciamadrid , Madrid, España.</li>
-                <li><strong className="text-white">Email:</strong> {SUPER_ADMIN_EMAIL}</li>
+                <li><strong className="text-white">{t('legal.terms.s1_address', 'Domicilio')}:</strong> {t('legal.notice.address_val', 'Rivas-Vaciamadrid, Madrid, España')}.</li>
+                <li><strong className="text-white">{t('legal.terms.contact_email', 'Email')}:</strong> {SUPER_ADMIN_EMAIL}</li>
               </ul>
             </div>
           </article>

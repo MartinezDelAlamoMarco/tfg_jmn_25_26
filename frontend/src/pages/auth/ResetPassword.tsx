@@ -3,10 +3,10 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { API_BASE_URL } from "../../config";
 import { Lock, Eye, EyeOff, Check, X, ShieldCheck } from "lucide-react";
-import { useTranslation } from "react-i18next"; // <-- IMPRESCINDIBLE
+import { useTranslation } from "react-i18next";
 
 const ResetPassword = () => {
-  const { t } = useTranslation(); // <-- IMPRESCINDIBLE
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
@@ -16,7 +16,7 @@ const ResetPassword = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [status, setStatus] = useState<{ type: 'success' | 'error', msg: string } | null>(null);
 
-  // Lógica de validación de requisitos (Igual que en el Registro)
+  // Lógica de validación de requisitos
   const validations = {
     length: password.length >= 8,
     upper: /[A-Z]/.test(password),
@@ -43,9 +43,8 @@ const ResetPassword = () => {
         password_confirmation: passwordConfirmation
       });
 
-      setStatus({ type: 'success', msg: t('reset_password.success_msg', "¡Contraseña actualizada con éxito! Redirigiendo al login...") }); // <-- MODIFICADO CON t()
+      setStatus({ type: 'success', msg: t('reset_password.success_msg', "¡Contraseña actualizada con éxito! Redirigiendo al login...") });
       
-      // Redirigimos al login tras 3 segundos
       setTimeout(() => {
         navigate("/login");
       }, 3000);
@@ -53,7 +52,7 @@ const ResetPassword = () => {
     } catch (err: any) {
       setStatus({ 
         type: 'error', 
-        msg: err.response?.data?.error || t('reset_password.error_msg', "El enlace ha expirado o es inválido. Solicita uno nuevo.") // <-- MODIFICADO CON t()
+        msg: err.response?.data?.error || t('reset_password.error_msg', "El enlace ha expirado o es inválido. Solicita uno nuevo.")
       });
     } finally {
       setIsSubmitting(false);
@@ -70,9 +69,9 @@ const ResetPassword = () => {
             </div>
           </div>
           <h2 className="text-2xl font-bold text-white mb-2 uppercase tracking-tighter">
-            {t('reset_password.reset', "Restablecer")} <span className="text-red-600">{t('reset_password.password', "Contraseña")}</span> {/* <-- MODIFICADO CON t() */}
+            {t('reset_password.reset', "Restablecer")} <span className="text-red-600">{t('reset_password.password', "Contraseña")}</span>
           </h2>
-          <p className="text-zinc-400 text-sm">{t('reset_password.subtitle', "Crea una nueva contraseña segura para tu cuenta.")}</p> {/* <-- MODIFICADO CON t() */}
+          <p className="text-zinc-400 text-sm">{t('reset_password.subtitle', "Crea una nueva contraseña segura para tu cuenta.")}</p>
         </div>
 
         {status && (
@@ -84,11 +83,10 @@ const ResetPassword = () => {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Nueva Contraseña */}
           <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
-              placeholder={t('reset_password.new_password', "Nueva contraseña")} // <-- MODIFICADO CON t()
+              placeholder={t('reset_password.new_password', "Nueva contraseña")}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-4 py-3 pl-10 bg-zinc-700 border border-zinc-600 rounded-lg text-white focus:ring-2 focus:ring-red-600 outline-none transition"
@@ -104,11 +102,10 @@ const ResetPassword = () => {
             </button>
           </div>
 
-          {/* Confirmar Contraseña */}
           <div className="relative">
             <input
               type="password"
-              placeholder={t('reset_password.repeat_password', "Repite la contraseña")} // <-- MODIFICADO CON t()
+              placeholder={t('reset_password.repeat_password', "Repite la contraseña")}
               value={passwordConfirmation}
               onChange={(e) => setPasswordConfirmation(e.target.value)}
               className="w-full px-4 py-3 pl-10 bg-zinc-700 border border-zinc-600 rounded-lg text-white focus:ring-2 focus:ring-red-600 outline-none transition"
@@ -117,13 +114,12 @@ const ResetPassword = () => {
             <Lock className="absolute left-3 top-3.5 text-zinc-500" size={18} />
           </div>
 
-          {/* Panel de Requisitos (UX) */}
           <div className="bg-zinc-900/50 p-4 rounded-lg grid grid-cols-2 gap-2 mt-4">
-            <ValidationItem label={t('reset_password.char_length', "8+ caracteres")} met={validations.length} /> {/* <-- MODIFICADO CON t() */}
-            <ValidationItem label={t('reset_password.uppercase', "Mayúscula")} met={validations.upper} /> {/* <-- MODIFICADO CON t() */}
-            <ValidationItem label={t('reset_password.number', "Número")} met={validations.number} /> {/* <-- MODIFICADO CON t() */}
-            <ValidationItem label={t('reset_password.symbol', "Símbolo (!@#)")} met={validations.special} /> {/* <-- MODIFICADO CON t() */}
-            <ValidationItem label={t('reset_password.match', "Coinciden")} met={validations.match} /> {/* <-- MODIFICADO CON t() */}
+            <ValidationItem label={t('reset_password.char_length', "8+ caracteres")} met={validations.length} />
+            <ValidationItem label={t('reset_password.uppercase', "Mayúscula")} met={validations.upper} />
+            <ValidationItem label={t('reset_password.number', "Número")} met={validations.number} />
+            <ValidationItem label={t('reset_password.symbol', "Símbolo (!@#)")} met={validations.special} />
+            <ValidationItem label={t('reset_password.match', "Coinciden")} met={validations.match} />
           </div>
 
           <button
@@ -131,7 +127,7 @@ const ResetPassword = () => {
             disabled={!isFormValid || isSubmitting}
             className="w-full bg-red-700 hover:bg-red-600 disabled:bg-zinc-700 disabled:text-zinc-500 text-white font-black uppercase py-3 rounded-lg transition mt-6 shadow-lg shadow-red-900/20"
           >
-            {isSubmitting ? t('reset_password.updating', "Actualizando...") : t('reset_password.save_new_password', "Guardar nueva contraseña")} {/* <-- MODIFICADO CON t() */}
+            {isSubmitting ? t('reset_password.updating', "Actualizando...") : t('reset_password.save_new_password', "Guardar nueva contraseña")}
           </button>
         </form>
       </div>
@@ -139,7 +135,6 @@ const ResetPassword = () => {
   );
 };
 
-// Componente auxiliar para los checks de validación
 const ValidationItem = ({ label, met }: { label: string, met: boolean }) => (
   <div className={`flex items-center space-x-2 ${met ? 'text-green-500' : 'text-zinc-500'} transition-colors duration-300`}>
     {met ? <Check size={14} className="shrink-0" /> : <X size={14} className="shrink-0" />}

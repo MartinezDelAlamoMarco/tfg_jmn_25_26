@@ -46,11 +46,11 @@ export default function PoliticaPrivacidad() {
             <div className="flex items-center gap-3 mb-4">
               <UserCheck className="text-red-600" size={24} />
               <h2 className="text-xl font-bold text-white uppercase tracking-wider">
-                {t('legal.privacy.q1_title', '¿Quién es el responsable del tratamiento de tus datos?')}
+                1. {t('legal.privacy.q1_title', '¿Quién es el responsable del tratamiento de tus datos?')}
               </h2>
             </div>
             <p className="text-zinc-400 pl-9 border-l-4 border-zinc-800 ml-3">
-              <strong>{APP_NAME} S.L. (Proyecto TFG)</strong> {t('legal.privacy.q1_text')}
+              <strong>{APP_NAME} S.L. {t('legal.notice.project_status', '(Proyecto TFG)')}</strong> {t('legal.privacy.q1_text')}
             </p>
           </article>
 
@@ -59,7 +59,7 @@ export default function PoliticaPrivacidad() {
             <div className="flex items-center gap-3 mb-4">
               <Target className="text-red-600" size={24} />
               <h2 className="text-xl font-bold text-white uppercase tracking-wider">
-                {t('legal.privacy.q2_title', '¿Para qué tratamos tus datos personales?')}
+                2. {t('legal.privacy.q2_title', '¿Para qué tratamos tus datos personales?')}
               </h2>
             </div>
             <div className="text-zinc-400 pl-9 border-l-4 border-zinc-800 ml-3 space-y-2">
@@ -78,7 +78,7 @@ export default function PoliticaPrivacidad() {
             <div className="flex items-center gap-3 mb-4">
               <FileText className="text-red-600" size={24} />
               <h2 className="text-xl font-bold text-white uppercase tracking-wider">
-                {t('legal.privacy.q3_title', '¿Por qué motivo podemos tratar tus datos?')}
+                3. {t('legal.privacy.q3_title', '¿Por qué motivo podemos tratar tus datos?')}
               </h2>
             </div>
             <div className="text-zinc-400 pl-9 border-l-4 border-zinc-800 ml-3 space-y-2">
@@ -95,7 +95,7 @@ export default function PoliticaPrivacidad() {
             <div className="flex items-center gap-3 mb-4">
               <Clock className="text-red-600" size={24} />
               <h2 className="text-xl font-bold text-white uppercase tracking-wider">
-                {t('legal.privacy.q4_title', '¿Durante cuánto tiempo guardaremos tus datos?')}
+                4. {t('legal.privacy.q4_title', '¿Durante cuánto tiempo guardaremos tus datos?')}
               </h2>
             </div>
             <p className="text-zinc-400 pl-9 border-l-4 border-zinc-800 ml-3">
@@ -108,7 +108,7 @@ export default function PoliticaPrivacidad() {
             <div className="flex items-center gap-3 mb-4">
               <Share2 className="text-red-600" size={24} />
               <h2 className="text-xl font-bold text-white uppercase tracking-wider">
-                {t('legal.privacy.q5_title', '¿A quién facilitamos tus datos personales?')}
+                5. {t('legal.privacy.q5_title', '¿A quién facilitamos tus datos personales?')}
               </h2>
             </div>
             <p className="text-zinc-400 pl-9 border-l-4 border-zinc-800 ml-3">
@@ -121,7 +121,7 @@ export default function PoliticaPrivacidad() {
             <div className="flex items-center gap-3 mb-4">
               <ShieldAlert className="text-red-600" size={24} />
               <h2 className="text-xl font-bold text-white uppercase tracking-wider">
-                {t('legal.privacy.q6_title', '¿Cuáles son tus derechos?')}
+                6. {t('legal.privacy.q6_title', '¿Cuáles son tus derechos?')}
               </h2>
             </div>
             <div className="text-zinc-400 pl-9 border-l-4 border-zinc-800 ml-3 space-y-4">
@@ -134,8 +134,8 @@ export default function PoliticaPrivacidad() {
               </ul>
               <div className="bg-zinc-900 p-4 rounded-lg border border-zinc-800 mt-4">
                 <p className="font-bold text-white mb-2">{t('legal.privacy.q6_contact_title')}:</p>
-                <p>{APP_NAME} – Rivas-Vaciamadrid, Madrid, España.</p>
-                <p>Email: {SUPER_ADMIN_EMAIL}</p>
+                <p>{APP_NAME} – {t('legal.notice.address_val', 'Rivas-Vaciamadrid, Madrid, España')}.</p>
+                <p>{t('legal.cookies.contact_email', 'Email')}: {SUPER_ADMIN_EMAIL}</p>
               </div>
             </div>
           </article>
@@ -145,7 +145,7 @@ export default function PoliticaPrivacidad() {
             <div className="flex items-center gap-3 mb-4">
               <AlertCircle className="text-red-600" size={24} />
               <h2 className="text-xl font-bold text-white uppercase tracking-wider">
-                {t('legal.privacy.q7_title', 'Carácter obligatorio de la información')}
+                7. {t('legal.privacy.q7_title', 'Carácter obligatorio de la información')}
               </h2>
             </div>
             <div className="text-zinc-400 pl-9 border-l-4 border-zinc-800 ml-3 space-y-3">
@@ -159,7 +159,7 @@ export default function PoliticaPrivacidad() {
             <div className="flex items-center gap-3 mb-4">
               <Lock className="text-red-600" size={24} />
               <h2 className="text-xl font-bold text-white uppercase tracking-wider">
-                {t('legal.privacy.q8_title', 'Medidas de Seguridad')}
+                8. {t('legal.privacy.q8_title', 'Medidas de Seguridad')}
               </h2>
             </div>
             <p className="text-zinc-400 pl-9 border-l-4 border-zinc-800 ml-3">

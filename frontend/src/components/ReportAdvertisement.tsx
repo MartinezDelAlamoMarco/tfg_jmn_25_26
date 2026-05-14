@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { API_BASE_URL } from "../config";
-import { useTranslation } from "react-i18next"; // <-- IMPRESCINDIBLE
+import { useTranslation } from "react-i18next";
 
 interface ReportType {
   id: number;
@@ -10,7 +10,7 @@ interface ReportType {
 }
 
 const ReportAdvertisement = () => {
-  const { t, i18n } = useTranslation(); // <-- IMPRESCINDIBLE
+  const { t, i18n } = useTranslation();
   const { id } = useParams<{ id: string }>(); // ID del anuncio a reportar
   const navigate = useNavigate();
   
@@ -33,7 +33,7 @@ const ReportAdvertisement = () => {
         const response = await axios.get(`${API_BASE_URL}/report-types`);
         setReportTypes(response.data);
       } catch (err) {
-        setError(t('report.loading_motives', "Error al cargar los motivos de reporte.")); // <-- MODIFICADO CON t()
+        setError(t('report.loading_motives', "Error al cargar los motivos de reporte."));
       } finally {
         setLoading(false);
       }
@@ -49,7 +49,7 @@ const ReportAdvertisement = () => {
     const token = localStorage.getItem('auth_token');
     
     if (!token) {
-      setError(t('report.login_required', "Debes iniciar sesión para reportar un anuncio.")); // <-- MODIFICADO CON t()
+      setError(t('report.login_required', "Debes iniciar sesión para reportar un anuncio."));
       setSubmitting(false);
       return;
     }
@@ -65,13 +65,13 @@ const ReportAdvertisement = () => {
         }
       });
 
-      setSuccessMsg(t('report.success_msg', "Tu reporte ha sido enviado. Un administrador lo revisará pronto.")); // <-- MODIFICADO CON t()
+      setSuccessMsg(t('report.success_msg', "Tu reporte ha sido enviado. Un administrador lo revisará pronto."));
     } catch (err: any) {
       // Manejar el error 422 de reporte duplicado que configuramos en Laravel
       if (err.response && err.response.status === 422) {
-        setError(err.response.data.message || t('report.error_processing', "Error al procesar el reporte.")); // <-- MODIFICADO CON t()
+        setError(err.response.data.message || t('report.error_processing', "Error al procesar el reporte."));
       } else {
-        setError(t('report.error_sending', "Hubo un error al enviar el reporte. Inténtalo de nuevo más tarde.")); // <-- MODIFICADO CON t()
+        setError(t('report.error_sending', "Hubo un error al enviar el reporte. Inténtalo de nuevo más tarde."));
       }
     } finally {
       setSubmitting(false);
@@ -83,8 +83,8 @@ const ReportAdvertisement = () => {
   return (
     <div className="min-h-screen bg-black text-white p-6 flex justify-center items-center">
       <div className="max-w-xl w-full bg-zinc-900 p-8 rounded-lg border border-zinc-800">
-        <h1 className="text-2xl font-bold uppercase mb-2">{t('report.title', "Denunciar Anuncio")}</h1> {/* <-- MODIFICADO CON t() */}
-        <p className="text-zinc-400 mb-6 text-sm">{t('report.subtitle', "Ayúdanos a mantener la comunidad segura. Selecciona el motivo de tu denuncia.")}</p> {/* <-- MODIFICADO CON t() */}
+        <h1 className="text-2xl font-bold uppercase mb-2">{t('report.title', "Denunciar Anuncio")}</h1>
+        <p className="text-zinc-400 mb-6 text-sm">{t('report.subtitle', "Ayúdanos a mantener la comunidad segura. Selecciona el motivo de tu denuncia.")}</p>
 
         {successMsg ? (
           <div className="bg-green-900/50 border border-green-500 text-green-400 p-4 rounded mb-6">
@@ -93,7 +93,7 @@ const ReportAdvertisement = () => {
               onClick={() => navigate(`/advertisement/${id}`)}
               className="mt-4 bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2 rounded transition-colors w-full uppercase font-bold text-sm"
             >
-              {t('report.back_to_ad', "Volver al anuncio")} {/* <-- MODIFICADO CON t() */}
+              {t('report.back_to_ad', "Volver al anuncio")}
             </button>
           </div>
         ) : (
@@ -126,10 +126,10 @@ const ReportAdvertisement = () => {
 
             {isOtherSelected && (
               <div className="animate-fade-in">
-                <label className="block text-sm uppercase font-bold text-zinc-500 mb-2">{t('report.specify_motive', "Por favor, especifica el motivo")}</label> {/* <-- MODIFICADO CON t() */}
+                <label className="block text-sm uppercase font-bold text-zinc-500 mb-2">{t('report.specify_motive', "Por favor, especifica el motivo")}</label>
                 <textarea
                   className="w-full bg-zinc-950 border border-zinc-700 rounded p-3 text-white focus:outline-none focus:border-red-500 min-h-100px"
-                  placeholder={t('report.details_placeholder', "Escribe los detalles aquí...")} // <-- MODIFICADO CON t()
+                  placeholder={t('report.details_placeholder', "Escribe los detalles aquí...")}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   required
@@ -143,14 +143,14 @@ const ReportAdvertisement = () => {
                 onClick={() => navigate(-1)}
                 className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-3 px-4 rounded uppercase text-sm transition-colors"
               >
-                {t('report.cancel', "Cancelar")} {/* <-- MODIFICADO CON t() */}
+                {t('report.cancel', "Cancelar")}
               </button>
               <button
                 type="submit"
                 disabled={submitting || selectedTypeId === ""}
                 className="flex-1 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-bold py-3 px-4 rounded uppercase text-sm transition-colors"
               >
-                {submitting ? t('report.sending', "Enviando...") : t('report.send_report', "Enviar Denuncia")} {/* <-- MODIFICADO CON t() */}
+                {submitting ? t('report.sending', "Enviando...") : t('report.send_report', "Enviar Denuncia")}
               </button>
             </div>
           </form>

@@ -106,7 +106,7 @@ export default function PoliticaCookies() {
             </div>
           </article>
 
-          {/* 5. Cookies Usadas (Adaptado a TFG Nujama Motors) */}
+          {/* 5. Tecnologías de Almacenamiento Usadas */}
           <article>
             <div className="flex items-center gap-3 mb-4">
               <List className="text-red-600" size={24} />
@@ -209,9 +209,9 @@ export default function PoliticaCookies() {
             </div>
             <div className="bg-zinc-900 p-6 rounded-lg border border-zinc-800 ml-3 pl-9">
               <p className="text-white font-bold">{APP_NAME} S.L.</p>
-              <p className="text-zinc-400 mt-2">Rivas-Vaciamadrid, Madrid, España</p>
-              <p className="text-zinc-400">Web: https://tfg-frontend-h7hs.onrender.com</p>
-              <p className="text-zinc-400">Email: {SUPER_ADMIN_EMAIL}</p>
+              <p className="text-zinc-400 mt-2">{t('legal.notice.address_val', 'Rivas-Vaciamadrid, Madrid, España')}</p>
+              <p className="text-zinc-400">{t('legal.cookies.contact_web', 'Web')}: https://www.nujamamotors.com</p>
+              <p className="text-zinc-400">{t('legal.cookies.contact_email', 'Email')}: {SUPER_ADMIN_EMAIL}</p>
             </div>
           </article>
 

@@ -9,7 +9,6 @@ import { ChevronDown, User, LayoutDashboard, LogOut, Heart, ShieldAlert, Message
 import { useTranslation } from "react-i18next";
 import { createClient } from '@supabase/supabase-js'; 
 
-// Inicializamos Supabase para escuchar notificaciones globales
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 export default function Navbar() {
@@ -24,13 +23,11 @@ export default function Navbar() {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const userRole = localStorage.getItem("user_role");
 
-  // Estados para Live Search
   const [allAds, setAllAds] = useState<any[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
 
-  // --- MODO CLARO/OSCURO ---
   const [isLight, setIsLight] = useState(() => document.documentElement.classList.contains("light"));
   const toggleTheme = () => {
     const next = !isLight;
@@ -39,24 +36,20 @@ export default function Navbar() {
   };
   const [totalUnread, setTotalUnread] = useState(0);
 
-  // Cargar anuncios al montar
   useEffect(() => {
     axios.get(`${API_BASE_URL}/advertisements`)
       .then(res => setAllAds(res.data))
       .catch(err => console.error("Error cargando anuncios", err));
   }, []);
 
-  // --- NUEVO: LÓGICA DE NOTIFICACIONES EN TIEMPO REAL ---
   useEffect(() => {
     if (!token) return;
 
-    // Función para obtener el total de mensajes sin leer
     const fetchUnreadCount = async () => {
       try {
         const res = await axios.get(`${API_BASE_URL}/conversations`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        // Sumamos los unread_count de todas las conversaciones
         const total = res.data.reduce((sum: number, chat: any) => sum + (chat.unread_count || 0), 0);
         setTotalUnread(total);
       } catch (error) {
@@ -64,10 +57,8 @@ export default function Navbar() {
       }
     };
 
-    // Cargamos los datos al iniciar
     fetchUnreadCount();
 
-    // Escuchamos CUALQUIER cambio en la tabla de mensajes para actualizar el número en tiempo real
     const notificationsChannel = supabase
       .channel('global-notifications')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, () => {
@@ -78,7 +69,6 @@ export default function Navbar() {
     return () => { supabase.removeChannel(notificationsChannel); };
   }, [token]);
 
-  // Limpiar buscador al cambiar de página
   useEffect(() => {
     setSearchTerm("");
     setShowSuggestions(false);
@@ -139,14 +129,12 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           
-          {/* Logo */}
           <div className="shrink-0">
             <Link to="/" onClick={closeMenus} className="flex items-center gap-2">
               <img src={logo} alt={`Logo de ${APP_NAME}`} className="h-10 w-auto object-contain" />
             </Link>
           </div>
 
-          {/* Buscador */}
           <div className="flex-1 max-w-lg mx-8 hidden md:block relative" ref={searchRef}>
             <form onSubmit={handleSearch} className="relative"> 
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -167,9 +155,8 @@ export default function Navbar() {
               />
             </form>
 
-            {/* CAJA DESPLEGABLE DE RESULTADOS */}
             {showSuggestions && searchTerm.trim() !== "" && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-zinc-800 border border-zinc-700 rounded-xl shadow-2xl overflow-hidden z-50">
+              <div className="absolute top-full left-0 right-0 mt-2 bg-zinc-800 border border-zinc-700 rounded-xl shadow-2xl overflow-hidden z-60">
                 {suggestions.length > 0 ? (
                   <ul>
                     {suggestions.map((v) => {
@@ -181,15 +168,15 @@ export default function Navbar() {
                       return (
                         <li key={v.id}>
                           <Link 
-                            to={isRent ? `/alquiler/${v.id}` : `/advertisements/${v.id}`} 
+                            to={isRent ? `/alquiler/${v.id}` : `/advertisement/${v.id}`} 
                             onClick={() => setShowSuggestions(false)}
                             className="flex items-center gap-4 p-3 hover:bg-zinc-700 transition border-b border-zinc-700/50 last:border-0"
                           >
                             <div className="h-10 w-14 rounded overflow-hidden bg-zinc-900 shrink-0">
                               {imageUrl ? (
-                                <img src={imageUrl} alt="Coche" className="w-full h-full object-cover" />
+                                <img src={imageUrl} alt={t('create_ad.photo', "Foto")} className="w-full h-full object-cover" />
                               ) : (
-                                <div className="text-[8px] flex items-center justify-center h-full text-zinc-500 uppercase">Foto</div>
+                                <div className="text-[8px] flex items-center justify-center h-full text-zinc-500 uppercase">{t('common.photo', 'Foto')}</div>
                               )}
                             </div>
                             <div className="flex-1 min-w-0">
@@ -197,9 +184,11 @@ export default function Navbar() {
                               <p className="text-zinc-400 text-xs truncate">{v.province_name} • {v.year}</p>
                             </div>
                             <div className="text-right shrink-0">
-                              <p className="text-red-500 font-bold text-sm">{Number(v.price).toLocaleString("es-ES")} €</p>
+                              <p className="text-red-500 font-bold text-sm">
+                                {Number(v.price).toLocaleString(i18n.language.startsWith('en') ? 'en-US' : 'es-ES')} €
+                              </p>
                               <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase ${isRent ? 'bg-red-700 text-white' : 'bg-zinc-950 text-zinc-300'}`}>
-                                {isRent ? 'Alquiler' : 'Venta'}
+                                {isRent ? t('common.rent', 'Alquiler') : t('common.sale', 'Venta')}
                               </span>
                             </div>
                           </Link>
@@ -213,25 +202,26 @@ export default function Navbar() {
                     </li>
                   </ul>
                 ) : (
-                  <div className="p-4 text-center text-zinc-400 text-sm">No hay coincidencias para "{searchTerm}"</div>
+                  <div className="p-4 text-center text-zinc-400 text-sm">
+                    {t('navbar.no_matches', 'No hay coincidencias para')} "{searchTerm}"
+                  </div>
                 )}
               </div>
             )}
           </div>
 
-          {/* Enlaces Desktop */}
           <div className="hidden md:flex items-center space-x-6">
-            <Link to="/" className={`relative transition-all duration-300 ${location.pathname === '/' ? 'text-red-500 font-bold' : 'text-zinc-300 hover:text-red-500 font-medium'} after:absolute after:-bottom-1 after:left-0 after:h-[2px] after:w-full after:bg-red-500 after:transition-transform after:duration-300 after:origin-center ${location.pathname === '/' ? 'after:scale-x-100' : 'after:scale-x-0 hover:after:scale-x-100'}`}>
+            <Link to="/" className={`relative transition-all duration-300 ${location.pathname === '/' ? 'text-red-500 font-bold' : 'text-zinc-300 hover:text-red-500 font-medium'} after:absolute after:-bottom-1 after:left-0 after:h-2px after:w-full after:bg-red-500 after:transition-transform after:duration-300 after:origin-center ${location.pathname === '/' ? 'after:scale-x-100' : 'after:scale-x-0 hover:after:scale-x-100'}`}>
               {t('navbar.home', 'Inicio')}
             </Link>
             
-            <Link to="/alquileres" className={`relative transition-all duration-300 ${location.pathname === '/alquileres' ? 'text-red-500 font-bold' : 'text-zinc-300 hover:text-red-500 font-medium'} after:absolute after:-bottom-1 after:left-0 after:h-[2px] after:w-full after:bg-red-500 after:transition-transform after:duration-300 after:origin-center ${location.pathname === '/alquileres' ? 'after:scale-x-100' : 'after:scale-x-0 hover:after:scale-x-100'}`}>
+            <Link to="/alquileres" className={`relative transition-all duration-300 ${location.pathname === '/alquileres' ? 'text-red-500 font-bold' : 'text-zinc-300 hover:text-red-500 font-medium'} after:absolute after:-bottom-1 after:left-0 after:h-2px after:w-full after:bg-red-500 after:transition-transform after:duration-300 after:origin-center ${location.pathname === '/alquileres' ? 'after:scale-x-100' : 'after:scale-x-0 hover:after:scale-x-100'}`}>
               {t('navbar.rents', 'Alquileres')}
             </Link>
 
             {!token ? (
               <div className="flex items-center gap-4 border-l border-zinc-700 pl-4">
-                <Link to="/login" className={`relative transition-all duration-300 ${location.pathname === '/login' ? 'text-red-700 font-bold' : 'text-white hover:text-red-700 font-medium'} after:absolute after:-bottom-1 after:left-0 after:h-[2px] after:w-full after:bg-red-700 after:transition-transform after:duration-300 after:origin-center ${location.pathname === '/login' ? 'after:scale-x-100' : 'after:scale-x-0 hover:after:scale-x-100'}`}>
+                <Link to="/login" className={`relative transition-all duration-300 ${location.pathname === '/login' ? 'text-red-700 font-bold' : 'text-white hover:text-red-700 font-medium'} after:absolute after:-bottom-1 after:left-0 after:h-2px after:w-full after:bg-red-700 after:transition-transform after:duration-300 after:origin-center ${location.pathname === '/login' ? 'after:scale-x-100' : 'after:scale-x-0 hover:after:scale-x-100'}`}>
                   {t('navbar.login', 'Iniciar Sesión')}
                 </Link>
                 <Link to="/register" className="bg-red-700 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">{t('navbar.register', 'Registrarse')}</Link>
@@ -239,15 +229,14 @@ export default function Navbar() {
             ) : (
               <div className="flex items-center gap-4 border-l border-zinc-700 pl-4">
                 
-                <Link to="/favoritos" className={`relative flex items-center gap-2 mr-2 transition-all duration-300 ${location.pathname === '/favoritos' ? 'text-red-500 font-bold' : 'text-zinc-300 hover:text-red-500 font-medium'} after:absolute after:-bottom-1 after:left-0 after:h-[2px] after:w-full after:bg-red-500 after:transition-transform after:duration-300 after:origin-center ${location.pathname === '/favoritos' ? 'after:scale-x-100' : 'after:scale-x-0 hover:after:scale-x-100'}`}>
+                <Link to="/favoritos" className={`relative flex items-center gap-2 mr-2 transition-all duration-300 ${location.pathname === '/favoritos' ? 'text-red-500 font-bold' : 'text-zinc-300 hover:text-red-500 font-medium'} after:absolute after:-bottom-1 after:left-0 after:h-2px after:w-full after:bg-red-500 after:transition-transform after:duration-300 after:origin-center ${location.pathname === '/favoritos' ? 'after:scale-x-100' : 'after:scale-x-0 hover:after:scale-x-100'}`}>
                   <Heart size={18} fill={location.pathname === '/favoritos' ? 'currentColor' : 'none'} />
                   {t('navbar.favorites', 'Favoritos')}
                 </Link>
 
-                {/* BOTÓN DE MENSAJES DESKTOP (CON NOTIFICACIÓN FLOTANTE) */}
-                <Link to="/mis-mensajes" className={`relative flex items-center gap-2 mr-2 transition-all duration-300 ${location.pathname === '/mis-mensajes' ? 'text-red-500 font-bold' : 'text-zinc-300 hover:text-red-500 font-medium'} after:absolute after:-bottom-1 after:left-0 after:h-[2px] after:w-full after:bg-red-500 after:transition-transform after:duration-300 after:origin-center ${location.pathname === '/mis-mensajes' ? 'after:scale-x-100' : 'after:scale-x-0 hover:after:scale-x-100'}`}>
+                <Link to="/mis-mensajes" className={`relative flex items-center gap-2 mr-2 transition-all duration-300 ${location.pathname === '/mis-mensajes' ? 'text-red-500 font-bold' : 'text-zinc-300 hover:text-red-500 font-medium'} after:absolute after:-bottom-1 after:left-0 after:h-2px after:w-full after:bg-red-500 after:transition-transform after:duration-300 after:origin-center ${location.pathname === '/mis-mensajes' ? 'after:scale-x-100' : 'after:scale-x-0 hover:after:scale-x-100'}`}>
                   <MessageSquare size={18} fill={location.pathname === '/mis-mensajes' ? 'currentColor' : 'none'} />
-                  Mensajes
+                  {t('navbar.messages', 'Mensajes')}
                   {totalUnread > 0 && (
                     <span className="absolute -top-2 -right-3 bg-red-600 text-white text-[10px] font-bold h-4 w-4 flex items-center justify-center rounded-full shadow-lg shadow-red-900/50 animate-bounce">
                       {totalUnread}
@@ -274,8 +263,7 @@ export default function Navbar() {
                   {isProfileDropdownOpen && (
                     <div className="absolute right-0 mt-2 w-48 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl py-2 z-50 animate-in fade-in zoom-in duration-150">
                       
-                      {/* ENLACE A MI PERFIL PÚBLICO - RUTA CORREGIDA (incluye estado 'from') */}
-                      <Link to={`/mi-perfil-publico`} state={{ from: location.pathname + location.search }} onClick={closeMenus} className={`flex items-center gap-3 px-4 py-2 text-sm transition-colors ${location.pathname === `/usuario/${user.id}` ? 'bg-zinc-800 text-white font-bold' : 'text-zinc-300 hover:bg-zinc-800 hover:text-white'}`}>
+                      <Link to={`/usuario/${user.id}`} state={{ from: location.pathname + location.search }} onClick={closeMenus} className={`flex items-center gap-3 px-4 py-2 text-sm transition-colors ${location.pathname === `/usuario/${user.id}` ? 'bg-zinc-800 text-white font-bold' : 'text-zinc-300 hover:bg-zinc-800 hover:text-white'}`}>
                         <User size={16} className="text-red-500" /> {t('navbar.public_profile', 'Mi Perfil Público')}
                       </Link>
 
@@ -308,7 +296,6 @@ export default function Navbar() {
               </div>
             )}
 
-            {/* Botón Modo Claro/Oscuro Desktop */}
             <button
               onClick={toggleTheme}
               className="p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
@@ -317,7 +304,6 @@ export default function Navbar() {
               {isLight ? <Moon size={18} /> : <Sun size={18} />}
             </button>
 
-            {/* Selector de Idiomas Desktop */}
             <div className="flex items-center gap-2 border-l border-zinc-700 pl-4 ml-2">
               <button
                 onClick={() => changeLanguage('es')}
@@ -337,10 +323,7 @@ export default function Navbar() {
 
           </div>
 
-          {/* Menú Móvil */}
           <div className="md:hidden flex items-center gap-4"> 
-            
-          {/* Botón Modo Claro/Oscuro Móvil */}
             <button
               onClick={toggleTheme}
               className="p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
@@ -349,7 +332,6 @@ export default function Navbar() {
               {isLight ? <Moon size={18} /> : <Sun size={18} />}
             </button>
 
-            {/* Selector de Idiomas Móvil */}
             <div className="flex items-center gap-2">
               <button onClick={() => changeLanguage('es')} className={`${i18n.language?.startsWith('es') ? 'opacity-100' : 'opacity-50'}`} aria-label="Español">
                 <img src={esFlag} alt="Español" className="h-5 w-6 object-contain" />
@@ -397,7 +379,6 @@ export default function Navbar() {
                   {t('navbar.hello', 'Hola')}, <span className="text-white font-semibold">{user.name}</span>
                 </div>
                 
-                {/* ENLACE A MI PERFIL PÚBLICO MÓVIL - AÑADE estado 'from' */}
                 <Link to={`/usuario/${user.id}`} state={{ from: location.pathname + location.search }} onClick={closeMenus} className={`flex items-center gap-3 px-2 py-2 transition-all ${location.pathname === `/usuario/${user.id}` ? 'text-white font-bold underline decoration-white decoration-2 underline-offset-4' : 'text-zinc-300 hover:text-white'}`}>
                   <User size={18} className="text-red-500" /> {t('navbar.public_profile', 'Mi Perfil Público')}
                 </Link>
@@ -406,10 +387,9 @@ export default function Navbar() {
                   <Heart size={18} /> {t('navbar.favorites', 'Favoritos')}
                 </Link>
                 
-                {/* BOTÓN DE MENSAJES MÓVIL (CON NOTIFICACIÓN) */}
                 <Link to="/mis-mensajes" onClick={closeMenus} className={`flex items-center justify-between px-2 py-2 transition-all ${location.pathname === '/mis-mensajes' ? 'text-white font-bold underline decoration-white decoration-2 underline-offset-4' : 'text-zinc-300 hover:text-white'}`}>
                   <div className="flex items-center gap-3">
-                    <MessageSquare size={18} /> Mensajes
+                    <MessageSquare size={18} /> {t('navbar.messages', 'Mensajes')}
                   </div>
                   {totalUnread > 0 && (
                     <span className="bg-red-600 text-white text-[10px] font-bold h-5 w-5 flex items-center justify-center rounded-full shadow-lg shadow-red-900/50">

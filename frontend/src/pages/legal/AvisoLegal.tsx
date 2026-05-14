@@ -10,7 +10,7 @@ export default function AvisoLegal() {
     <div className="min-h-screen bg-zinc-950 text-zinc-300 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         
-        {/* Botón Volver con traducción de tu diccionario actual */}
+        {/* Botón Volver */}
         <Link 
           to="/" 
           className="inline-flex items-center gap-2 text-zinc-500 hover:text-red-500 transition-colors mb-8 group"
@@ -49,9 +49,9 @@ export default function AvisoLegal() {
             <ul className="space-y-3 bg-zinc-900 p-6 rounded-lg border border-zinc-800 border-l-4 border-l-red-600">
               <li><strong className="text-white">{t('legal.notice.domain', 'Dominio')}:</strong> {DOMAIN}</li>
               <li><strong className="text-white">{t('legal.notice.trade_name', 'Nombre Comercial')}:</strong> {APP_NAME}</li>
-              <li><strong className="text-white">{t('legal.notice.company_name', 'Razón Social')}:</strong> {COMPANY_NAME} S.L. (Proyecto TFG)</li>
+              <li><strong className="text-white">{t('legal.notice.company_name', 'Razón Social')}:</strong> {COMPANY_NAME} S.L. {t('legal.notice.project_status', '(Proyecto TFG)')}</li>
               <li><strong className="text-white">NIF:</strong> B12345678</li>
-              <li><strong className="text-white">{t('legal.notice.address', 'Dirección')}:</strong> Rivas-Vaciamadrid, Madrid, España</li>
+              <li><strong className="text-white">{t('legal.notice.address', 'Dirección')}:</strong> {t('legal.notice.address_val', 'Rivas-Vaciamadrid, Madrid, España')}</li>
               <li><strong className="text-white">E-mail:</strong> {SUPER_ADMIN_EMAIL}</li>
             </ul>
           </article>

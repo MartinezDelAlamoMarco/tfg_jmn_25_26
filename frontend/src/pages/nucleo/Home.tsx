@@ -464,12 +464,12 @@ const Home = () => {
                   {/* --- NUEVAS ETIQUETAS DE ESTADO --- */}
                   {v.status === "reservado" && (
                     <div className="absolute top-2 left-2 z-20 bg-orange-600 text-white text-[10px] font-black px-2 py-1 rounded shadow-lg uppercase tracking-widest animate-pulse">
-                      ⚠️ Reservado
+                      ⚠️ {t("common.reserved", "Reservado")}
                     </div>
                   )}
                   {v.status === "vendido" && (
                     <div className="absolute top-2 left-2 z-20 bg-zinc-700 text-zinc-300 text-[10px] font-black px-2 py-1 rounded shadow-lg uppercase tracking-widest border border-zinc-500">
-                      🏁 Vendido
+                      🏁 {t("common.sold", "Vendido")}
                     </div>
                   )}
 

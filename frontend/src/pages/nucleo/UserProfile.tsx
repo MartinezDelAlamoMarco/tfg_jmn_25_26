@@ -157,7 +157,7 @@ export default function UserProfile() {
             <div className="flex items-center gap-4">
               <div className="h-20 w-20 rounded-full bg-zinc-900 flex items-center justify-center text-2xl font-bold uppercase overflow-hidden">
                 {user.avatar_url ? (
-                  <img src={user.avatar_url} alt={user.name || 'Perfil'} className="w-full h-full object-cover" />
+                  <img src={user.avatar_url} alt={user.name || t('user_profile.profile_image', 'Perfil')} className="w-full h-full object-cover" />
                 ) : (
                   <span>{user.name ? user.name[0] : 'U'}</span>
                 )}
@@ -244,7 +244,7 @@ export default function UserProfile() {
             <ul className="text-sm text-zinc-400 space-y-2">
               <li><strong className="text-white">{t('user_profile.ads_label', 'Anuncios')}:</strong> {ads.length}</li>
               <li><strong className="text-white">{t('user_profile.reviews_label', 'Valoraciones')}:</strong> {user.reviews_count || 0}</li>
-              <li><strong className="text-white">{t('user_profile.member_since', 'Miembro desde')}:</strong> {user.created_at ? new Date(user.created_at).toLocaleDateString() : t('user_profile.unspecified', 'Desconocido')}</li>
+              <li><strong className="text-white">{t('user_profile.member_since', 'Miembro desde')}:</strong> {user.created_at ? new Date(user.created_at).toLocaleDateString() : t('user_profile.unknown', 'Desconocido')}</li>
               <li><strong className="text-white">{t('user_profile.location_label', 'Ubicación')}:</strong> {user.province || t('user_profile.unspecified', 'No especificada')}</li>
               {user.phone && <li><strong className="text-white">{t('user_profile.phone_label', 'Teléfono')}:</strong> {user.phone}</li>}
             </ul>

@@ -1,4 +1,3 @@
-// UserReviews.tsx corregido
 import { useEffect, useState } from "react";
 import axios from "axios";
 import StarRating from "./StarRating";
@@ -15,7 +14,7 @@ type Review = {
 export default function UserReviews({ userId }: { userId: string }) {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     setLoading(true);
@@ -68,7 +67,7 @@ export default function UserReviews({ userId }: { userId: string }) {
                   <div className="flex items-center gap-2">
                     <StarRating value={r.rating} size={12} />
                     <span className="text-zinc-500 text-[10px] font-medium">
-                      {r.created_at ? new Date(r.created_at).toLocaleDateString() : ""}
+                      {r.created_at ? new Date(r.created_at).toLocaleDateString(i18n.language.startsWith('en') ? 'en-US' : 'es-ES') : ""}
                     </span>
                   </div>
                 </div>

@@ -142,11 +142,11 @@ const VehicleDetail = () => {
         await axios.delete(`${API_BASE_URL}/advertisements/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        alert(t('common.delete', "Anuncio eliminado correctamente."));
+        alert(t('common.delete_success', "Anuncio eliminado correctamente."));
         navigate("/admin/panel");
       } catch (error) {
         console.error("Error eliminando el anuncio", error);
-        alert(t('common.not_found', "Hubo un error al eliminar el anuncio."));
+        alert(t('common.delete_error', "Hubo un error al eliminar el anuncio."));
       }
     }
   };
@@ -166,7 +166,7 @@ const VehicleDetail = () => {
       }
     } catch (err) {
       console.error("Error updating favorite:", err);
-      alert(t('common.not_found', "No se pudo actualizar favoritos"));
+      alert(t('favorites.update_error', "No se pudo actualizar favoritos"));
     } finally {
       setFavoriteLoading(false);
     }
@@ -190,7 +190,7 @@ const VehicleDetail = () => {
       navigate('/mis-mensajes');
     } catch (err) {
       console.error("Error al iniciar la conversación", err);
-      alert("No se pudo iniciar el chat con el vendedor.");
+      alert(t('details.chat_error', "No se pudo iniciar el chat con el vendedor."));
     }
   };
 
@@ -206,7 +206,7 @@ const VehicleDetail = () => {
     return (
       <div className="min-h-screen flex flex-col justify-center items-center text-white bg-zinc-900">
         <p className="text-xl mb-4">{error || t('common.not_found', "Vehículo no encontrado")}</p>
-        <Link to="/" className="text-red-700 hover:underline">{t('details.home_link', 'Volver al inicio')}</Link>
+        <Link to="/" className="text-red-700 hover:underline">{t('details.home_link', 'Volver al catálogo')}</Link>
       </div>
     );
   }
@@ -224,12 +224,12 @@ const VehicleDetail = () => {
               
               {advertisement.status === 'reservado' && (
                 <div className="absolute top-4 left-4 z-10 bg-orange-600 text-white text-[10px] font-black px-3 py-1 rounded shadow-lg uppercase tracking-widest animate-pulse">
-                  ⚠️ Reservado
+                  ⚠️ {t('common.reserved', 'Reservado')}
                 </div>
               )}
               {advertisement.status === 'vendido' && (
                 <div className="absolute top-4 left-4 z-10 bg-zinc-700 text-zinc-300 text-[10px] font-black px-3 py-1 rounded shadow-lg uppercase tracking-widest border border-zinc-500">
-                  🏁 Vendido
+                  🏁 {t('common.sold', 'Vendido')}
                 </div>
               )}
 
@@ -267,7 +267,7 @@ const VehicleDetail = () => {
                     )}
                   </div>
                   <div className="flex-1">
-                    <div className="font-bold text-lg">{owner.name || 'Vendedor'}</div>
+                    <div className="font-bold text-lg">{owner.name || t('details.seller_fallback', 'Vendedor')}</div>
                     {/* --- MOSTRANDO LAS ESTRELLAS REALES --- */}
                     {ownerProfile && ownerProfile.average_rating !== undefined && (
                       <div className="flex items-center gap-2 text-sm text-zinc-400 mt-1">
@@ -286,7 +286,7 @@ const VehicleDetail = () => {
             <div className="bg-zinc-800 rounded-2xl p-8 border border-zinc-700 shadow-xl">
               <div className="flex justify-between items-start mb-4">
                 <span className="px-3 py-1 bg-red-700/20 text-red-500 rounded-full text-xs font-bold uppercase tracking-wider">
-                  {advertisement.state?.name || "Venta"}
+                  {advertisement.state?.name || t('common.sale', 'Venta')}
                 </span>
                 <span className="text-zinc-500 text-sm">
                   {t('details.views', 'Vistas')}: {advertisement.views || 0}
@@ -303,28 +303,28 @@ const VehicleDetail = () => {
 
               <div className="grid grid-cols-2 gap-4 mb-8">
                 <div className="bg-zinc-700/30 p-4 rounded-xl border border-zinc-600">
-                  <p className="text-zinc-500 text-[10px] uppercase font-black tracking-widest mb-1">Km</p>
+                  <p className="text-zinc-500 text-[10px] uppercase font-black tracking-widest mb-1">{t('common.km', 'Km')}</p>
                   <p className="text-xl font-bold">{advertisement.vehicle?.km?.toLocaleString("es-ES")} km</p>
                 </div>
                 <div className="bg-zinc-700/30 p-4 rounded-xl border border-zinc-600">
-                  <p className="text-zinc-500 text-[10px] uppercase font-black tracking-widest mb-1">Año</p>
+                  <p className="text-zinc-500 text-[10px] uppercase font-black tracking-widest mb-1">{t('common.year', 'Año')}</p>
                   <p className="text-xl font-bold">{advertisement.vehicle?.year}</p>
                 </div>
               </div>
 
               {userRole === "admin" ? (
                 <button onClick={handleDeleteAd} className="w-full py-4 bg-red-700 hover:bg-red-600 text-white font-black uppercase tracking-widest rounded-xl transition shadow-lg shadow-red-900/20">
-                  Eliminar Anuncio (ADMIN)
+                  {t('details.delete_admin', 'Eliminar Anuncio (ADMIN)')}
                 </button>
               ) : (
                 <>
                   {isOwner ? (
                     <button disabled className="w-full py-4 bg-zinc-900 text-zinc-500 border border-zinc-700 font-black uppercase tracking-widest rounded-xl cursor-not-allowed mb-4">
-                      ES TU ANUNCIO
+                      {t('details.is_your_ad', 'ES TU ANUNCIO')}
                     </button>
                   ) : advertisement.status === 'vendido' ? (
                     <button disabled className="w-full py-4 bg-zinc-950 text-zinc-600 border border-zinc-800 font-black uppercase tracking-widest rounded-xl cursor-not-allowed mb-4 opacity-50">
-                      VEHÍCULO NO DISPONIBLE
+                      {t('details.not_available', 'VEHÍCULO NO DISPONIBLE')}
                     </button>
                   ) : (
                     <button 
@@ -354,29 +354,29 @@ const VehicleDetail = () => {
 
         <div className="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 bg-zinc-800 p-8 rounded-2xl border border-zinc-700 shadow-xl">
-            <h2 className="text-2xl font-black mb-6 border-b border-zinc-700 pb-2 uppercase italic">Descripción</h2>
+            <h2 className="text-2xl font-black mb-6 border-b border-zinc-700 pb-2 uppercase italic">{t('details.description', 'Descripción')}</h2>
             <p className="text-zinc-300 leading-relaxed whitespace-pre-wrap text-lg">
               {isEnglish && advertisement.description_en ? advertisement.description_en : advertisement.description}
             </p>
           </div>
 
           <div className="bg-zinc-800 p-8 rounded-2xl border border-zinc-700 shadow-xl">
-            <h2 className="text-2xl font-black mb-6 border-b border-zinc-700 pb-2 uppercase italic">Ficha Técnica</h2>
+            <h2 className="text-2xl font-black mb-6 border-b border-zinc-700 pb-2 uppercase italic">{t('details.technical_sheet', 'Ficha Técnica')}</h2>
             <ul className="space-y-4">
               <li className="flex justify-between items-center border-b border-zinc-700/50 pb-2 font-bold">
-                <span className="text-zinc-500 text-sm uppercase">Transmisión</span>
+                <span className="text-zinc-500 text-sm uppercase">{t('common.transmission', 'Transmisión')}</span>
                 <span>{advertisement.vehicle?.transmission?.name || "Manual"}</span>
               </li>
               <li className="flex justify-between items-center border-b border-zinc-700/50 pb-2 font-bold">
-                <span className="text-zinc-500 text-sm uppercase">Combustible</span>
+                <span className="text-zinc-500 text-sm uppercase">{t('common.fuel', 'Combustible')}</span>
                 <span>{advertisement.vehicle?.fuel_type?.name}</span>
               </li>
               <li className="flex justify-between items-center border-b border-zinc-700/50 pb-2 font-bold">
-                <span className="text-zinc-500 text-sm uppercase">Puertas</span>
+                <span className="text-zinc-500 text-sm uppercase">{t('common.doors', 'Puertas')}</span>
                 <span>{advertisement.vehicle?.doors}</span>
               </li>
               <li className="flex justify-between items-center pb-2 font-bold">
-                <span className="text-zinc-500 text-sm uppercase">Ubicación</span>
+                <span className="text-zinc-500 text-sm uppercase">{t('common.location', 'Ubicación')}</span>
                 <span>{advertisement.province?.name}</span>
               </li>
             </ul>

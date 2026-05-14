@@ -95,13 +95,13 @@ const RentDetail = () => {
           setOwnerDetails(userRes.data);
         }
       } catch (err) {
-        setError("Error al cargar la información.");
+        setError(t('details.error_loading_info', "Error al cargar la información."));
       } finally {
         setLoading(false);
       }
     };
     fetchData();
-  }, [id]);
+  }, [id, t]);
 
   useEffect(() => {
     if (range?.from && range?.to && advertisement) {
@@ -130,7 +130,7 @@ const RentDetail = () => {
         seller_id: ownerId 
       }, { headers: { Authorization: `Bearer ${token}` } });
       navigate('/mis-mensajes');
-    } catch (err) { alert("No se pudo iniciar la conversación."); }
+    } catch (err) { alert(t('details.chat_error', "No se pudo iniciar la conversación.")); }
   };
 
   const handleDeleteAd = async () => {
@@ -141,13 +141,13 @@ const RentDetail = () => {
         });
         alert(t('common.delete_success', "Anuncio eliminado correctamente."));
         navigate('/admin/panel');
-      } catch (error) { alert("Hubo un error al eliminar el anuncio."); }
+      } catch (error) { alert(t('common.delete_error', "Hubo un error al eliminar el anuncio.")); }
     }
   };
 
   const handleRent = async () => {
     if (!token) { navigate("/login"); return; }
-    if (!range?.from || !range?.to) { setError("Selecciona un rango en el calendario."); return; }
+    if (!range?.from || !range?.to) { setError(t('details.select_range_error', "Selecciona un rango en el calendario.")); return; }
     
     setActionLoading(true);
     try {
@@ -165,7 +165,7 @@ const RentDetail = () => {
       }
       setSuccess(true);
     } catch (err: any) {
-      setError(err.response?.data?.message || "Error al reservar");
+      setError(err.response?.data?.message || t('details.booking_error', "Error al reservar"));
     } finally { setActionLoading(false); }
   };
 
@@ -176,7 +176,7 @@ const RentDetail = () => {
       {actionLoading && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-100 flex flex-col items-center justify-center">
           <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-red-600 mb-4"></div>
-          <p className="text-red-500 font-bold uppercase tracking-widest animate-pulse">Procesando reserva...</p>
+          <p className="text-red-500 font-bold uppercase tracking-widest animate-pulse">{t('details.processing_booking', "Procesando reserva...")}</p>
         </div>
       )}
 
@@ -189,9 +189,9 @@ const RentDetail = () => {
           {/* COLUMNA IZQUIERDA */}
           <div className="space-y-4">
             <div className="aspect-video bg-zinc-800 rounded-2xl border border-zinc-700 flex items-center justify-center shadow-2xl overflow-hidden relative">
-              {advertisement?.status === 'vendido' && <div className="absolute top-4 left-4 z-10 bg-zinc-700 text-zinc-300 text-[10px] font-black px-3 py-1 rounded shadow-lg uppercase tracking-widest border border-zinc-500">🏁 Alquilado</div>}
+              {advertisement?.status === 'vendido' && <div className="absolute top-4 left-4 z-10 bg-zinc-700 text-zinc-300 text-[10px] font-black px-3 py-1 rounded shadow-lg uppercase tracking-widest border border-zinc-500">🏁 {t('common.rented', "Alquilado")}</div>}
               <div className="absolute top-4 right-4 z-10 bg-red-700 text-white text-[10px] font-bold px-3 py-1 rounded shadow-lg uppercase tracking-widest">{t('common.rent', "Alquiler")}</div>
-              {mainImage ? <img src={mainImage} alt="Coche" className="w-full h-full object-cover animate-fade-in" /> : <span className="text-zinc-500 italic text-lg">Sin imagen</span>}
+              {mainImage ? <img src={mainImage} alt="Coche" className="w-full h-full object-cover animate-fade-in" /> : <span className="text-zinc-500 italic text-lg">{t('common.no_photo', "Sin imagen")}</span>}
             </div>
             
             <div className="grid grid-cols-5 gap-2">
@@ -207,7 +207,7 @@ const RentDetail = () => {
                     {ownerDetails.avatar_url ? <img src={ownerDetails.avatar_url} className="w-full h-full object-cover" /> : <span>{ownerDetails.name ? ownerDetails.name[0] : 'U'}</span>}
                   </div>
                   <div className="flex-1">
-                    <div className="font-bold text-lg">{ownerDetails.name || 'Vendedor'}</div>
+                    <div className="font-bold text-lg">{ownerDetails.name || t('details.seller_fallback', "Vendedor")}</div>
                     <div className="flex items-center gap-2 text-sm text-zinc-400 mt-1">
                       <StarRating value={Math.round(ownerDetails.average_rating || 0)} size={16} />
                       <span className="text-white font-bold">{Number(ownerDetails.average_rating || 0).toFixed(1)}</span>
@@ -222,31 +222,31 @@ const RentDetail = () => {
           <div className="flex flex-col">
             <div className="bg-zinc-800 rounded-2xl p-8 border border-zinc-700 shadow-xl">
               <div className="flex justify-between items-start mb-4">
-                <span className="px-3 py-1 bg-red-700/20 text-red-500 rounded-full text-xs font-bold uppercase tracking-wider">{advertisement?.state?.name || "Alquiler"}</span>
-                <span className="text-zinc-500 text-sm">Vistas: {advertisement?.views || 0}</span>
+                <span className="px-3 py-1 bg-red-700/20 text-red-500 rounded-full text-xs font-bold uppercase tracking-wider">{advertisement?.state?.name || t('common.rent', "Alquiler")}</span>
+                <span className="text-zinc-500 text-sm">{t('details.views', "Vistas")}: {advertisement?.views || 0}</span>
               </div>
               <h1 className="text-4xl font-black mb-2 uppercase tracking-tight">{advertisement?.vehicle?.model?.brand?.name} {advertisement?.vehicle?.model?.name}</h1>
-              <p className="text-zinc-400 text-lg mb-6 flex items-center"><span className="mr-2">📍</span> {advertisement?.province?.name || "España"}</p>
-              <div className="flex items-end mb-8 gap-2"><div className="text-5xl font-black text-white">{Number(advertisement?.price).toLocaleString("es-ES")} €</div><span className="text-zinc-500 font-bold uppercase italic pb-1">/ día</span></div>
+              <p className="text-zinc-400 text-lg mb-6 flex items-center"><span className="mr-2">📍</span> {advertisement?.province?.name || t('common.spain', "España")}</p>
+              <div className="flex items-end mb-8 gap-2"><div className="text-5xl font-black text-white">{Number(advertisement?.price).toLocaleString("es-ES")} €</div><span className="text-zinc-500 font-bold uppercase italic pb-1">{t('common.per_day', "/ día")}</span></div>
 
               {userRole === 'admin' ? (
                   <div className="mt-4 bg-red-950/30 p-6 rounded-xl border border-red-900 mb-8 text-center">
-                    <h3 className="text-red-500 font-bold uppercase text-sm tracking-widest mb-4">🛠️ Herramientas de Moderador</h3>
-                    <button onClick={handleDeleteAd} className="w-full py-4 bg-red-700 hover:bg-red-600 text-white font-black uppercase tracking-widest rounded-xl transition shadow-lg">Eliminar Anuncio</button>
+                    <h3 className="text-red-500 font-bold uppercase text-sm tracking-widest mb-4">{t('details.mod_tools', "🛠️ Herramientas de Moderador")}</h3>
+                    <button onClick={handleDeleteAd} className="w-full py-4 bg-red-700 hover:bg-red-600 text-white font-black uppercase tracking-widest rounded-xl transition shadow-lg">{t('common.delete_ad', "Eliminar Anuncio")}</button>
                   </div>
               ) : (
                 <>
                   {success ? (
                     <div className="bg-green-900/20 border border-green-700 p-8 rounded-2xl text-center mb-8 animate-fade-in">
                       <div className="w-16 h-16 bg-green-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">✓</div>
-                      <h3 className="text-xl font-bold text-green-500 mb-2">¡Reserva Confirmada!</h3>
-                      <button onClick={() => navigate('/mis-mensajes')} className="mt-6 px-6 py-3 bg-red-700 hover:bg-red-600 rounded-lg text-sm font-bold uppercase transition flex items-center justify-center gap-2 mx-auto shadow-lg"><MessageCircle size={18} /> Ir al chat ahora</button>
+                      <h3 className="text-xl font-bold text-green-500 mb-2">{t('details.booking_success', "¡Reserva Confirmada!")}</h3>
+                      <button onClick={() => navigate('/mis-mensajes')} className="mt-6 px-6 py-3 bg-red-700 hover:bg-red-600 rounded-lg text-sm font-bold uppercase transition flex items-center justify-center gap-2 mx-auto shadow-lg"><MessageCircle size={18} /> {t('details.go_to_chat', "Ir al chat ahora")}</button>
                     </div>
                   ) : (
                     <>
                       {/* CALENDARIO VISUAL ESTILO BOOKING */}
                       <div className="bg-zinc-900/60 p-4 rounded-2xl border border-zinc-700 mb-8 flex flex-col items-center">
-                        <h3 className="text-xs font-black uppercase text-zinc-500 mb-4 self-start flex items-center gap-2 tracking-widest ml-2"><CalendarIcon size={16}/> Disponibilidad</h3>
+                        <h3 className="text-xs font-black uppercase text-zinc-500 mb-4 self-start flex items-center gap-2 tracking-widest ml-2"><CalendarIcon size={16}/> {t('details.availability', "Disponibilidad")}</h3>
                         <DayPicker
                           mode="range"
                           selected={range}
@@ -263,7 +263,7 @@ const RentDetail = () => {
                       </div>
 
                       <div className="flex justify-between items-center bg-black/40 p-5 rounded-xl border border-zinc-800 mb-6">
-                        <span className="text-zinc-400 font-bold uppercase text-xs tracking-widest">Total Estimado</span>
+                        <span className="text-zinc-400 font-bold uppercase text-xs tracking-widest">{t('details.estimated_total', "Total Estimado")}</span>
                         <span className="text-3xl font-black text-red-500">{totalPrice.toLocaleString("es-ES")} €</span>
                       </div>
 
@@ -271,13 +271,13 @@ const RentDetail = () => {
 
                       <div className="mb-6 flex flex-col gap-3">
                         {isOwner ? (
-                           <button disabled className="w-full py-4 bg-zinc-900 text-zinc-500 border border-zinc-700 font-black uppercase tracking-widest rounded-xl cursor-not-allowed">ES TU ANUNCIO</button>
+                           <button disabled className="w-full py-4 bg-zinc-900 text-zinc-500 border border-zinc-700 font-black uppercase tracking-widest rounded-xl cursor-not-allowed">{t('details.is_your_ad', "ES TU ANUNCIO")}</button>
                         ) : advertisement?.status === 'vendido' ? (
-                          <button disabled className="w-full py-4 bg-zinc-950 text-zinc-600 border border-zinc-800 font-black uppercase tracking-widest rounded-xl cursor-not-allowed opacity-50">ALQUILADO</button>
+                          <button disabled className="w-full py-4 bg-zinc-950 text-zinc-600 border border-zinc-800 font-black uppercase tracking-widest rounded-xl cursor-not-allowed opacity-50">{t('details.rented', "ALQUILADO")}</button>
                         ) : (
                           <>
-                            <button onClick={handleRent} disabled={!!error || !range?.from || !range?.to} className="w-full py-5 bg-red-700 hover:bg-red-600 text-white font-black uppercase tracking-widest rounded-xl transition shadow-lg active:scale-95 text-lg">Confirmar Reserva</button>
-                            <button onClick={handleContactSeller} className="w-full py-3 bg-zinc-800 hover:bg-zinc-700 text-white font-bold uppercase tracking-widest rounded-xl border border-zinc-700 transition flex justify-center items-center gap-2 text-sm"><MessageCircle size={18} /> Contactar por Chat</button>
+                            <button onClick={handleRent} disabled={!!error || !range?.from || !range?.to} className="w-full py-5 bg-red-700 hover:bg-red-600 text-white font-black uppercase tracking-widest rounded-xl transition shadow-lg active:scale-95 text-lg">{t('details.confirm_booking', "Confirmar Reserva")}</button>
+                            <button onClick={handleContactSeller} className="w-full py-3 bg-zinc-800 hover:bg-zinc-700 text-white font-bold uppercase tracking-widest rounded-xl border border-zinc-700 transition flex justify-center items-center gap-2 text-sm"><MessageCircle size={18} /> {t('details.contact_chat', "Contactar por Chat")}</button>
                           </>
                         )}
                       </div>
@@ -292,20 +292,20 @@ const RentDetail = () => {
         {/* --- SECCIÓN DESCRIPCIÓN Y FICHA TÉCNICA (INTEGRADAS) --- */}
         <div className="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 bg-zinc-800 p-8 rounded-2xl border border-zinc-700 shadow-xl">
-            <h2 className="text-2xl font-black mb-6 border-b border-zinc-700 pb-2 uppercase italic">Descripción</h2>
+            <h2 className="text-2xl font-black mb-6 border-b border-zinc-700 pb-2 uppercase italic">{t('details.description', "Descripción")}</h2>
             <p className="text-zinc-300 leading-relaxed whitespace-pre-wrap text-lg font-medium italic">
               "{isEnglish && advertisement?.description_en ? advertisement.description_en : advertisement?.description}"
             </p>
           </div>
           <div className="bg-zinc-800 p-8 rounded-2xl border border-zinc-700 shadow-xl h-fit">
             <h2 className="text-2xl font-black mb-6 border-b border-zinc-700 pb-2 uppercase italic flex items-center gap-2">
-              <Info size={20} className="text-red-700" /> Ficha Técnica
+              <Info size={20} className="text-red-700" /> {t('details.technical_sheet', "Ficha Técnica")}
             </h2>
             <ul className="space-y-4">
-              <li className="flex justify-between items-center border-b border-zinc-700/50 pb-2 font-bold"><span className="text-zinc-500 text-sm uppercase font-bold tracking-widest">Motor</span><span>{advertisement?.vehicle?.fuel_type?.name}</span></li>
-              <li className="flex justify-between items-center border-b border-zinc-700/50 pb-2 font-bold"><span className="text-zinc-500 text-sm uppercase font-bold tracking-widest">Potencia</span><span>{advertisement?.vehicle?.power_hp} CV</span></li>
-              <li className="flex justify-between items-center border-b border-zinc-700/50 pb-2 font-bold"><span className="text-zinc-500 text-sm uppercase font-bold tracking-widest">Año</span><span>{advertisement?.vehicle?.year}</span></li>
-              <li className="flex justify-between items-center pb-2 font-bold"><span className="text-zinc-500 text-sm uppercase font-bold tracking-widest">Ubicación</span><span>{advertisement?.province?.name}</span></li>
+              <li className="flex justify-between items-center border-b border-zinc-700/50 pb-2 font-bold"><span className="text-zinc-500 text-sm uppercase font-bold tracking-widest">{t('details.engine', "Motor")}</span><span>{advertisement?.vehicle?.fuel_type?.name}</span></li>
+              <li className="flex justify-between items-center border-b border-zinc-700/50 pb-2 font-bold"><span className="text-zinc-500 text-sm uppercase font-bold tracking-widest">{t('common.power', "Potencia")}</span><span>{advertisement?.vehicle?.power_hp} CV</span></li>
+              <li className="flex justify-between items-center border-b border-zinc-700/50 pb-2 font-bold"><span className="text-zinc-500 text-sm uppercase font-bold tracking-widest">{t('common.year', "Año")}</span><span>{advertisement?.vehicle?.year}</span></li>
+              <li className="flex justify-between items-center pb-2 font-bold"><span className="text-zinc-500 text-sm uppercase font-bold tracking-widest">{t('common.location', "Ubicación")}</span><span>{advertisement?.province?.name}</span></li>
             </ul>
           </div>
         </div>
