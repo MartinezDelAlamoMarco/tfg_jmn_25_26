@@ -398,7 +398,7 @@ const RentDetail = () => {
   /* --- ESTILOS COMUNES PARA EL RANGO (SIEMPRE LETRAS BLANCAS) --- */
   /* Días seleccionados y en medio del rango: forzamos texto blanco en ambos modos */
   .custom-rdp .rdp-selected .rdp-day_button,
-  .custom-rdp .rdp-range_middle .rdp-day_button,
+  .rdp-day_button,
   .custom-rdp .rdp-range_start .rdp-day_button,
   .custom-rdp .rdp-range_end .rdp-day_button {
     color: white !important; 
