@@ -351,85 +351,85 @@ const RentDetail = () => {
       </div>
 
      <style>{`
+  /* --- ESTILOS BASE (MODO OSCURO) --- */
   .custom-rdp {
     --rdp-accent-color: #b91c1c;
     --rdp-accent-background-color: #b91c1c;
     --rdp-day_button-border-radius: 12px;
     
-    /* FONDO CLARO */
-    background-color: white;
-    color: #18181b; /* zinc-900 */
+    background-color: #18181b; /* zinc-900 */
+    color: white;
     border-radius: 16px;
     padding: 12px;
+    border: 1px solid #27272a;
+    transition: all 0.3s ease;
   }
 
-  /* DÍAS NORMALES */
   .custom-rdp .rdp-day_button {
-    color: #18181b !important;
-    transition: all 0.2s ease;
+    color: white !important;
   }
 
-  /* HOVER EN MODO CLARO */
-  .custom-rdp .rdp-day_button:hover:not([disabled]):not(.rdp-selected) {
-    background-color: #f4f4f5 !important; /* zinc-100 */
-    transform: scale(1.05);
-  }
-
-  /* DÍAS SELECCIONADOS (INICIO, FIN Y ÚNICOS) */
-  .custom-rdp .rdp-selected .rdp-day_button {
-    background-color: #b91c1c !important;
+  .custom-rdp .rdp-caption_label {
     color: white !important;
     font-weight: 800;
+    text-transform: uppercase;
   }
 
-  /* DÍAS EN MEDIO DEL RANGO */
-  .custom-rdp .rdp-range_middle {
-    background-color: #b91c1c !important; /* Fondo rojo para el rango */
-    opacity: 0.8; /* Un poco más suave que los extremos */
+  /* --- MODO CLARO (Se activa con la clase .light en el html) --- */
+  .light .custom-rdp {
+    background-color: white;
+    color: #18181b;
+    border: 1px solid #e4e4e7; /* zinc-200 */
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
   }
 
-  .custom-rdp .rdp-range_middle .rdp-day_button {
-    background: transparent !important;
-    color: white !important; /* LETRAS BLANCAS EN EL RANGO */
-    font-weight: 700;
+  .light .custom-rdp .rdp-day_button {
+    color: #18181b !important;
   }
 
-  /* INICIO Y FIN DEL RANGO */
+  .light .custom-rdp .rdp-caption_label {
+    color: #18181b !important;
+  }
+
+  .light .custom-rdp .rdp-day_button:hover:not([disabled]):not(.rdp-selected) {
+    background-color: #f4f4f5 !important; /* zinc-100 */
+  }
+
+  /* --- ESTILOS COMUNES PARA EL RANGO (SIEMPRE LETRAS BLANCAS) --- */
+  /* Días seleccionados y en medio del rango: forzamos texto blanco en ambos modos */
+  .custom-rdp .rdp-selected .rdp-day_button,
+  .custom-rdp .rdp-range_middle .rdp-day_button,
   .custom-rdp .rdp-range_start .rdp-day_button,
   .custom-rdp .rdp-range_end .rdp-day_button {
+    color: white !important; 
     background-color: #b91c1c !important;
-    color: white !important;
-    border-radius: 9999px !important;
-    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    opacity: 1;
   }
 
-  /* DÍAS DESHABILITADOS */
+  .custom-rdp .rdp-range_middle {
+    background-color: rgba(185, 28, 28, 0.8) !important;
+  }
+
+  /* Estilos de los extremos del rango */
+  .custom-rdp .rdp-range_start .rdp-day_button,
+  .custom-rdp .rdp-range_end .rdp-day_button {
+    border-radius: 9999px !important;
+  }
+
+  /* Otros ajustes */
   .custom-rdp .rdp-disabled {
     opacity: 0.25;
     text-decoration: line-through;
-    pointer-events: none;
-    color: #a1a1aa !important;
   }
 
-  /* CABECERA (Días de la semana) */
   .custom-rdp .rdp-weekday {
     color: #71717a;
     font-size: 0.7rem;
     font-weight: 900;
-    text-transform: uppercase;
   }
 
-  /* BOTONES NAVEGACIÓN */
   .custom-rdp .rdp-chevron {
     fill: #ef4444;
-  }
-
-  /* MES/TÍTULO */
-  .custom-rdp .rdp-caption_label {
-    color: #18181b !important;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
   }
 `}</style>
     </div>
