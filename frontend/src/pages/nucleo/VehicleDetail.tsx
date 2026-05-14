@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { API_BASE_URL } from "../../config";
-import { Heart, MessageCircle } from "lucide-react";
+import { Heart, MessageCircle, Flag } from "lucide-react"; // <-- Importamos Flag
 import { useTranslation } from "react-i18next";
 import StarRating from "../../components/StarRating";
 
@@ -45,13 +45,13 @@ const VehicleDetail = () => {
   const [mainImage, setMainImage] = useState<string>("");
   const [isFavorite, setIsFavorite] = useState<boolean | null>(null);
   const [favoriteLoading, setFavoriteLoading] = useState<boolean>(false);
+  
+  const [contactLoading, setContactLoading] = useState<boolean>(false);
 
   const token = localStorage.getItem("auth_token");
   const userRole = localStorage.getItem("user_role");
   
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-
-  // --- NUEVO ESTADO: Guardamos el perfil real del vendedor ---
   const [ownerProfile, setOwnerProfile] = useState<any>(null);
 
   useEffect(() => {
@@ -127,7 +127,6 @@ const VehicleDetail = () => {
     return () => window.removeEventListener("favorites:updated", onFavsUpdated as EventListener);
   }, [id, token, t]);
 
-  // --- NUEVA PETICIÓN: Cargamos las estrellas reales del usuario ---
   useEffect(() => {
     if (ownerId) {
       axios.get(`${API_BASE_URL}/users/${ownerId}`)
@@ -179,6 +178,8 @@ const VehicleDetail = () => {
     }
     if (!advertisement || !ownerId) return;
     
+    setContactLoading(true);
+
     try {
       await axios.post(`${API_BASE_URL}/conversations`, {
         advertisement_id: advertisement.id,
@@ -191,6 +192,8 @@ const VehicleDetail = () => {
     } catch (err) {
       console.error("Error al iniciar la conversación", err);
       alert(t('details.chat_error', "No se pudo iniciar el chat con el vendedor."));
+    } finally {
+      setContactLoading(false);
     }
   };
 
@@ -212,7 +215,17 @@ const VehicleDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-900 text-white py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-zinc-900 text-white py-12 px-4 sm:px-6 lg:px-8 relative">
+      
+      {contactLoading && (
+        <div className="fixed inset-0 z-9999 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm">
+          <div className="w-16 h-16 border-4 border-red-600 border-t-transparent rounded-full animate-spin mb-6 shadow-[0_0_15px_rgba(220,38,38,0.5)]"></div>
+          <p className="font-black italic uppercase tracking-[0.2em] text-red-500 animate-pulse text-sm text-center px-4">
+            {t('details.starting_chat', 'Iniciando chat...')}
+          </p>
+        </div>
+      )}
+
       <div className="max-w-6xl mx-auto">
         <Link to="/" className="flex items-center text-zinc-400 hover:text-white mb-8 transition duration-200">
           <span className="mr-2">←</span> {t('details.home_link', 'Volver al catálogo')}
@@ -268,7 +281,6 @@ const VehicleDetail = () => {
                   </div>
                   <div className="flex-1">
                     <div className="font-bold text-lg">{owner.name || t('details.seller_fallback', 'Vendedor')}</div>
-                    {/* --- MOSTRANDO LAS ESTRELLAS REALES --- */}
                     {ownerProfile && ownerProfile.average_rating !== undefined && (
                       <div className="flex items-center gap-2 text-sm text-zinc-400 mt-1">
                         <StarRating value={Math.round(ownerProfile.average_rating || 0)} size={14} />
@@ -298,13 +310,13 @@ const VehicleDetail = () => {
               </h1>
               
               <div className="text-5xl font-black text-white mb-8 mt-4">
-                {Number(advertisement.price).toLocaleString("es-ES")} €
+                {Number(advertisement.price).toLocaleString(i18n.language.startsWith('en') ? 'en-US' : 'es-ES')} €
               </div>
 
               <div className="grid grid-cols-2 gap-4 mb-8">
                 <div className="bg-zinc-700/30 p-4 rounded-xl border border-zinc-600">
                   <p className="text-zinc-500 text-[10px] uppercase font-black tracking-widest mb-1">{t('common.km', 'Km')}</p>
-                  <p className="text-xl font-bold">{advertisement.vehicle?.km?.toLocaleString("es-ES")} km</p>
+                  <p className="text-xl font-bold">{advertisement.vehicle?.km?.toLocaleString(i18n.language.startsWith('en') ? 'en-US' : 'es-ES')} km</p>
                 </div>
                 <div className="bg-zinc-700/30 p-4 rounded-xl border border-zinc-600">
                   <p className="text-zinc-500 text-[10px] uppercase font-black tracking-widest mb-1">{t('common.year', 'Año')}</p>
@@ -329,7 +341,8 @@ const VehicleDetail = () => {
                   ) : (
                     <button 
                       onClick={handleContactSeller} 
-                      className="w-full py-4 bg-red-700 hover:bg-red-600 text-white font-black uppercase tracking-widest rounded-xl transition shadow-lg shadow-red-900/20 mb-4 flex justify-center items-center gap-2 active:scale-95"
+                      disabled={contactLoading} 
+                      className="w-full py-4 bg-red-700 hover:bg-red-600 text-white font-black uppercase tracking-widest rounded-xl transition shadow-lg shadow-red-900/20 mb-4 flex justify-center items-center gap-2 active:scale-95 disabled:opacity-50"
                     >
                       <MessageCircle size={20} />
                       {t('details.contact_seller', 'Contactar con el vendedor')}
@@ -337,14 +350,25 @@ const VehicleDetail = () => {
                   )}
 
                   {token && !isOwner && (
-                    <button
-                      onClick={handleToggleFavorite}
-                      disabled={favoriteLoading}
-                      className={`w-full py-3 rounded-xl font-bold transition flex items-center justify-center gap-2 ${isFavorite ? "bg-red-700/20 text-red-500 border border-red-700/50" : "bg-zinc-700 hover:bg-zinc-600 text-white"}`}
-                    >
-                      <Heart size={20} className={isFavorite ? "fill-current" : ""} />
-                      {isFavorite ? t('favorites.remove_favorite', 'Quitar favorito') : t('favorites.no_favorites', 'Añadir a favoritos')}
-                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleToggleFavorite}
+                        disabled={favoriteLoading}
+                        className={`flex-1 py-3 rounded-xl font-bold transition flex items-center justify-center gap-2 ${isFavorite ? "bg-red-700/20 text-red-500 border border-red-700/50" : "bg-zinc-700 hover:bg-zinc-600 text-white"}`}
+                      >
+                        <Heart size={20} className={isFavorite ? "fill-current" : ""} />
+                        {isFavorite ? t('favorites.remove_favorite', 'Quitar favorito') : t('favorites.no_favorites', 'Añadir a favoritos')}
+                      </button>
+
+                      {/* BOTÓN REPORTAR (Redirige al form de denuncia) */}
+                      <button
+                        onClick={() => navigate(`/reportar/${advertisement.id}`)}
+                        className="py-3 px-4 bg-zinc-800 hover:bg-red-900/40 text-zinc-400 hover:text-red-400 border border-zinc-700 hover:border-red-900/50 rounded-xl transition flex items-center justify-center"
+                        title={t('details.report_ad', 'Reportar anuncio')}
+                      >
+                        <Flag size={20} />
+                      </button>
+                    </div>
                   )}
                 </>
               )}

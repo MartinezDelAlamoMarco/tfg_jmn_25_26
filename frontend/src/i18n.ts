@@ -132,6 +132,7 @@ const resources = {
         availability: "Disponibilidad",
         rented: "ALQUILADO",
         contact_chat: "Contactar por Chat",
+        starting_chat: "Iniciando chat...",
       },
       my_ads: {
         title: "Mis Anuncios",
@@ -723,6 +724,7 @@ const resources = {
         availability: "Availability",
         rented: "RENTED",
         contact_chat: "Contact via Chat",
+        starting_chat: "Starting chat...",
       },
       my_ads: {
         title: "My Ads",

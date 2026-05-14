@@ -3,7 +3,7 @@ import { Link, useParams, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { API_BASE_URL } from "../../config";
 import { useTranslation } from "react-i18next";
-import { MessageCircle, Calendar as CalendarIcon, Info, AlertCircle, ChevronLeft } from "lucide-react";
+import { MessageCircle, Calendar as CalendarIcon, Info, AlertCircle, ChevronLeft, Flag } from "lucide-react"; // <-- AÑADIDO Flag
 import StarRating from "../../components/StarRating";
 
 // --- IMPORTS DEL CALENDARIO ---
@@ -52,6 +52,8 @@ const RentDetail = () => {
   const [success, setSuccess] = useState<boolean>(false); 
   const [mainImage, setMainImage] = useState<string>("");
   const [bookedDates, setBookedDates] = useState<{start_date: string, end_date: string}[]>([]);
+
+  const [contactLoading, setContactLoading] = useState<boolean>(false);
 
   const [range, setRange] = useState<DateRange | undefined>();
   const [totalPrice, setTotalPrice] = useState<number>(0);
@@ -124,13 +126,20 @@ const RentDetail = () => {
   const handleContactSeller = async () => {
     if (!token) { navigate('/login'); return; }
     if (!advertisement || !ownerId) return;
+
+    setContactLoading(true); 
+
     try {
       await axios.post(`${API_BASE_URL}/conversations`, { 
         advertisement_id: advertisement.id, 
         seller_id: ownerId 
       }, { headers: { Authorization: `Bearer ${token}` } });
       navigate('/mis-mensajes');
-    } catch (err) { alert(t('details.chat_error', "No se pudo iniciar la conversación.")); }
+    } catch (err) { 
+      alert(t('details.chat_error', "No se pudo iniciar la conversación.")); 
+    } finally {
+      setContactLoading(false); 
+    }
   };
 
   const handleDeleteAd = async () => {
@@ -173,10 +182,20 @@ const RentDetail = () => {
 
   return (
     <div className="min-h-screen bg-zinc-900 text-white py-12 px-4 sm:px-6 lg:px-8 relative pt-24 font-sans">
+      
       {actionLoading && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-100 flex flex-col items-center justify-center">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-9999 flex flex-col items-center justify-center">
           <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-red-600 mb-4"></div>
           <p className="text-red-500 font-bold uppercase tracking-widest animate-pulse">{t('details.processing_booking', "Procesando reserva...")}</p>
+        </div>
+      )}
+
+      {contactLoading && (
+        <div className="fixed inset-0 z-9999 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm">
+          <div className="w-16 h-16 border-4 border-red-600 border-t-transparent rounded-full animate-spin mb-6 shadow-[0_0_15px_rgba(220,38,38,0.5)]"></div>
+          <p className="font-black italic uppercase tracking-[0.2em] text-red-500 animate-pulse text-sm text-center px-4">
+            {t('details.starting_chat', 'Iniciando chat...')}
+          </p>
         </div>
       )}
 
@@ -227,7 +246,7 @@ const RentDetail = () => {
               </div>
               <h1 className="text-4xl font-black mb-2 uppercase tracking-tight">{advertisement?.vehicle?.model?.brand?.name} {advertisement?.vehicle?.model?.name}</h1>
               <p className="text-zinc-400 text-lg mb-6 flex items-center"><span className="mr-2">📍</span> {advertisement?.province?.name || t('common.spain', "España")}</p>
-              <div className="flex items-end mb-8 gap-2"><div className="text-5xl font-black text-white">{Number(advertisement?.price).toLocaleString("es-ES")} €</div><span className="text-zinc-500 font-bold uppercase italic pb-1">{t('common.per_day', "/ día")}</span></div>
+              <div className="flex items-end mb-8 gap-2"><div className="text-5xl font-black text-white">{Number(advertisement?.price).toLocaleString(i18n.language.startsWith('en') ? 'en-US' : 'es-ES')} €</div><span className="text-zinc-500 font-bold uppercase italic pb-1">{t('common.per_day', "/ día")}</span></div>
 
               {userRole === 'admin' ? (
                   <div className="mt-4 bg-red-950/30 p-6 rounded-xl border border-red-900 mb-8 text-center">
@@ -264,7 +283,7 @@ const RentDetail = () => {
 
                       <div className="flex justify-between items-center bg-black/40 p-5 rounded-xl border border-zinc-800 mb-6">
                         <span className="text-zinc-400 font-bold uppercase text-xs tracking-widest">{t('details.estimated_total', "Total Estimado")}</span>
-                        <span className="text-3xl font-black text-red-500">{totalPrice.toLocaleString("es-ES")} €</span>
+                        <span className="text-3xl font-black text-red-500">{totalPrice.toLocaleString(i18n.language.startsWith('en') ? 'en-US' : 'es-ES')} €</span>
                       </div>
 
                       {error && <div className="p-4 bg-red-900/20 border border-red-700 text-red-500 rounded-xl text-sm font-bold text-center mb-4"><AlertCircle size={18} className="inline mr-2"/> {error}</div>}
@@ -277,7 +296,27 @@ const RentDetail = () => {
                         ) : (
                           <>
                             <button onClick={handleRent} disabled={!!error || !range?.from || !range?.to} className="w-full py-5 bg-red-700 hover:bg-red-600 text-white font-black uppercase tracking-widest rounded-xl transition shadow-lg active:scale-95 text-lg">{t('details.confirm_booking', "Confirmar Reserva")}</button>
-                            <button onClick={handleContactSeller} className="w-full py-3 bg-zinc-800 hover:bg-zinc-700 text-white font-bold uppercase tracking-widest rounded-xl border border-zinc-700 transition flex justify-center items-center gap-2 text-sm"><MessageCircle size={18} /> {t('details.contact_chat', "Contactar por Chat")}</button>
+                            
+                            <div className="flex gap-2">
+                              <button 
+                                onClick={handleContactSeller} 
+                                disabled={contactLoading} 
+                                className="flex-1 py-3 bg-zinc-800 hover:bg-zinc-700 text-white font-bold uppercase tracking-widest rounded-xl border border-zinc-700 transition flex justify-center items-center gap-2 text-sm disabled:opacity-50"
+                              >
+                                <MessageCircle size={18} /> {t('details.contact_chat', "Contactar por Chat")}
+                              </button>
+
+                              {/* --- NUEVO BOTÓN DE REPORTAR EN ALQUILER --- */}
+                              {token && !isOwner && (
+                                <button
+                                  onClick={() => navigate(`/reportar/${advertisement?.id}`)}
+                                  className="py-3 px-4 bg-zinc-800 hover:bg-red-900/40 text-zinc-400 hover:text-red-400 border border-zinc-700 hover:border-red-900/50 rounded-xl transition flex items-center justify-center"
+                                  title={t('details.report_ad', 'Reportar anuncio')}
+                                >
+                                  <Flag size={20} />
+                                </button>
+                              )}
+                            </div>
                           </>
                         )}
                       </div>
