@@ -32,7 +32,9 @@ const Home = () => {
   const marketPart = APP_NAME.slice(6);
 
   // Guardamos TODOS los anuncios aquí
-  const [allAdvertisements, setAllAdvertisements] = useState<Advertisement[]>([]);
+  const [allAdvertisements, setAllAdvertisements] = useState<Advertisement[]>(
+    [],
+  );
   const [loading, setLoading] = useState(false);
 
   // Estado para controlar si el panel avanzado está abierto
@@ -230,7 +232,9 @@ const Home = () => {
                 onChange={handleFilterChange}
                 className="w-full px-4 pr-10 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white outline-none appearance-none transition-all duration-200 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
               >
-                <option value="">{t("filters.all_brands", "Todas las marcas")}</option>
+                <option value="">
+                  {t("filters.all_brands", "Todas las marcas")}
+                </option>
                 {availableBrands.map((b) => (
                   <option key={b} value={b}>
                     {b}
@@ -238,8 +242,18 @@ const Home = () => {
                 ))}
               </select>
               <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-zinc-400">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
                 </svg>
               </div>
             </div>
@@ -253,7 +267,9 @@ const Home = () => {
                 disabled={!filters.brand}
                 className="w-full px-4 pr-10 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white outline-none appearance-none transition-all duration-200 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 disabled:opacity-50"
               >
-                <option value="">{t("filters.all_models", "Todos los modelos")}</option>
+                <option value="">
+                  {t("filters.all_models", "Todos los modelos")}
+                </option>
                 {availableModels.map((m) => (
                   <option key={m} value={m}>
                     {m}
@@ -261,8 +277,18 @@ const Home = () => {
                 ))}
               </select>
               <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-zinc-400">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
                 </svg>
               </div>
             </div>
@@ -275,7 +301,9 @@ const Home = () => {
                 onChange={handleFilterChange}
                 className="w-full px-4 pr-10 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white outline-none appearance-none transition-all duration-200 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
               >
-                <option value="">{t("filters.any_province", "Cualquier provincia")}</option>
+                <option value="">
+                  {t("filters.any_province", "Cualquier provincia")}
+                </option>
                 {availableProvinces.map((p) => (
                   <option key={p} value={p}>
                     {p}
@@ -283,8 +311,18 @@ const Home = () => {
                 ))}
               </select>
               <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-zinc-400">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
                 </svg>
               </div>
             </div>
@@ -360,8 +398,18 @@ const Home = () => {
                   ))}
                 </select>
                 <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-zinc-400">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </div>
               </div>
@@ -374,7 +422,9 @@ const Home = () => {
                   onChange={handleFilterChange}
                   className="w-full px-4 pr-10 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white outline-none appearance-none transition-all duration-200 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
                 >
-                  <option value="">{t("common.transmission", "Transmisión")}</option>
+                  <option value="">
+                    {t("common.transmission", "Transmisión")}
+                  </option>
                   {availableTransmissions.map((t_opt) => (
                     <option key={t_opt} value={t_opt}>
                       {t_opt}
@@ -382,8 +432,18 @@ const Home = () => {
                   ))}
                 </select>
                 <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-zinc-400">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </div>
               </div>
@@ -404,8 +464,18 @@ const Home = () => {
                   ))}
                 </select>
                 <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-zinc-400">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </div>
               </div>
@@ -418,15 +488,27 @@ const Home = () => {
                   onChange={handleFilterChange}
                   className="w-full px-4 pr-10 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white outline-none appearance-none transition-all duration-200 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
                 >
-                  <option value="">{t("filters.doors_qty", "Nº Puertas")}</option>
+                  <option value="">
+                    {t("filters.doors_qty", "Nº Puertas")}
+                  </option>
                   <option value="2">{t("filters.doors_2", "2 puertas")}</option>
                   <option value="3">{t("filters.doors_3", "3 puertas")}</option>
                   <option value="4">{t("filters.doors_4", "4 puertas")}</option>
                   <option value="5">{t("filters.doors_5", "5 puertas")}</option>
                 </select>
                 <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-zinc-400">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </div>
               </div>
@@ -436,7 +518,8 @@ const Home = () => {
 
         {/* --- LISTA DE ANUNCIOS FILTRADOS --- */}
         <div className="mb-4 text-zinc-400 font-bold">
-          {filteredAds.length} {t("home.vehicles_found", "vehículos encontrados")}
+          {filteredAds.length}{" "}
+          {t("home.vehicles_found", "vehículos encontrados")}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -473,7 +556,7 @@ const Home = () => {
                     </div>
                   )}
 
-                  <div className="absolute top-2 right-2 z-20 bg-black/80 backdrop-blur-sm px-2 py-1 rounded border border-zinc-700 text-[9px] font-bold uppercase tracking-widest shadow-lg text-white">
+                  <div className="absolute top-2 right-2 z-20 bg-zinc-900/90 text-white dark:bg-zinc-100/90 dark:text-zinc-900 backdrop-blur-sm px-2.5 py-1 rounded border border-zinc-700 dark:border-zinc-300 text-[9px] font-black uppercase tracking-widest shadow-xl transition-colors">
                     {t("common.sale", "Venta")}
                   </div>
 
