@@ -264,7 +264,7 @@ const RentDetail = () => {
                   ) : (
                     <>
                       {/* CALENDARIO VISUAL ESTILO BOOKING */}
-                      <div className="bg-zinc-900/60 p-4 rounded-2xl border border-zinc-700 mb-8 flex flex-col items-center">
+                      <div className="bg-zinc-900 p-4 rounded-2xl border border-zinc-100 mb-8 flex flex-col items-center">
                         <h3 className="text-xs font-black uppercase text-zinc-500 mb-4 self-start flex items-center gap-2 tracking-widest ml-2"><CalendarIcon size={16}/> {t('details.availability', "Disponibilidad")}</h3>
                         <DayPicker
                           mode="range"
@@ -281,7 +281,7 @@ const RentDetail = () => {
                         )}
                       </div>
 
-                      <div className="flex justify-between items-center bg-black/40 p-5 rounded-xl border border-zinc-800 mb-6">
+                      <div className="flex justify-between items-center bg-zinc-900 p-5 rounded-xl border border-zinc-800 mb-6">
                         <span className="text-zinc-400 font-bold uppercase text-xs tracking-widest">{t('details.estimated_total', "Total Estimado")}</span>
                         <span className="text-3xl font-black text-red-500">{totalPrice.toLocaleString(i18n.language.startsWith('en') ? 'en-US' : 'es-ES')} €</span>
                       </div>
@@ -336,14 +336,14 @@ const RentDetail = () => {
               "{isEnglish && advertisement?.description_en ? advertisement.description_en : advertisement?.description}"
             </p>
           </div>
-          <div className="bg-zinc-800 p-8 rounded-2xl border border-zinc-200 shadow-xl h-fit">
+          <div className="bg-zinc-800 p-8 rounded-2xl border border-zinc-700 shadow-xl h-fit">
             <h2 className="text-2xl font-black mb-6 border-b border-zinc-700 pb-2 uppercase italic flex items-center gap-2">
               <Info size={20} className="text-red-700" /> {t('details.technical_sheet', "Ficha Técnica")}
             </h2>
             <ul className="space-y-4">
-              <li className="flex justify-between items-center border-b border-zinc-700/50 pb-2 font-bold"><span className="text-zinc-200 text-sm uppercase font-bold tracking-widest">{t('details.engine', "Motor")}</span><span>{advertisement?.vehicle?.fuel_type?.name}</span></li>
-              <li className="flex justify-between items-center border-b border-zinc-700/50 pb-2 font-bold"><span className="text-zinc-200 text-sm uppercase font-bold tracking-widest">{t('common.power', "Potencia")}</span><span>{advertisement?.vehicle?.power_hp} CV</span></li>
-              <li className="flex justify-between items-center border-b border-zinc-700/50 pb-2 font-bold"><span className="text-zinc-200 text-sm uppercase font-bold tracking-widest">{t('common.year', "Año")}</span><span>{advertisement?.vehicle?.year}</span></li>
+              <li className="flex justify-between items-center border-b border-zinc-700/50 pb-2 font-bold"><span className="text-zinc-500 text-sm uppercase font-bold tracking-widest">{t('details.engine', "Motor")}</span><span>{advertisement?.vehicle?.fuel_type?.name}</span></li>
+              <li className="flex justify-between items-center border-b border-zinc-700/50 pb-2 font-bold"><span className="text-zinc-500 text-sm uppercase font-bold tracking-widest">{t('common.power', "Potencia")}</span><span>{advertisement?.vehicle?.power_hp} CV</span></li>
+              <li className="flex justify-between items-center border-b border-zinc-700/50 pb-2 font-bold"><span className="text-zinc-500 text-sm uppercase font-bold tracking-widest">{t('common.year', "Año")}</span><span>{advertisement?.vehicle?.year}</span></li>
               <li className="flex justify-between items-center pb-2 font-bold"><span className="text-zinc-500 text-sm uppercase font-bold tracking-widest">{t('common.location', "Ubicación")}</span><span>{advertisement?.province?.name}</span></li>
             </ul>
           </div>
