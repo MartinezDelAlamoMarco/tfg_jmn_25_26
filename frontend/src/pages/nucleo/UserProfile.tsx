@@ -16,51 +16,83 @@ export default function UserProfile() {
 
   useEffect(() => {
     setLoading(true);
-    axios
-      .get(`/users/${id}`)
-      .then((res) => setUser(res.data))
-      .catch(() => setUser(null));
 
-    // Obtenemos anuncios y manejamos distintas formas de respuesta (array directo o paginado)
-    axios
-      .get(`/users/${id}/advertisements`)
-      .then(async (res) => {
-        const data = res.data;
-        let arr: any[] = [];
-        if (Array.isArray(data)) arr = data;
-        else if (Array.isArray(data?.data)) arr = data.data;
-        else if (Array.isArray(data?.items)) arr = data.items;
-
-        // Si no hay resultados, intentamos una segunda estrategia: traer todos los anuncios y filtrar por owner
-        if (arr.length === 0) {
+    (async () => {
+      try {
+        // 1) Fetch user (either public user by id or current authenticated user)
+        if (id) {
           try {
-            const allResp = await axios.get('/advertisements');
-            const all = allResp.data;
-            const list = Array.isArray(all) ? all : Array.isArray(all?.data) ? all.data : Array.isArray(all?.items) ? all.items : [];
-            const filtered = list.filter((a: any) => String(a.owner_id || a.owner?.id || a.user_id || a.seller_id) === String(id));
-            setAds(filtered);
-            return;
+            const res = await axios.get(`/users/${id}`);
+            setUser(res.data);
           } catch (e) {
-            setAds([]);
-            return;
+            setUser(null);
+          }
+        } else {
+          try {
+            const res = await axios.get(`/user`);
+            setUser(res.data);
+          } catch (e) {
+            setUser(null);
           }
         }
 
-        setAds(arr || []);
-      })
-      .catch(async () => {
-        // Fallback: obtener todos y filtrar por owner
-        try {
-          const allResp = await axios.get('/advertisements');
-          const all = allResp.data;
-          const list = Array.isArray(all) ? all : Array.isArray(all?.data) ? all.data : Array.isArray(all?.items) ? all.items : [];
-          const filtered = list.filter((a: any) => String(a.owner_id || a.owner?.id || a.user_id || a.seller_id) === String(id));
-          setAds(filtered);
-        } catch (e) {
-          setAds([]);
+        // 2) Fetch advertisements
+        if (id) {
+          // Public ads for specific user
+          try {
+            const res = await axios.get(`/users/${id}/advertisements`);
+            const data = res.data;
+            let arr: any[] = [];
+            if (Array.isArray(data)) arr = data;
+            else if (Array.isArray(data?.data)) arr = data.data;
+            else if (Array.isArray(data?.items)) arr = data.items;
+
+            if (arr.length === 0) {
+              // Fallback: get all and filter by owner id
+              const allResp = await axios.get('/advertisements');
+              const all = allResp.data;
+              const list = Array.isArray(all) ? all : Array.isArray(all?.data) ? all.data : Array.isArray(all?.items) ? all.items : [];
+              const filtered = list.filter((a: any) => String(a.owner_id || a.owner?.id || a.user_id || a.seller_id) === String(id));
+              setAds(filtered);
+            } else {
+              setAds(arr || []);
+            }
+          } catch (e) {
+            try {
+              const allResp = await axios.get('/advertisements');
+              const all = allResp.data;
+              const list = Array.isArray(all) ? all : Array.isArray(all?.data) ? all.data : Array.isArray(all?.items) ? all.items : [];
+              const filtered = list.filter((a: any) => String(a.owner_id || a.owner?.id || a.user_id || a.seller_id) === String(id));
+              setAds(filtered);
+            } catch (e2) {
+              setAds([]);
+            }
+          }
+        } else {
+          // My advertisements (protected)
+          try {
+            const res = await axios.get('/my-advertisements');
+            const data = res.data;
+            const arr = Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : Array.isArray(data?.items) ? data.items : [];
+            setAds(arr || []);
+          } catch (e) {
+            // Fallback: try to grab all and filter by current user id (if available)
+            try {
+              const allResp = await axios.get('/advertisements');
+              const all = allResp.data;
+              const list = Array.isArray(all) ? all : Array.isArray(all?.data) ? all.data : Array.isArray(all?.items) ? all.items : [];
+              const ownerId = id ?? (user && user.id ? user.id : null);
+              const filtered = list.filter((a: any) => String(a.owner_id || a.owner?.id || a.user_id || a.seller_id) === String(ownerId));
+              setAds(filtered);
+            } catch (e2) {
+              setAds([]);
+            }
+          }
         }
-      })
-      .finally(() => setLoading(false));
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, [id]);
 
   if (loading) {
@@ -85,22 +117,37 @@ export default function UserProfile() {
   return (
     <div className="min-h-screen text-white py-6 px-4 bg-zinc-900">
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Volver al anuncio: si venimos desde un anuncio, usamos su id; si no, navegamos hacia atrás */}
+        {/* Volver: respetando estado 'from' o 'fromAd', si existen */}
         {(() => {
-          const fromAd = (location.state as any)?.fromAd || new URLSearchParams(location.search).get('fromAd');
-          if (fromAd) {
+          const state = (location.state || {}) as any;
+          const fromPath = state.from;
+          const fromAd = state.fromAd || new URLSearchParams(location.search).get('fromAd') || new URLSearchParams(location.search).get('from');
+
+          if (fromPath) {
             return (
               <div className="lg:col-span-4">
-                <Link to={`/advertisement/${fromAd}`} className="flex items-center text-zinc-400 hover:text-white mb-4 transition duration-200">
+                <Link to={fromPath} className="flex items-center text-zinc-400 hover:text-white mb-4 transition duration-200">
+                  <span className="mr-2">←</span> {t('user_profile.back', 'Volver')}
+                </Link>
+              </div>
+            );
+          }
+
+          if (fromAd) {
+            const adTarget = String(fromAd).startsWith('/') ? fromAd : `/advertisement/${fromAd}`;
+            return (
+              <div className="lg:col-span-4">
+                <Link to={adTarget} className="flex items-center text-zinc-400 hover:text-white mb-4 transition duration-200">
                   <span className="mr-2">←</span> {t('user_profile.back_to_ad', 'Volver al anuncio')}
                 </Link>
               </div>
             );
           }
+
           return (
             <div className="lg:col-span-4">
               <button onClick={() => navigate(-1)} className="flex items-center text-zinc-400 hover:text-white mb-4 transition duration-200">
-                <span className="mr-2">←</span> {t('user_profile.back_to_ad', 'Volver al anuncio')}
+                <span className="mr-2">←</span> {t('user_profile.back', 'Volver')}
               </button>
             </div>
           );
@@ -143,7 +190,7 @@ export default function UserProfile() {
             </div>
 
             <div className="mt-4">
-              <UserReviews userId={String(id)} />
+              {(id || user?.id) && <UserReviews userId={String(id ?? user?.id)} />}
             </div>
           </div>
 

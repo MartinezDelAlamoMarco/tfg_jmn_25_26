@@ -50,6 +50,7 @@ export default function AppRouter() {
           <Route path="/create-ad-rent" element={<CreateAdRent />} />
           <Route path="/alquiler/:id" element={<RentDetail />} />
           <Route path="/perfil" element={<Profile />} />
+          <Route path="/mi-perfil-publico" element={<UserProfile />} />
           <Route path="/usuario/:id" element={<UserProfile />} />
           <Route path="/anuncios/:id/reportar" element={<ReportAdvertisement />} />
           <Route path="/admin/panel" element={<AdminDashboard />} />

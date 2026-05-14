@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { APP_NAME } from "../config";
+import { APP_NAME, SUPER_ADMIN_EMAIL } from "../config";
 import logo from "../assets/Logotipo.png";
 import { Mail, Phone, MapPin, Car } from "lucide-react";
 
@@ -78,7 +78,9 @@ export default function Footer() {
               </li>
               <li className="flex items-center gap-3">
                 <Mail size={18} className="text-red-500 shrink-0" />
-                <a href="mailto:info@redlinemotors.com" className="hover:text-white transition-colors">info@redlinemotors.com</a>
+                <a href={`mailto:${SUPER_ADMIN_EMAIL}`} className="hover:text-white transition-colors">
+                  {SUPER_ADMIN_EMAIL}
+                </a>
               </li>
             </ul>
           </div>

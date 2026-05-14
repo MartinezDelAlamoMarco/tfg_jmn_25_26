@@ -11,7 +11,7 @@ import {
   AlertCircle, 
   Lock 
 } from "lucide-react";
-import { APP_NAME } from "../../config";
+import { APP_NAME, SUPER_ADMIN_EMAIL } from "../../config";
 
 export default function PoliticaPrivacidad() {
   const { t } = useTranslation();
@@ -135,7 +135,7 @@ export default function PoliticaPrivacidad() {
               <div className="bg-zinc-900 p-4 rounded-lg border border-zinc-800 mt-4">
                 <p className="font-bold text-white mb-2">{t('legal.privacy.q6_contact_title')}:</p>
                 <p>{APP_NAME} – Rivas-Vaciamadrid, Madrid, España.</p>
-                <p>Email: admin@redlinemotors.com</p>
+                <p>Email: {SUPER_ADMIN_EMAIL}</p>
               </div>
             </div>
           </article>

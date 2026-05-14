@@ -464,10 +464,10 @@ const ChatInterface: React.FC = () => {
   );
 
   return (
-    <div className="flex h-[calc(100vh-64px)] bg-[#0a0a0a] text-zinc-100 overflow-hidden font-sans">
+    <div className="flex h-[calc(100vh-64px)] bg-zinc-950 text-zinc-100 overflow-hidden font-sans chat-root">
       {/* PANEL IZQUIERDA: LISTA */}
-      <div className={`${activeChatId ? "hidden md:flex" : "flex"} w-full md:w-96 shrink-0 flex-col border-r border-zinc-800 bg-[#111]`}>
-        <div className="p-4 bg-[#1a1a1a] border-b border-zinc-800">
+      <div className={`${activeChatId ? "hidden md:flex" : "flex"} w-full md:w-96 shrink-0 flex-col border-r border-zinc-800 bg-zinc-900`}>
+        <div className="p-4 bg-zinc-900/80 border-b border-zinc-800">
           <h2 className="text-3xl font-black italic uppercase mb-4 text-white">Mensajes</h2>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={20} />
@@ -512,7 +512,7 @@ const ChatInterface: React.FC = () => {
       </div>
 
       {/* ÁREA DE CHAT */}
-      <div className={`${!activeChatId ? "hidden md:flex" : "flex"} flex-1 flex-col bg-[#0f0f0f] relative`}>
+      <div className={`${!activeChatId ? "hidden md:flex" : "flex"} flex-1 flex-col bg-zinc-950 relative`}>
         {activeChatId && !loadingChat ? (
           <div className="flex flex-col h-full relative">
             {isActionPending && (
@@ -525,7 +525,7 @@ const ChatInterface: React.FC = () => {
             )}
 
             {/* CABECERA */}
-            <div className="bg-[#1a1a1a] px-3 md:px-5 py-4 border-b border-zinc-800 flex items-center justify-between z-20 shadow-md">
+            <div className="bg-zinc-900/80 px-3 md:px-5 py-4 border-b border-zinc-800 flex items-center justify-between z-20 shadow-md">
               <div className="flex items-center gap-4 min-w-0">
                 <button onClick={() => setActiveChatId(null)} className="md:hidden text-zinc-400 p-1 -ml-1 hover:text-white transition-colors"><ArrowLeft size={24} /></button>
                 <div className="h-12 w-12 shrink-0 rounded-full bg-red-600 flex items-center justify-center text-lg font-bold text-white shadow-md">
@@ -650,7 +650,7 @@ const ChatInterface: React.FC = () => {
             )}
 
             {/* ÁREA MENSAJES */}
-            <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 md:p-6 space-y-5 bg-[#0a0a0a]">
+            <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 md:p-6 space-y-5 bg-zinc-950">
               {messages.map((msg) => {
                 const isMe = String(msg.sender_id) === String(currentUserId);
                 const isSystem = !msg.sender_id || String(msg.sender_id) === "0" || String(msg.sender_id) === "1" || String(msg.sender_id) === "2";
@@ -701,7 +701,7 @@ const ChatInterface: React.FC = () => {
             )}
 
             {/* PIE DE CHAT */}
-            <div className="p-3 md:p-5 bg-[#1a1a1a] border-t border-zinc-800 pb-safe">
+            <div className="p-3 md:p-5 bg-zinc-900/80 border-t border-zinc-800 pb-safe">
               {activeChatData?.chat_status === "disabled" ? (
                 <div className="flex justify-center">
                   <button onClick={handleDeleteChat} className="bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-4 px-8 rounded-xl border border-zinc-700 transition w-full max-w-md shadow-lg italic tracking-wide uppercase text-sm">
@@ -721,7 +721,7 @@ const ChatInterface: React.FC = () => {
             </div>
           </div>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-zinc-500 p-8 text-center bg-[#0a0a0a]">
+          <div className="flex-1 flex flex-col items-center justify-center text-zinc-500 p-8 text-center bg-zinc-950">
             <div className="h-28 w-28 bg-zinc-900/50 rounded-full flex items-center justify-center mb-6 border border-zinc-800/50 shadow-xl">
               <MessageSquare size={48} className="text-zinc-700" />
             </div>

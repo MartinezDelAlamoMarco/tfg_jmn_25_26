@@ -43,7 +43,7 @@ class User extends Authenticatable
     ];
 
     // =========================================================
-    // RELACIONES ELOQUENT (Lógica de Redline Motors)
+    // RELACIONES ELOQUENT (Lógica de Nujama Motors)
     // =========================================================
 
     /**

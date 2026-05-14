@@ -1,7 +1,7 @@
 -- NIVEL 0: TABLAS INDEPENDIENTES Y USUARIOS
 -- Contraseña para todos: 'password'
 INSERT INTO users (id, name, email, password, telephone, role, created_at, updated_at) VALUES
-(1, 'Admin', 'admin@redlinemotors.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '600111222', 'admin', NOW(), NOW());
+(1, 'Admin', 'admin@nujamamotors.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '600111222', 'admin', NOW(), NOW());
 
 INSERT INTO provinces (id, name, created_at, updated_at) VALUES
 (1, 'Madrid', NOW(), NOW()), (2, 'Barcelona', NOW(), NOW()), (3, 'Valencia', NOW(), NOW()), (4, 'Sevilla', NOW(), NOW());
