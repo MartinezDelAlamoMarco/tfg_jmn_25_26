@@ -264,7 +264,7 @@ const RentDetail = () => {
                   ) : (
                     <>
                       {/* CALENDARIO VISUAL ESTILO BOOKING */}
-                      <div className="bg-zinc-900 p-4 rounded-2xl border border-zinc-100 mb-8 flex flex-col items-center">
+                      <div className="bg-zinc-900 p-4 rounded-2xl border border-zinc-800 mb-8 flex flex-col items-center">
                         <h3 className="text-xs font-black uppercase text-zinc-500 mb-4 self-start flex items-center gap-2 tracking-widest ml-2"><CalendarIcon size={16}/> {t('details.availability', "Disponibilidad")}</h3>
                         <DayPicker
                           mode="range"
