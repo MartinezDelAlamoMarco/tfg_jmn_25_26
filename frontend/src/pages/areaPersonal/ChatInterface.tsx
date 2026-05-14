@@ -464,8 +464,10 @@ const ChatInterface: React.FC = () => {
   );
 
   return (
-    // CORRECCIÓN 1: Se usa '100dvh' (dynamic viewport height) en lugar de '100vh' para que no quede oculto detrás de la barra de Chrome/Safari móvil
-    <div className="flex h-[calc(100dvh-64px)] bg-zinc-950 text-zinc-100 overflow-hidden font-sans chat-root">
+    // CAMBIO 1: Position 'fixed', top-16 (altura del Navbar), anclado a todos los bordes, con un alto z-index (z-40)
+    // Esto crea un layout 100% estático tapando el resto de la página y el Footer.
+    <div className="fixed top-16 inset-x-0 bottom-0 flex bg-zinc-950 text-zinc-100 overflow-hidden font-sans z-40">
+      
       {/* PANEL IZQUIERDA: LISTA */}
       <div className={`${activeChatId ? "hidden md:flex" : "flex"} w-full md:w-96 shrink-0 flex-col border-r border-zinc-800 bg-zinc-900`}>
         <div className="p-4 bg-zinc-900/80 border-b border-zinc-800">
@@ -526,8 +528,7 @@ const ChatInterface: React.FC = () => {
             )}
 
             {/* CABECERA */}
-            <div className="bg-zinc-900/80 px-3 md:px-5 py-4 border-b border-zinc-800 flex items-center justify-between z-20 shadow-md">
-              {/* CORRECCIÓN 2: gap-2 en móvil, y el flex-1 empuja correctamente las opciones hacia el final para que nada se monte */}
+            <div className="bg-zinc-900/80 px-3 md:px-5 py-4 border-b border-zinc-800 flex items-center justify-between z-20 shadow-md shrink-0">
               <div className="flex items-center gap-2 md:gap-4 min-w-0 flex-1">
                 <button onClick={() => setActiveChatId(null)} className="md:hidden text-zinc-400 p-1 -ml-1 hover:text-white transition-colors shrink-0"><ArrowLeft size={24} /></button>
                 <div className="h-12 w-12 shrink-0 rounded-full bg-red-600 flex items-center justify-center text-lg font-bold text-white shadow-md">
@@ -661,7 +662,6 @@ const ChatInterface: React.FC = () => {
                   return (
                     <div key={msg.id} className="flex flex-col items-center my-8 animate-in fade-in zoom-in duration-500">
                       <span className="text-[11px] text-zinc-500 uppercase font-black tracking-widest mb-2 italic">{t('chat.notification_from', "Notificación de")} {APP_NAME}</span>
-                      {/* CORRECCIÓN 3: max-w-[480px] y mx-4 en vez de la clase errónea max-w-480px que rompía márgenes */}
                       <div className="bg-zinc-900 border border-red-900/40 text-zinc-200 text-[16px] px-6 py-5 md:px-8 md:py-6 rounded-2xl max-w-480px mx-4 w-full shadow-2xl leading-relaxed whitespace-pre-wrap mt-1 text-center">
                         {msg.content}
                       </div>
@@ -684,14 +684,14 @@ const ChatInterface: React.FC = () => {
 
             {/* VALORACIÓN */}
             {activeChatData?.chat_status === "sold" && String(currentUserId) === String(activeChatData?.buyer_id) && !hasReviewed && (
-              <div className="mx-4 mb-4 p-6 md:p-8 bg-zinc-800 border-2 border-yellow-600/30 rounded-2xl text-center animate-in zoom-in shadow-2xl relative">
+              <div className="mx-4 mb-4 p-6 md:p-8 bg-zinc-800 border-2 border-yellow-600/30 rounded-2xl text-center animate-in zoom-in shadow-2xl relative shrink-0">
                 <button onClick={() => handleFinalizeChat(activeChatId!)} className="absolute top-4 right-4 text-zinc-500 hover:text-white transition-colors"><X size={24} /></button>
                 <h3 className="text-xl font-black uppercase italic mb-2 text-white">{t('chat.purchase_finished', "¡Compra finalizada!")}</h3>
                 <p className="text-zinc-400 text-[13px] md:text-[14px] mb-5 uppercase tracking-widest px-2">{t('chat.rate_user', "Valora a")} {activeChatData?.seller_name} {t('chat.to_help_community', "para ayudar a la comunidad")}</p>
                 <div className="flex justify-center gap-2 md:gap-4 mb-6">
                   {[1, 2, 3, 4, 5].map((s) => (
                     <button key={s} onClick={() => setRating(s)} className={`transition-transform active:scale-90 ${rating >= s ? "text-yellow-500 drop-shadow-[0_0_8px_rgba(234,179,8,0.5)]" : "text-zinc-700"}`}>
-                      <Star size={36} fill={rating >= s ? "currentColor" : "none"} />
+                      <Star size={36} className="md:w-11 md:h-11" fill={rating >= s ? "currentColor" : "none"} />
                     </button>
                   ))}
                 </div>
@@ -704,7 +704,7 @@ const ChatInterface: React.FC = () => {
             )}
 
             {/* PIE DE CHAT */}
-            <div className="p-3 md:p-5 bg-zinc-900/80 border-t border-zinc-800 pb-safe">
+            <div className="p-3 md:p-5 bg-zinc-900/80 border-t border-zinc-800 pb-safe shrink-0">
               {activeChatData?.chat_status === "disabled" ? (
                 <div className="flex justify-center">
                   <button onClick={handleDeleteChat} className="bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-4 px-8 rounded-xl border border-zinc-700 transition w-full max-w-md shadow-lg italic tracking-wide uppercase text-xs md:text-sm">
@@ -712,13 +712,25 @@ const ChatInterface: React.FC = () => {
                   </button>
                 </div>
               ) : (
-                <form onSubmit={handleSendMessage} className="flex gap-2 md:gap-3 items-end max-w-4xl mx-auto w-full">
-                  <textarea value={newMessage} onChange={(e) => setNewMessage(e.target.value)} onKeyDown={handleKeyDown} placeholder={t('chat.write_message', "Escribe tu mensaje...")} rows={1}
-                    style={{ minHeight: "52px", maxHeight: "140px" }}
-                    className="flex-1 bg-zinc-900 border border-zinc-700 rounded-2xl px-4 py-3 md:px-5 md:py-3.5 outline-none text-[16px] md:text-[17px] resize-none focus:border-red-600 transition shadow-inner" />
-                  {/* CORRECCIÓN 4: w-[52px] h-[52px] y shrink-0 arregla la deformación extrema del botón de enviar en móviles */}
-                  <button type="submit" disabled={!newMessage.trim()} className="bg-red-600 text-white w-52px h-52px shrink-0 rounded-full flex items-center justify-center hover:bg-red-500 transition disabled:opacity-50 shadow-md">
-                    <Send size={22} className="ml-1" />
+                <form onSubmit={handleSendMessage} className="flex gap-2 items-end max-w-4xl mx-auto w-full">
+                  {/* CAMBIO 2: text-base evita el zoom en iOS Safari */}
+                  <textarea 
+                    value={newMessage} 
+                    onChange={(e) => setNewMessage(e.target.value)} 
+                    onKeyDown={handleKeyDown} 
+                    placeholder={t('chat.write_message', "Escribe tu mensaje...")} 
+                    rows={1}
+                    style={{ minHeight: "48px", maxHeight: "120px" }}
+                    className="flex-1 w-full bg-zinc-900 border border-zinc-700 rounded-2xl px-4 py-3 outline-none text-base resize-none focus:border-red-600 transition shadow-inner" 
+                  />
+                  
+                  {/* CAMBIO 3: flex-none asegura que el botón JAMÁS se encoja por el textarea y se rompa */}
+                  <button 
+                    type="submit" 
+                    disabled={!newMessage.trim()} 
+                    className="flex-none w-12 h-12 bg-red-600 text-white rounded-full flex items-center justify-center hover:bg-red-500 transition disabled:opacity-50 shadow-md mb-1px"
+                  >
+                    <Send size={20} className="relative right-1px" />
                   </button>
                 </form>
               )}
