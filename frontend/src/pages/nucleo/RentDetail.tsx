@@ -336,14 +336,14 @@ const RentDetail = () => {
               "{isEnglish && advertisement?.description_en ? advertisement.description_en : advertisement?.description}"
             </p>
           </div>
-          <div className="bg-zinc-800 p-8 rounded-2xl border border-zinc-700 shadow-xl h-fit">
+          <div className="bg-zinc-800 p-8 rounded-2xl border border-zinc-200 shadow-xl h-fit">
             <h2 className="text-2xl font-black mb-6 border-b border-zinc-700 pb-2 uppercase italic flex items-center gap-2">
               <Info size={20} className="text-red-700" /> {t('details.technical_sheet', "Ficha Técnica")}
             </h2>
             <ul className="space-y-4">
-              <li className="flex justify-between items-center border-b border-zinc-700/50 pb-2 font-bold"><span className="text-zinc-500 text-sm uppercase font-bold tracking-widest">{t('details.engine', "Motor")}</span><span>{advertisement?.vehicle?.fuel_type?.name}</span></li>
-              <li className="flex justify-between items-center border-b border-zinc-700/50 pb-2 font-bold"><span className="text-zinc-500 text-sm uppercase font-bold tracking-widest">{t('common.power', "Potencia")}</span><span>{advertisement?.vehicle?.power_hp} CV</span></li>
-              <li className="flex justify-between items-center border-b border-zinc-700/50 pb-2 font-bold"><span className="text-zinc-500 text-sm uppercase font-bold tracking-widest">{t('common.year', "Año")}</span><span>{advertisement?.vehicle?.year}</span></li>
+              <li className="flex justify-between items-center border-b border-zinc-700/50 pb-2 font-bold"><span className="text-zinc-200 text-sm uppercase font-bold tracking-widest">{t('details.engine', "Motor")}</span><span>{advertisement?.vehicle?.fuel_type?.name}</span></li>
+              <li className="flex justify-between items-center border-b border-zinc-700/50 pb-2 font-bold"><span className="text-zinc-200 text-sm uppercase font-bold tracking-widest">{t('common.power', "Potencia")}</span><span>{advertisement?.vehicle?.power_hp} CV</span></li>
+              <li className="flex justify-between items-center border-b border-zinc-700/50 pb-2 font-bold"><span className="text-zinc-200 text-sm uppercase font-bold tracking-widest">{t('common.year', "Año")}</span><span>{advertisement?.vehicle?.year}</span></li>
               <li className="flex justify-between items-center pb-2 font-bold"><span className="text-zinc-500 text-sm uppercase font-bold tracking-widest">{t('common.location', "Ubicación")}</span><span>{advertisement?.province?.name}</span></li>
             </ul>
           </div>
@@ -351,7 +351,7 @@ const RentDetail = () => {
       </div>
 
      <style>{`
-  /* --- ESTILOS BASE (MODO OSCURO) --- */
+  /* --- ESTILOS BASE --- */
   .custom-rdp {
     --rdp-accent-color: #b91c1c;
     --rdp-accent-background-color: #b91c1c;
@@ -365,21 +365,17 @@ const RentDetail = () => {
     transition: all 0.3s ease;
   }
 
+  /* Días normales en modo oscuro */
   .custom-rdp .rdp-day_button {
     color: white !important;
+    background-color: transparent !important;
   }
 
-  .custom-rdp .rdp-caption_label {
-    color: white !important;
-    font-weight: 800;
-    text-transform: uppercase;
-  }
-
-  /* --- MODO CLARO (Se activa con la clase .light en el html) --- */
+  /* --- MODO CLARO --- */
   .light .custom-rdp {
     background-color: white;
     color: #18181b;
-    border: 1px solid #e4e4e7; /* zinc-200 */
+    border: 1px solid #e4e4e7;
     box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
   }
 
@@ -391,40 +387,44 @@ const RentDetail = () => {
     color: #18181b !important;
   }
 
-  .light .custom-rdp .rdp-day_button:hover:not([disabled]):not(.rdp-selected) {
-    background-color: #f4f4f5 !important; /* zinc-100 */
-  }
+  /* --- LÓGICA DEL RANGO (ESTO ARREGLA TU PROBLEMA) --- */
 
-  /* --- ESTILOS COMUNES PARA EL RANGO (SIEMPRE LETRAS BLANCAS) --- */
-  /* Días seleccionados y en medio del rango: forzamos texto blanco en ambos modos */
-  .custom-rdp .rdp-selected .rdp-day_button,
-  .rdp-day_button,
-  .custom-rdp .rdp-range_start .rdp-day_button,
-  .custom-rdp .rdp-range_end .rdp-day_button {
-    color: white !important; 
-    background-color: #b91c1c !important;
-    opacity: 1;
-  }
-
+  /* 1. Días del MEDIO: Barra con opacidad y letras blancas */
   .custom-rdp .rdp-range_middle {
-    background-color: rgba(185, 28, 28, 0.8) !important;
+    background-color: rgba(185, 28, 28, 0.7) !important; /* Rojo semi-transparente */
   }
 
-  /* Estilos de los extremos del rango */
+  .custom-rdp .rdp-range_middle .rdp-day_button {
+    color: white !important;
+    font-weight: 600;
+    border-radius: 0px !important; /* Cuadrado para formar la barra */
+    width: 100% !important;
+  }
+
+  /* 2. EXTREMOS (Inicio y Fin): Círculos sólidos rojos */
   .custom-rdp .rdp-range_start .rdp-day_button,
-  .custom-rdp .rdp-range_end .rdp-day_button {
-    border-radius: 9999px !important;
+  .custom-rdp .rdp-range_end .rdp-day_button,
+  .custom-rdp .rdp-selected:not(.rdp-range_middle) .rdp-day_button {
+    background-color: #b91c1c !important;
+    color: white !important;
+    font-weight: 800;
+    border-radius: 9999px !important; /* Círculo perfecto */
+    opacity: 1 !important;
   }
 
-  /* Otros ajustes */
+  /* --- OTROS AJUSTES --- */
+  .custom-rdp .rdp-caption_label {
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
   .custom-rdp .rdp-disabled {
-    opacity: 0.25;
+    opacity: 0.2;
     text-decoration: line-through;
   }
 
   .custom-rdp .rdp-weekday {
     color: #71717a;
-    font-size: 0.7rem;
     font-weight: 900;
   }
 
