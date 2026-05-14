@@ -464,7 +464,8 @@ const ChatInterface: React.FC = () => {
   );
 
   return (
-    <div className="flex h-[calc(100vh-64px)] bg-zinc-950 text-zinc-100 overflow-hidden font-sans chat-root">
+    // CORRECCIÓN 1: Se usa '100dvh' (dynamic viewport height) en lugar de '100vh' para que no quede oculto detrás de la barra de Chrome/Safari móvil
+    <div className="flex h-[calc(100dvh-64px)] bg-zinc-950 text-zinc-100 overflow-hidden font-sans chat-root">
       {/* PANEL IZQUIERDA: LISTA */}
       <div className={`${activeChatId ? "hidden md:flex" : "flex"} w-full md:w-96 shrink-0 flex-col border-r border-zinc-800 bg-zinc-900`}>
         <div className="p-4 bg-zinc-900/80 border-b border-zinc-800">
@@ -526,16 +527,17 @@ const ChatInterface: React.FC = () => {
 
             {/* CABECERA */}
             <div className="bg-zinc-900/80 px-3 md:px-5 py-4 border-b border-zinc-800 flex items-center justify-between z-20 shadow-md">
-              <div className="flex items-center gap-4 min-w-0">
-                <button onClick={() => setActiveChatId(null)} className="md:hidden text-zinc-400 p-1 -ml-1 hover:text-white transition-colors"><ArrowLeft size={24} /></button>
+              {/* CORRECCIÓN 2: gap-2 en móvil, y el flex-1 empuja correctamente las opciones hacia el final para que nada se monte */}
+              <div className="flex items-center gap-2 md:gap-4 min-w-0 flex-1">
+                <button onClick={() => setActiveChatId(null)} className="md:hidden text-zinc-400 p-1 -ml-1 hover:text-white transition-colors shrink-0"><ArrowLeft size={24} /></button>
                 <div className="h-12 w-12 shrink-0 rounded-full bg-red-600 flex items-center justify-center text-lg font-bold text-white shadow-md">
                   {(String(currentUserId) === String(activeChatData?.seller_id) ? activeChatData?.buyer_name : activeChatData?.seller_name)?.charAt(0).toUpperCase()}
                 </div>
-                <div className="min-w-0">
-                  <h2 className="font-bold truncate text-white text-[17px] leading-tight">
+                <div className="min-w-0 pr-2">
+                  <h2 className="font-bold truncate text-white text-[16px] md:text-[17px] leading-tight">
                     {String(currentUserId) === String(activeChatData?.seller_id) ? activeChatData?.buyer_name : activeChatData?.seller_name}
                   </h2>
-                  <p className="text-[13px] text-zinc-400 truncate mt-0.5">
+                  <p className="text-[12px] md:text-[13px] text-zinc-400 truncate mt-0.5">
                     {activeChatData?.is_rent ? t('chat.rent_of', 'Alquiler de: ') : t('chat.negotiating_for', 'Negociando por: ')}
                     <span className="text-zinc-200 font-bold">{activeChatData?.brand_name} {activeChatData?.model_name}</span>
                     <span className="ml-1.5 text-red-500 font-black">{activeChatData?.advertisement_price}€</span>
@@ -543,12 +545,12 @@ const ChatInterface: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 md:gap-3 shrink-0">
-                <button onClick={handleDeleteChat} className="p-2.5 text-zinc-500 hover:text-red-500 transition" title={t('chat.delete_chat_title', "Borrar Chat")}><Trash2 size={22} /></button>
+              <div className="flex items-center gap-1 md:gap-3 shrink-0">
+                <button onClick={handleDeleteChat} className="p-2 text-zinc-500 hover:text-red-500 transition" title={t('chat.delete_chat_title', "Borrar Chat")}><Trash2 size={22} /></button>
                 <div className="relative">
-                  <button onClick={() => setShowOptions(!showOptions)} className="p-2.5 text-zinc-400 hover:text-white transition"><MoreVertical size={22} /></button>
+                  <button onClick={() => setShowOptions(!showOptions)} className="p-2 text-zinc-400 hover:text-white transition"><MoreVertical size={22} /></button>
                   {showOptions && (
-                    <div className="absolute right-0 mt-2 w-72 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-2 z-50 overflow-hidden animate-in fade-in zoom-in duration-200">
+                    <div className="absolute right-0 mt-2 w-[85vw] max-w-[18rem] bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-2 z-50 overflow-hidden animate-in fade-in zoom-in duration-200">
                       {isCurrentUserSeller && activeChatData?.chat_status !== "disabled" && (
                         <>
                           {/* LÓGICA DE ALQUILER */}
@@ -659,7 +661,8 @@ const ChatInterface: React.FC = () => {
                   return (
                     <div key={msg.id} className="flex flex-col items-center my-8 animate-in fade-in zoom-in duration-500">
                       <span className="text-[11px] text-zinc-500 uppercase font-black tracking-widest mb-2 italic">{t('chat.notification_from', "Notificación de")} {APP_NAME}</span>
-                      <div className="bg-zinc-900 border border-red-900/40 text-zinc-200 text-[16px] px-8 py-6 rounded-2xl max-w-480px w-full shadow-2xl leading-relaxed whitespace-pre-wrap mt-1 text-center">
+                      {/* CORRECCIÓN 3: max-w-[480px] y mx-4 en vez de la clase errónea max-w-480px que rompía márgenes */}
+                      <div className="bg-zinc-900 border border-red-900/40 text-zinc-200 text-[16px] px-6 py-5 md:px-8 md:py-6 rounded-2xl max-w-480px mx-4 w-full shadow-2xl leading-relaxed whitespace-pre-wrap mt-1 text-center">
                         {msg.content}
                       </div>
                     </div>
@@ -668,8 +671,8 @@ const ChatInterface: React.FC = () => {
 
                 return (
                   <div key={msg.id} className={`flex ${isMe ? "justify-end" : "justify-start"} w-full animate-in slide-in-from-bottom-2 duration-300`}>
-                    <div className={`max-w-[85%] md:max-w-[75%] px-5 py-3 rounded-2xl ${isMe ? "bg-red-600 text-white rounded-tr-sm shadow-md" : "bg-zinc-800 text-zinc-100 rounded-tl-sm border border-zinc-700 shadow-md"}`}>
-                      <p className="text-[17px] leading-relaxed whitespace-pre-wrap font-medium wrap-break-words">{msg.content}</p>
+                    <div className={`max-w-[85%] md:max-w-[75%] px-4 py-3 md:px-5 md:py-3 rounded-2xl ${isMe ? "bg-red-600 text-white rounded-tr-sm shadow-md" : "bg-zinc-800 text-zinc-100 rounded-tl-sm border border-zinc-700 shadow-md"}`}>
+                      <p className="text-[16px] md:text-[17px] leading-relaxed whitespace-pre-wrap font-medium wrap-break-words">{msg.content}</p>
                       <p className="text-[11px] mt-1.5 text-right opacity-60 font-bold">
                         {new Date(msg.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                       </p>
@@ -681,20 +684,20 @@ const ChatInterface: React.FC = () => {
 
             {/* VALORACIÓN */}
             {activeChatData?.chat_status === "sold" && String(currentUserId) === String(activeChatData?.buyer_id) && !hasReviewed && (
-              <div className="mx-4 mb-4 p-8 bg-zinc-800 border-2 border-yellow-600/30 rounded-2xl text-center animate-in zoom-in shadow-2xl relative">
-                <button onClick={() => handleFinalizeChat(activeChatId!)} className="absolute top-5 right-5 text-zinc-500 hover:text-white transition-colors"><X size={24} /></button>
+              <div className="mx-4 mb-4 p-6 md:p-8 bg-zinc-800 border-2 border-yellow-600/30 rounded-2xl text-center animate-in zoom-in shadow-2xl relative">
+                <button onClick={() => handleFinalizeChat(activeChatId!)} className="absolute top-4 right-4 text-zinc-500 hover:text-white transition-colors"><X size={24} /></button>
                 <h3 className="text-xl font-black uppercase italic mb-2 text-white">{t('chat.purchase_finished', "¡Compra finalizada!")}</h3>
-                <p className="text-zinc-400 text-[14px] mb-5 uppercase tracking-widest mr-8 ml-8">{t('chat.rate_user', "Valora a")} {activeChatData?.seller_name} {t('chat.to_help_community', "para ayudar a la comunidad")}</p>
-                <div className="flex justify-center gap-4 mb-6">
+                <p className="text-zinc-400 text-[13px] md:text-[14px] mb-5 uppercase tracking-widest px-2">{t('chat.rate_user', "Valora a")} {activeChatData?.seller_name} {t('chat.to_help_community', "para ayudar a la comunidad")}</p>
+                <div className="flex justify-center gap-2 md:gap-4 mb-6">
                   {[1, 2, 3, 4, 5].map((s) => (
                     <button key={s} onClick={() => setRating(s)} className={`transition-transform active:scale-90 ${rating >= s ? "text-yellow-500 drop-shadow-[0_0_8px_rgba(234,179,8,0.5)]" : "text-zinc-700"}`}>
-                      <Star size={44} fill={rating >= s ? "currentColor" : "none"} />
+                      <Star size={36} fill={rating >= s ? "currentColor" : "none"} />
                     </button>
                   ))}
                 </div>
                 <textarea placeholder={t('chat.review_placeholder', "Cuéntanos cómo fue todo (opcional)...")} value={reviewComment} onChange={(e) => setReviewComment(e.target.value)}
-                  className="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-5 text-white text-base mb-5 outline-none focus:border-yellow-600 focus:ring-1 focus:ring-yellow-600 transition" />
-                <button onClick={submitReview} disabled={!rating || loadingReview} className="w-full py-4 bg-yellow-600 text-black text-[15px] font-black uppercase tracking-widest rounded-xl transition hover:bg-yellow-500 disabled:opacity-50 shadow-lg">
+                  className="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-4 text-white text-base mb-5 outline-none focus:border-yellow-600 focus:ring-1 focus:ring-yellow-600 transition" />
+                <button onClick={submitReview} disabled={!rating || loadingReview} className="w-full py-3.5 bg-yellow-600 text-black text-[15px] font-black uppercase tracking-widest rounded-xl transition hover:bg-yellow-500 disabled:opacity-50 shadow-lg">
                   {loadingReview ? t('common.sending', "Enviando...") : t('chat.submit_review', "Enviar Valoración")}
                 </button>
               </div>
@@ -704,16 +707,17 @@ const ChatInterface: React.FC = () => {
             <div className="p-3 md:p-5 bg-zinc-900/80 border-t border-zinc-800 pb-safe">
               {activeChatData?.chat_status === "disabled" ? (
                 <div className="flex justify-center">
-                  <button onClick={handleDeleteChat} className="bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-4 px-8 rounded-xl border border-zinc-700 transition w-full max-w-md shadow-lg italic tracking-wide uppercase text-sm">
+                  <button onClick={handleDeleteChat} className="bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-4 px-8 rounded-xl border border-zinc-700 transition w-full max-w-md shadow-lg italic tracking-wide uppercase text-xs md:text-sm">
                     {t('chat.car_sold_to_other', "Coche vendido a otro usuario - Eliminar Chat")}
                   </button>
                 </div>
               ) : (
-                <form onSubmit={handleSendMessage} className="flex gap-3 items-end max-w-4xl mx-auto w-full">
+                <form onSubmit={handleSendMessage} className="flex gap-2 md:gap-3 items-end max-w-4xl mx-auto w-full">
                   <textarea value={newMessage} onChange={(e) => setNewMessage(e.target.value)} onKeyDown={handleKeyDown} placeholder={t('chat.write_message', "Escribe tu mensaje...")} rows={1}
                     style={{ minHeight: "52px", maxHeight: "140px" }}
-                    className="flex-1 bg-zinc-900 border border-zinc-700 rounded-2xl px-5 py-3.5 outline-none text-[17px] resize-none focus:border-red-600 transition shadow-inner" />
-                  <button type="submit" disabled={!newMessage.trim()} className="bg-red-600 text-white w-52px h-52px flex-none rounded-full flex items-center justify-center hover:bg-red-500 transition disabled:opacity-50 shadow-md ml-1">
+                    className="flex-1 bg-zinc-900 border border-zinc-700 rounded-2xl px-4 py-3 md:px-5 md:py-3.5 outline-none text-[16px] md:text-[17px] resize-none focus:border-red-600 transition shadow-inner" />
+                  {/* CORRECCIÓN 4: w-[52px] h-[52px] y shrink-0 arregla la deformación extrema del botón de enviar en móviles */}
+                  <button type="submit" disabled={!newMessage.trim()} className="bg-red-600 text-white w-52px h-52px shrink-0 rounded-full flex items-center justify-center hover:bg-red-500 transition disabled:opacity-50 shadow-md">
                     <Send size={22} className="ml-1" />
                   </button>
                 </form>

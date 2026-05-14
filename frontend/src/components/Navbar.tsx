@@ -129,12 +129,14 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           
+          {/* Logo */}
           <div className="shrink-0">
             <Link to="/" onClick={closeMenus} className="flex items-center gap-2">
               <img src={logo} alt={`Logo de ${APP_NAME}`} className="h-10 w-auto object-contain" />
             </Link>
           </div>
 
+          {/* Buscador Escritorio */}
           <div className="flex-1 max-w-lg mx-8 hidden md:block relative" ref={searchRef}>
             <form onSubmit={handleSearch} className="relative"> 
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -155,6 +157,7 @@ export default function Navbar() {
               />
             </form>
 
+            {/* Sugerencias de Búsqueda */}
             {showSuggestions && searchTerm.trim() !== "" && (
               <div className="absolute top-full left-0 right-0 mt-2 bg-zinc-800 border border-zinc-700 rounded-xl shadow-2xl overflow-hidden z-60">
                 {suggestions.length > 0 ? (
@@ -210,6 +213,7 @@ export default function Navbar() {
             )}
           </div>
 
+          {/* Menú Escritorio */}
           <div className="hidden md:flex items-center space-x-6">
             <Link to="/" className={`relative transition-all duration-300 ${location.pathname === '/' ? 'text-red-500 font-bold' : 'text-zinc-300 hover:text-red-500 font-medium'} after:absolute after:-bottom-1 after:left-0 after:h-2px after:w-full after:bg-red-500 after:transition-transform after:duration-300 after:origin-center ${location.pathname === '/' ? 'after:scale-x-100' : 'after:scale-x-0 hover:after:scale-x-100'}`}>
               {t('navbar.home', 'Compras')}
@@ -320,27 +324,10 @@ export default function Navbar() {
                 <img src={gbFlag} alt="English" className="h-5 w-6 object-contain" />
               </button>
             </div>
-
           </div>
 
-          <div className="md:hidden flex items-center gap-4"> 
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
-              aria-label="Cambiar tema"
-            >
-              {isLight ? <Moon size={18} /> : <Sun size={18} />}
-            </button>
-
-            <div className="flex items-center gap-2">
-              <button onClick={() => changeLanguage('es')} className={`${i18n.language?.startsWith('es') ? 'opacity-100' : 'opacity-50'}`} aria-label="Español">
-                <img src={esFlag} alt="Español" className="h-5 w-6 object-contain" />
-              </button>
-              <button onClick={() => changeLanguage('en')} className={`${i18n.language?.startsWith('en') ? 'opacity-100' : 'opacity-50'}`} aria-label="English">
-                <img src={gbFlag} alt="English" className="h-5 w-6 object-contain" />
-              </button>
-            </div>
-
+          {/* Botón Menú Móvil (Limpio, solo hamburguesa) */}
+          <div className="md:hidden flex items-center"> 
             <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-white hover:text-red-700 p-2">
               <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 {isMobileMenuOpen ? (
@@ -354,9 +341,42 @@ export default function Navbar() {
         </div>
       </div>
 
+      {/* Menú Desplegable Móvil */}
       {isMobileMenuOpen && (
         <div className="md:hidden bg-zinc-900 border-t border-zinc-800 shadow-xl pb-6">
           <div className="px-4 pt-4 space-y-2">
+            
+            {/* NUEVO BLOQUE: Preferencias (Tema e Idioma) */}
+            <div className="flex items-center justify-between bg-zinc-800 p-3 rounded-lg mb-4">
+              <div className="flex items-center gap-3">
+                <button 
+                  onClick={() => changeLanguage('es')} 
+                  className={`transition-all ${i18n.language?.startsWith('es') ? 'opacity-100 scale-110 drop-shadow-md' : 'opacity-50 grayscale hover:grayscale-0'}`} 
+                  aria-label="Español"
+                >
+                  <img src={esFlag} alt="Español" className="h-5 w-6 object-contain" />
+                </button>
+                <button 
+                  onClick={() => changeLanguage('en')} 
+                  className={`transition-all ${i18n.language?.startsWith('en') ? 'opacity-100 scale-110 drop-shadow-md' : 'opacity-50 grayscale hover:grayscale-0'}`} 
+                  aria-label="English"
+                >
+                  <img src={gbFlag} alt="English" className="h-5 w-6 object-contain" />
+                </button>
+              </div>
+              <div className="border-l border-zinc-700 pl-4">
+                <button
+                  onClick={toggleTheme}
+                  className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors"
+                  aria-label="Cambiar tema"
+                >
+                  {isLight ? <Moon size={20} /> : <Sun size={20} />}
+                </button>
+              </div>
+            </div>
+            
+            <hr className="my-2 border-zinc-800" />
+
             <Link to="/" onClick={closeMenus} className={`block px-2 py-2 transition-all ${location.pathname === '/' ? 'text-white font-bold underline decoration-white decoration-2 underline-offset-4' : 'text-zinc-300 font-medium hover:text-white'}`}>{t('navbar.home', 'Inicio')}</Link>
             <Link to="/alquileres" onClick={closeMenus} className={`block px-2 py-2 transition-all ${location.pathname === '/alquileres' ? 'text-white font-bold underline decoration-white decoration-2 underline-offset-4' : 'text-zinc-300 font-medium hover:text-white'}`}>{t('navbar.rents', 'Alquileres')}</Link>
             
