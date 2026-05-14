@@ -37,7 +37,7 @@ class GoogleDriveService
     /**
      * Busca la carpeta de la marca dentro de la principal, si no existe la crea.
      */
-    private function getOrCreateBrandFolder(string $brandName)
+    private function getOrCreateBrandFolder($brandName)
     {
         $parentId = env('GOOGLE_DRIVE_PARENT_ID');
 
@@ -71,7 +71,7 @@ class GoogleDriveService
     /**
      * Sube la imagen y devuelve la URL del thumbnail.
      */
-    public function uploadImageByBrand(string $filePath, string $fileName, string $brandName)
+    public function uploadImageByBrand($filePath, $fileName, $brandName)
     {
         try {
             $brandFolderId = $this->getOrCreateBrandFolder($brandName);
@@ -103,7 +103,7 @@ class GoogleDriveService
         }
     }
 
-    private function makeFilePublic(int $fileId)
+    private function makeFilePublic($fileId)
     {
         $permission = new Permission(['type' => 'anyone', 'role' => 'reader']);
         $this->drive->permissions->create($fileId, $permission);
