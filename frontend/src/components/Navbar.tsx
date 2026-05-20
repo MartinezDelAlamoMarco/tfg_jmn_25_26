@@ -152,22 +152,23 @@ export default function Navbar() {
 
   return (
     <nav className="w-full bg-zinc-900 text-white border-b border-zinc-800 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* CORRECCIÓN: Quitamos max-w-7xl y mx-auto para ocupar todo el ancho de la pantalla */}
+      <div className="w-full px-4 sm:px-6 lg:px-8">
         
-        {/* PUNTO 7: justify-between empuja el Logo a la izquierda y el resto a la derecha */}
+        {/* El justify-between ahora empuja al Logo al extremo izquierdo absoluto */}
         <div className="flex justify-between items-center h-16">
           
-          {/* Logo - Pegado a la Izquierda */}
+          {/* Logo - Pegado a la Izquierda del todo */}
           <div className="shrink-0 flex items-center">
             <Link to="/" onClick={closeMenus} className="flex items-center gap-2">
               <img src={logo} alt={`Logo de ${APP_NAME}`} className="h-10 w-auto object-contain" />
             </Link>
           </div>
 
-          {/* Contenedor Derecho: Buscador + Menús (Agrupados para evitar solapamientos) */}
+          {/* Contenedor Derecho: Todo lo demás se queda agrupado en el extremo derecho */}
           <div className="flex items-center gap-4 lg:gap-6">
             
-            {/* PUNTO 8: Buscador Desplegable (Lupa) */}
+            {/* Buscador Desplegable (Lupa) */}
             <div className="relative z-50" ref={searchRef}>
               {!showSearchInput ? (
                 <button 
@@ -263,7 +264,7 @@ export default function Navbar() {
               )}
             </div>
 
-            {/* PUNTO 3: Menú Escritorio (Cambiado md por lg para evitar solapamiento en tablets) */}
+            {/* Menú Escritorio */}
             <div className="hidden lg:flex items-center space-x-6">
               <Link to="/" className={`relative transition-all duration-300 ${location.pathname === '/' ? 'text-red-500 font-bold' : 'text-zinc-300 hover:text-red-500 font-medium'} after:absolute after:-bottom-1 after:left-0 after:h-2px after:w-full after:bg-red-500 after:transition-transform after:duration-300 after:origin-center ${location.pathname === '/' ? 'after:scale-x-100' : 'after:scale-x-0 hover:after:scale-x-100'}`}>
                 {t('navbar.home', 'Compras')}
@@ -379,7 +380,7 @@ export default function Navbar() {
               </div>
             </div>
 
-            {/* Botón Menú Móvil (Cambiado md a lg para que aparezca en tablets) */}
+            {/* Botón Menú Móvil */}
             <div className="lg:hidden flex items-center"> 
               <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-white hover:text-red-700 p-2">
                 <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
