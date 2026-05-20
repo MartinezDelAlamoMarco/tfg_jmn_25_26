@@ -312,7 +312,7 @@ export default function Navbar() {
                         {user.name?.charAt(0).toUpperCase()}
                       </div>
                       <div className="flex items-center gap-1">
-                        <span className="text-zinc-300 text-sm group-hover:text-white transition-colors truncate max-w-[80px]">
+                        <span className="text-zinc-300 text-sm group-hover:text-white transition-colors truncate max-w-80px">
                           {t('navbar.hello', 'Hola')}, <span className="text-white font-semibold">{user.name?.split(" ")[0]}</span>
                         </span>
                         <ChevronDown size={14} className={`text-zinc-500 transition-transform duration-200 shrink-0 ${isProfileDropdownOpen ? 'rotate-180' : ''}`} />
