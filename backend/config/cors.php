@@ -15,11 +15,18 @@ return [
     |
     */
 
-    'paths' => ['api/*', 'sanctum/csrf-cookie'],
+    // Añadido 'storage/*' para que React pueda cargar las imágenes locales
+    'paths' => ['api/*', 'sanctum/csrf-cookie', 'storage/*'],
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['https://www.nujamamotors.com', 'https://tfg-jmn-25-26.onrender.com', 'http://localhost:3000', 'http://localhost:5173/'],
+
+    'allowed_origins' => [
+        'https://www.nujamamotors.com', 
+        'https://tfg-jmn-25-26.onrender.com', 
+        'http://localhost:3000', 
+        'http://localhost:5173'
+    ],
 
     'allowed_origins_patterns' => [],
 
