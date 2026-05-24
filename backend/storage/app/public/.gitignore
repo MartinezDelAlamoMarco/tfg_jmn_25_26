@@ -1,2 +1,4 @@
 *
 !.gitignore
+!test_cars/
+!test_cars/*
