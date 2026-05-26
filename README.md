@@ -89,6 +89,7 @@ Ejecuta las migraciones e inicia el servidor:
 
 ```bash
 php artisan migrate --seed
+php artisan storage:link
 php artisan serve
 ```
 
@@ -100,13 +101,13 @@ Abre una nueva terminal y ejecuta:
 
 ```bash
 cd frontend
-npm install
+pnpm install
 ```
 
 Inicia el servidor de desarrollo:
 
 ```bash
-npm run dev
+pnpm run dev
 ```
 
 ---
