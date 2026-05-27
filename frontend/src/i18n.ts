@@ -107,7 +107,7 @@ const resources = {
         processing_booking: "Procesando reserva...",
         back_to_fleet: "Volver a la flota",
         views: "Vistas",
-        mod_tools: "🛠️ Herramientas de Moderador",
+        mod_tools: "Herramientas de Moderador",
         booking_contact: "El propietario se pondrá en contacto contigo pronto.",
         view_my_bookings: "Ver mis reservas",
         booking_dates: "Fechas de reserva",
@@ -146,7 +146,7 @@ const resources = {
         empty_part2: "publicado.",
         tag_sale: "En Venta",
         tag_rent: "En Alquiler",
-        delete_confirm: "⚠️ ¿Estás seguro de que quieres ELIMINAR este anuncio definitivamente?",
+        delete_confirm: "¿Estás seguro de que quieres ELIMINAR este anuncio definitivamente?",
       },
       create_ad: {
         title_sale: "Publicar Anuncio de Venta",
@@ -352,11 +352,11 @@ const resources = {
         type: "Tipo",
         state: "Estado",
         price: "Precio",
-        actions: "Acciones", // <-- CORREGIDO
-        searching_inventory: "Buscando en Inventario...", // <-- CORREGIDO
-        no_ads_found: "No se han encontrado anuncios.", // <-- CORREGIDO
-        delete_confirm: "¿Eliminar este anuncio definitivamente?", // <-- CORREGIDO
-        delete_error: "Error al eliminar el anuncio", // <-- CORREGIDO
+        actions: "Acciones", 
+        searching_inventory: "Buscando en Inventario...", 
+        no_ads_found: "No se han encontrado anuncios.", 
+        delete_confirm: "¿Eliminar este anuncio definitivamente?", 
+        delete_error: "Error al eliminar el anuncio", 
         priority_reports: "Reportes Prioritarios",
         urgency: "Urgencia",
         vehicle_ad: "Vehículo / Anuncio",
@@ -411,7 +411,6 @@ const resources = {
         copyright: "© {{year}} {{app_name}}. Todos los derechos reservados.",
         tfg: "TFG 2º DAW",
       },
-      // --- NUEVAS TRADUCCIONES PARA AVISO LEGAL ---
       legal: {
         notice: {
           last_update: "Última actualización: Mayo 2026",
@@ -576,7 +575,6 @@ const resources = {
         write_message: "Escribe tu mensaje...",
         mailbox_title: "Buzón de Negociación",
         mailbox_desc: "Selecciona un chat lateral para empezar a hablar con el vendedor o gestionar tu compra.",
-        // Alertas y Confirmaciones
         cancel_rent_confirm: "¿Estás seguro de que quieres cancelar esta reserva de alquiler? Las fechas volverán a estar disponibles.",
         canceling_reserve: "Cancelando reserva...",
         cancel_rent_error: "Error al cancelar la reserva.",
@@ -1097,15 +1095,15 @@ const resources = {
           s8_l5: "Right to transfer (portability) of your data.",
           s8_l6: "Right to object to the processing.",
           s9_title: "Contact Details",
-          contact_web: "Web", // <-- NUEVA
-          contact_email: "Email", // <-- NUEVA
+          contact_web: "Web", 
+          contact_email: "Email", 
         },
         terms: {
           last_update: "Last update: May 2026",
           s1_title: "Owner Identification",
           s1_company: "Company Name",
           s1_address: "Address",
-          contact_email: "Email", // <-- NUEVA
+          contact_email: "Email", 
           s2_title: "Purpose and Description of the Service",
           s2_text: "{{app_name}} offers through its platform a digital marketplace for publishing vehicle sale and rental ads, facilitating contact between private users and professionals in the automotive sector.",
           s3_title: "Prices and Taxes",
@@ -1167,7 +1165,6 @@ const resources = {
         write_message: "Write your message...",
         mailbox_title: "Negotiation Mailbox",
         mailbox_desc: "Select a chat on the side to start talking with the seller or manage your purchase.",
-        // Alerts & Confirmations
         cancel_rent_confirm: "Are you sure you want to cancel this rental booking? The dates will become available again.",
         canceling_reserve: "Canceling reservation...",
         cancel_rent_error: "Error canceling the reservation.",
