@@ -18,25 +18,23 @@ class GoogleDriveService
         $this->client->setClientId(env('GOOGLE_CLIENT_ID'));
         $this->client->setClientSecret(env('GOOGLE_CLIENT_SECRET'));
 
-        // 1. ESTO ES VITAL: Le dice a Google que vamos a usar un Refresh Token
+        // Le dice a Google que vamos a usar un Refresh Token
         $this->client->setAccessType('offline');
 
         $refreshToken = env('GOOGLE_REFRESH_TOKEN');
 
-        // 2. Comprobación de seguridad por si Laravel sigue sin leer el .env
+        // Comprobamos la seguridad por si Laravel sigue sin leer el .env
         if (empty($refreshToken)) {
             throw new \Exception("¡Error! Laravel no está leyendo tu GOOGLE_REFRESH_TOKEN. El valor está vacío.");
         }
 
-        // 3. Obtener el token fresco
+        // Obtenemos el token
         $this->client->fetchAccessTokenWithRefreshToken($refreshToken);
 
         $this->drive = new Drive($this->client);
     }
 
-    /**
-     * Busca la carpeta de la marca dentro de la principal, si no existe la crea.
-     */
+    //Busca la carpeta de la marca dentro de la principal, si no existe la crea.
     private function getOrCreateBrandFolder(string $brandName)
     {
         $parentId = env('GOOGLE_DRIVE_PARENT_ID');
@@ -62,15 +60,13 @@ class GoogleDriveService
 
         $folder = $this->drive->files->create($folderMetadata, ['fields' => 'id']);
 
-        // Dar permisos públicos a la carpeta
+        // Dar permisos publicos a la carpeta
         $this->makeFilePublic($folder->id);
 
         return $folder->id;
     }
 
-    /**
-     * Sube la imagen y devuelve la URL del thumbnail.
-     */
+    //Sube la imagen y devuelve la URL del thumbnail
     public function uploadImageByBrand(string $filePath, string $fileName, string $brandName)
     {
         try {
@@ -90,10 +86,9 @@ class GoogleDriveService
                 'fields' => 'id'
             ]);
 
-            // 1. HACER EL ARCHIVO PÚBLICO (VITAL para evitar el error 403)
+            // hacemos el arcihov publico
             $this->makeFilePublic($file->id);
 
-            // 2. USAR EL FORMATO DE MINIATURA SOLICITADO
             return [
                 'file_id' => $file->id,
                 'url' => "https://drive.google.com/thumbnail?id={$file->id}&sz=w1000"
@@ -109,14 +104,14 @@ class GoogleDriveService
         $this->drive->permissions->create($fileId, $permission);
     }
 
-    //Elimina un archivo de Google Drive dado su ID.
+    //Eliminamos el archivo de google drive por su ID.
     public function deleteFile(string $fileId)
     {
         try {
             $this->drive->files->delete($fileId);
             return true;
         } catch (\Exception $e) {
-            // Logueamos el error, pero no detenemos la aplicación si la foto ya no existía
+            // Logueamos el error, pero no detenemos la aplicación si la foto ya no existia
             \Illuminate\Support\Facades\Log::warning("No se pudo borrar la imagen de Drive ({$fileId}): " . $e->getMessage());
             return false;
         }

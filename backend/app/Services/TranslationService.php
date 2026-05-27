@@ -22,7 +22,7 @@ class TranslationService
             
         } catch (\Exception $e) {
             Log::error('Error en Stichoza Translation: ' . $e->getMessage());
-            return null; // Si falla, guardará null y el frontend mostrará el texto en español por defecto
+            return null; // Si falla, guardará null y el frontend mostrará el texto en español por defecto por si las moscas
         }
     }
 }
