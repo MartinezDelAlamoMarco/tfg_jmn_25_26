@@ -7,7 +7,6 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // Vista de Anuncios (Compatible universalmente con MySQL/MariaDB en XAMPP)
         DB::statement("
             CREATE OR REPLACE VIEW view_advertisements_details AS
             SELECT a.id, a.price, a.description, a.description_en, a.views, a.is_rent, a.created_at, a.updated_at, a.status,
@@ -29,8 +28,6 @@ return new class extends Migration
             JOIN transmissions t ON v.transmission_id = t.id
             JOIN tonalities ton ON v.tonality_id = ton.id;
         ");
-
-        // Vista de Conversaciones
         DB::statement("
             CREATE OR REPLACE VIEW view_conversations_details AS
             SELECT c.id, c.advertisement_id, c.buyer_id, c.seller_id, c.created_at, c.updated_at, c.status as chat_status,
@@ -46,7 +43,6 @@ return new class extends Migration
             JOIN users us ON c.seller_id = us.id;
         ");
 
-        // Vista de Reportes
         DB::statement("
             CREATE OR REPLACE VIEW view_reports_priority AS
             SELECT r.advertisement_id, r.report_type_id, rt.name as report_type_name,

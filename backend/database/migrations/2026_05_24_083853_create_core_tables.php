@@ -8,7 +8,6 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // Usuarios [cite: 30]
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
@@ -16,12 +15,11 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->string('telephone')->nullable();
-            $table->string('role')->default('user'); // admin, user [cite: 30, 31]
+            $table->string('role')->default('user'); 
             $table->rememberToken();
             $table->timestamps();
         });
 
-        // Tablas por defecto del sistema y autenticación [cite: 13, 14, 24]
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
             $table->string('token');
@@ -50,7 +48,6 @@ return new class extends Migration
             $table->index(['tokenable_type', 'tokenable_id']);
         });
 
-        // Catálogos [cite: 4, 10, 17, 19, 27, 29, 33]
         $catalogs = ['ad_states', 'fuel_types', 'provinces', 'report_types', 'tonalities', 'transmissions', 'vehicle_brands'];
         foreach ($catalogs as $catalog) {
             Schema::create($catalog, function (Blueprint $table) {

@@ -8,18 +8,16 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // Solicitudes de Anuncios [cite: 1]
         Schema::create('ad_requests', function (Blueprint $table) {
             $table->id();
             $table->foreignId('advertisement_id')->constrained('advertisements')->cascadeOnDelete();
             $table->foreignId('sender_id')->constrained('users')->cascadeOnDelete();
-            $table->string('type'); // informacion, reserva [cite: 3]
-            $table->string('status')->default('pendiente'); // pendiente, aceptada, rechazada [cite: 2]
+            $table->string('type'); 
+            $table->string('status')->default('pendiente'); 
             $table->text('message');
             $table->timestamps();
         });
 
-        // Chats y Mensajes [cite: 8, 11]
         Schema::create('conversations', function (Blueprint $table) {
             $table->id();
             $table->foreignId('advertisement_id')->constrained('advertisements')->cascadeOnDelete();
@@ -38,7 +36,6 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // Favoritos [cite: 9]
         Schema::create('favourites', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
@@ -46,7 +43,6 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // Alquileres [cite: 18]
         Schema::create('rents', function (Blueprint $table) {
             $table->id();
             $table->foreignId('advertisement_id')->constrained('advertisements')->cascadeOnDelete();
@@ -57,18 +53,16 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // Reportes [cite: 20]
         Schema::create('reports', function (Blueprint $table) {
             $table->id();
             $table->foreignId('reporter_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('advertisement_id')->constrained('advertisements')->cascadeOnDelete();
             $table->foreignId('report_type_id')->constrained('report_types');
             $table->text('description')->nullable();
-            $table->string('status')->default('pendiente'); // pendiente, resuelto, cancelado [cite: 21]
+            $table->string('status')->default('pendiente'); 
             $table->timestamps();
         });
 
-        // Reseñas [cite: 22, 23]
         Schema::create('reviews', function (Blueprint $table) {
             $table->id();
             $table->foreignId('advertisement_id')->constrained('advertisements')->cascadeOnDelete();
@@ -78,10 +72,9 @@ return new class extends Migration
             $table->text('comment')->nullable();
             $table->timestamps();
             
-            $table->unique(['advertisement_id', 'reviewer_id'], 'unique_review_per_ad'); // [cite: 23]
+            $table->unique(['advertisement_id', 'reviewer_id'], 'unique_review_per_ad'); 
         });
 
-        // Transacciones / Compras [cite: 28]
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('advertisement_id')->constrained('advertisements')->cascadeOnDelete();
