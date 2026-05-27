@@ -213,7 +213,7 @@ class ChatController extends Controller
         $conversation->save();
 
         // Mensaje DETALLADO para el comprador que tiene la reserva
-        $fechaReserva = now()->format('d/m/Y \a \l\a\s H:i');
+        $fechaReserva = now()->setTimezone('Europe/Madrid')->format('d/m/Y \a \l\a\s H:i');
         $fechaExpira  = $reservedUntil->format('d/m/Y');
 
 
