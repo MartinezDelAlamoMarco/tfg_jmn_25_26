@@ -16,7 +16,6 @@ import {
   Search,
   MoreVertical,
   Trash2,
-  Ban,
   CheckCircle2,
   CalendarClock,
   Star,
@@ -707,10 +706,6 @@ const ChatInterface: React.FC = () => {
                             <div className="h-px bg-zinc-800 my-1"></div>
                           </>
                         )}
-                      <button className="w-full px-5 py-3.5 flex items-center gap-3 text-[15px] text-red-500 hover:bg-red-950/20 transition text-left">
-                        <Ban size={18} />{" "}
-                        {t("chat.block_user", "Bloquear usuario")}
-                      </button>
                     </div>
                   )}
                 </div>

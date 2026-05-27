@@ -11,11 +11,10 @@ use App\Http\Controllers\AdminAdController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ChatController;
-use App\Http\Controllers\RentController;  // ← NUEVO
+use App\Http\Controllers\RentController;
 use Illuminate\Support\Facades\Route;
 
-// --- RUTAS PÚBLICAS ---
-
+//RUTAS PÚBLICAS
 // Autenticación
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
@@ -49,7 +48,7 @@ Route::get('/users/{id}/reviews', [ReviewController::class, 'index']);
 // Reportes (Tipos)
 Route::get('/report-types', [ReportController::class, 'getTypes']);
 
-// --- RUTAS PROTEGIDAS (REQUIEREN LOGIN / SANCTUM) ---
+//RUTAS PROTEGIDAS (REQUIEREN LOGIN / SANCTUM)
 
 Route::middleware('auth:sanctum')->group(function () {
 
@@ -110,7 +109,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/advertisements/{id}', [AdvertisementController::class, 'destroy']);
 });
 
-// Ping de salud
+// Hacemos una llamada al bot automatico para desperar la web
 Route::get('/ping', function () {
-    return response()->json(['status' => 'ok', 'message' => '¡El servidor está despierto!'], 200);
+    return response()->json(['status' => 'ok', 'message' => 'El servidor está despierto'], 200);
 });
