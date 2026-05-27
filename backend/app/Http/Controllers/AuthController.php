@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ResetPasswordMail;
-use Illuminate\Support\Facades\Http; // <-- Importante para llamar a Make.com
+use Illuminate\Support\Facades\Http; // CHICOS esto es para llamar a Make.com
 
 class AuthController extends Controller
 {

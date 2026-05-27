@@ -9,7 +9,6 @@ use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
-    // Public user profile data
     public function show(int $id)
     {
         $user = User::findOrFail($id);
@@ -24,7 +23,6 @@ class UserController extends Controller
         return response()->json($data);
     }
 
-    // Advertisements posted by user (from view)
     public function advertisements(int $id)
     {
         $ads = AdvertisementView::where('owner_id', $id)->orderBy('created_at', 'desc')->get();

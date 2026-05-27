@@ -7,9 +7,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Models\Vehicle;
 use App\Models\Advertisement;
-use App\Models\VehicleBrand;          // Añadido para buscar la marca
-use App\Models\AdvertisementImage;    // Añadido para guardar la imagen
-use App\Services\GoogleDriveService;  // Añadido para conectar con Drive
+use App\Models\VehicleBrand;          
+use App\Models\AdvertisementImage;    
+use App\Services\GoogleDriveService;
 use App\Services\TranslationService;
 
 class MyAdvertisementsController extends Controller
@@ -35,7 +35,7 @@ class MyAdvertisementsController extends Controller
     {
         $userId = Auth::id();
 
-        // 1. Buscamos el anuncio y CARGAMOS sus imágenes vinculadas
+        // Buscamos el anuncio y cargamos sus imagenes 
         $ad = Advertisement::with('images')->where('id', $id)
             ->whereHas('vehicle', function ($query) use ($userId) {
                 $query->where('owner_id', $userId);
@@ -46,12 +46,10 @@ class MyAdvertisementsController extends Controller
         }
 
         try {
-            // 2. Instanciamos el servicio de Google Drive
             $driveService = new GoogleDriveService();
 
-            // 3. Recorremos las imágenes del anuncio para borrarlas de Drive
+            // Recorremos las imágenes del anuncio para borrarlas de Drive
             foreach ($ad->images as $image) {
-                // Extraemos el ID del archivo de la URL usando una expresión regular
                 // Busca lo que hay después de "?id=" y antes del "&"
                 if (preg_match('/id=([a-zA-Z0-9_-]+)/', $image->image_url, $matches)) {
                     $fileId = $matches[1];
@@ -59,8 +57,7 @@ class MyAdvertisementsController extends Controller
                 }
             }
 
-            // 4. Borramos el anuncio de la Base de Datos (las imágenes en BD se borrarán por cascada
-            // o puedes forzarlo aquí con $ad->images()->delete(); si no tienes cascada activada)
+            //Borramos el anuncio de la BD
             $ad->images()->delete();
             $ad->delete();
 
@@ -70,7 +67,7 @@ class MyAdvertisementsController extends Controller
         }
     }
 
-    public function store(Request $request, TranslationService $translator) // <-- INYECTAMOS EL SERVICIO
+    public function store(Request $request, TranslationService $translator)
     {
         $request->validate([
             'price' => 'required|numeric',
@@ -96,7 +93,6 @@ class MyAdvertisementsController extends Controller
                 'doors'            => $request->doors,
             ]);
 
-            // <-- AÑADIDO: Traducir la descripción antes de crear el anuncio
             $translatedDescription = $translator->translateToEnglish($request->description);
 
             $advertisement = Advertisement::create([
@@ -105,7 +101,7 @@ class MyAdvertisementsController extends Controller
                 'ad_state_id'  => 1,
                 'price'        => $request->price,
                 'description'  => $request->description,
-                'description_en' => $translatedDescription, // <-- AÑADIDO
+                'description_en' => $translatedDescription,
                 'views'        => 0,
                 'is_rent'      => $request->boolean('is_rent'),
             ]);
@@ -145,7 +141,7 @@ class MyAdvertisementsController extends Controller
         return response()->json($ad);
     }
 
-    public function update(Request $request, $id, TranslationService $translator) // <-- INYECTAMOS EL SERVICIO
+    public function update(Request $request, $id, TranslationService $translator)
     {
         $ad = Advertisement::with('vehicle')->findOrFail($id);
 
@@ -154,7 +150,7 @@ class MyAdvertisementsController extends Controller
         }
 
         try {
-            DB::transaction(function () use ($request, $ad, $translator) { // <-- PASAMOS EL TRADUCTOR
+            DB::transaction(function () use ($request, $ad, $translator) {
                 $ad->vehicle->update([
                     'model_id'         => $request->vehicle_model_id,
                     'fuel_type_id'     => $request->fuel_type_id,
@@ -166,7 +162,6 @@ class MyAdvertisementsController extends Controller
                     'doors'            => $request->doors,
                 ]);
 
-                // <-- AÑADIDO: Traducir solo si la descripción en español ha cambiado
                 $newTranslatedDescription = null;
                 if ($request->description !== $ad->description) {
                     $newTranslatedDescription = $translator->translateToEnglish($request->description);
@@ -178,7 +173,7 @@ class MyAdvertisementsController extends Controller
                     'province_id'    => $request->province_id,
                     'price'          => $request->price,
                     'description'    => $request->description,
-                    'description_en' => $newTranslatedDescription, // <-- AÑADIDO
+                    'description_en' => $newTranslatedDescription,
                 ]);
             });
 

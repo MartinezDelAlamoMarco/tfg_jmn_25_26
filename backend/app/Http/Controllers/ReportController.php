@@ -9,13 +9,11 @@ use Illuminate\Support\Facades\Auth;
 
 class ReportController extends Controller
 {
-    // Obtener los tipos de reporte para el formulario de React
     public function getTypes()
     {
         return response()->json(ReportType::all());
     }
 
-    // Guardar la denuncia
     public function store(Request $request)
     {
         $request->validate([
@@ -24,13 +22,12 @@ class ReportController extends Controller
             'description' => 'nullable|string|max:1000',
         ]);
 
-        $userId = Auth::id(); // O el ID que obtengas del token
+        $userId = Auth::id(); 
 
-        // REGLA DE NEGOCIO: Prevención de duplicados
-        // Buscamos si ya existe un reporte 'pendiente' de este usuario para este anuncio
+    
         $existingReport = Report::where('reporter_id', $userId)
             ->where('advertisement_id', $request->advertisement_id)
-            ->where('status', 'pendiente') // Solo bloqueamos si aún no se ha resuelto
+            ->where('status', 'pendiente')
             ->first();
 
         if ($existingReport) {
@@ -56,8 +53,6 @@ class ReportController extends Controller
 
     public function getPriorityReports()
     {
-        // Usamos el modelo vinculado a la Vista SQL
-        // Cargamos también la relación con el anuncio y el vehículo para mostrar nombres en la tabla
         $reports = \App\Models\ReportPriority::with(['advertisement.vehicle.model.brand'])->get();
 
         return response()->json($reports);

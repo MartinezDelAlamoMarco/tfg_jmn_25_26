@@ -9,24 +9,15 @@ use Illuminate\Support\Facades\Auth;
 
 class ReviewController extends Controller
 {
-    /**
-     * Lista todas las valoraciones recibidas por un usuario específico.
-     * Útil para el componente UserReviews en el perfil.
-     */
     public function index(int $userId)
     {
-    $reviews = Review::with('reviewer:id,name') 
-        ->where('evaluated_id', $userId)
-        ->orderBy('created_at', 'desc')
-        ->get();
+        $reviews = Review::with('reviewer:id,name')
+            ->where('evaluated_id', $userId)
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-    return response()->json($reviews);
-}
-
-    /**
-     * Guarda una nueva valoración.
-     * Llamado desde el ChatInterface cuando la venta se confirma.
-     */
+        return response()->json($reviews);
+    }
     public function store(Request $request)
     {
         $request->validate([
@@ -37,7 +28,6 @@ class ReviewController extends Controller
 
         $userId = Auth::id();
 
-        // SEGURIDAD: Solo el comprador de una conversación 'sold' puede valorar
         $conv = Conversation::where('advertisement_id', $request->advertisement_id)
             ->where('buyer_id', $userId)
             ->where('status', 'sold')
@@ -62,24 +52,17 @@ class ReviewController extends Controller
                 'message' => '¡Valoración enviada con éxito!',
                 'review' => $review
             ]);
-
         } catch (\Exception $e) {
-            // Captura el error si el UNIQUE INDEX de la DB detecta duplicidad
             return response()->json([
                 'message' => 'Ya has valorado esta transacción anteriormente.'
             ], 400);
         }
     }
 
-    /**
-     * Comprueba si el usuario actual puede dejar una reseña a otro usuario.
-     * Útil para lógica de UI en el frontend.
-     */
     public function canReview(int $evaluatedId)
     {
         $userId = Auth::id();
-
-        // Existe alguna venta finalizada entre ellos donde el logueado sea el comprador?
+        
         $can = Conversation::where('seller_id', $evaluatedId)
             ->where('buyer_id', $userId)
             ->where('status', 'sold')

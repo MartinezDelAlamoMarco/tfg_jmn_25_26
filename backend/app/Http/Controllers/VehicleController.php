@@ -36,10 +36,9 @@ class VehicleController extends Controller
             'state'
         ])->findOrFail($id);
 
-        // Creamos una clave única en caché usando la IP del cliente y la ID del anuncio
         $cacheKey = 'viewed_ad_' . $id . '_' . $request->ip();
 
-        // Cache::add es una operación ATÓMICA. Devuelve true solo si la clave NO existía y la acaba de crear.
+        // Cache::add devuelve true solo si la clave NO existia y la acaba de crear.
         // Esto frena en seco las peticiones simultáneas del StrictMode de React.
         if (Cache::add($cacheKey, true, now()->addMinutes(5))) {
             $advertisement->increment('views');

@@ -121,7 +121,7 @@ class AdvertisementController extends Controller
     {
         try {
             $advertisement = Advertisement::with([
-                'vehicle.model.brand', // Ruta correcta según tu Vehicle.php
+                'vehicle.model.brand',
                 'vehicle.fuelType',
                 'vehicle.transmission',
                 'images',
