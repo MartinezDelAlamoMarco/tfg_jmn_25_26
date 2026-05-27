@@ -16,13 +16,12 @@ class Report extends Model
         'status'
     ];
 
-    // Relación con el usuario que hace la denuncia
     public function reporter()
     {
         return $this->belongsTo(User::class, 'reporter_id');
     }
 
-    // Relación con el anuncio denunciado
+   
     public function advertisement()
     {
         return $this->belongsTo(Advertisement::class);

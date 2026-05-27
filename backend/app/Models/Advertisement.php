@@ -22,7 +22,7 @@ class Advertisement extends Model
         'description_en',
         'views',
         'is_rent',
-        'status' // <-- AÑADIDO: Para permitir Disponible, Reservado y Vendido
+        'status'
     ];
 
     public function user(): BelongsTo

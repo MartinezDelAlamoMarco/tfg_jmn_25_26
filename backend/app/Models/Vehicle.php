@@ -27,7 +27,6 @@ class Vehicle extends Model
         return $this->belongsTo(VehicleModel::class, 'model_id');
     }
 
-    // Relaciones con tablas maestras
     public function fuelType()
     {
         return $this->belongsTo(FuelType::class);
@@ -41,7 +40,6 @@ class Vehicle extends Model
         return $this->belongsTo(Tonality::class);
     }
 
-    // Un coche puede aparecer en varios anuncios (histórico)
     public function advertisements()
     {
         return $this->hasMany(Advertisement::class);

@@ -18,25 +18,17 @@ class Review extends Model
         'comment',
     ];
 
-    /**
-     * Relación con el anuncio (Vehículo vendido)
-     */
     public function advertisement(): BelongsTo
     {
         return $this->belongsTo(Advertisement::class);
     }
 
-    /**
-     * Relación con el usuario que escribe la reseña (Comprador)
-     */
     public function reviewer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reviewer_id');
     }
 
-    /**
-     * Relación con el usuario valorado (Vendedor)
-     */
+
     public function evaluated(): BelongsTo
     {
         return $this->belongsTo(User::class, 'evaluated_id');

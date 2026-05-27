@@ -10,7 +10,6 @@ class ReportType extends Model
 
     protected $fillable = ['name'];
 
-    // Un tipo de reporte puede estar en muchos reportes
     public function reports()
     {
         return $this->hasMany(Report::class);
