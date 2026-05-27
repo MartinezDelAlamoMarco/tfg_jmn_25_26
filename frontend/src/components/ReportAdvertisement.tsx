@@ -23,11 +23,10 @@ const ReportAdvertisement = () => {
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  // Comprobar si el tipo seleccionado es "Otro" para mostrar el textarea
+
   const isOtherSelected = reportTypes.find(t => t.id === Number(selectedTypeId))?.name === 'Otro';
 
   useEffect(() => {
-    // Obtener los tipos de reporte del backend
     const fetchReportTypes = async () => {
       try {
         const response = await axios.get(`${API_BASE_URL}/report-types`);
@@ -113,7 +112,7 @@ const ReportAdvertisement = () => {
                     required
                   />
                   <span className="font-semibold">
-                    {/* TRADUCCIÓN CONDICIONAL DE LOS MOTIVOS SI EXISTE LA TRADUCCIÓN */}
+
                     {i18n.language.startsWith('en') && type.name === 'Estafa / Fraude' ? 'Scam / Fraud' : 
                      i18n.language.startsWith('en') && type.name === 'Spam / Publicidad' ? 'Spam / Advertising' : 
                      i18n.language.startsWith('en') && type.name === 'Contenido Inapropiado' ? 'Inappropriate Content' : 

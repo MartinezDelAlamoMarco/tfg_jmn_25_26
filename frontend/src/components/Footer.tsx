@@ -13,13 +13,11 @@ export default function Footer() {
 
   return (
     <footer className="w-full bg-zinc-900 text-white border-t border-zinc-800">
-      {/* Reducimos el padding en móvil (py-8) y lo ampliamos en escritorio (md:py-12) */}
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
         
-        {/* Usamos 2 columnas en móvil y 4 en escritorio. Reducimos el gap base. */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12">
           
-          {/* Columna 1: Logo y Descripción (Ocupa 2 columnas en móvil, 1 en escritorio) */}
           <div className="col-span-2 lg:col-span-1 space-y-4">
             <Link to="/" className="flex items-center gap-2">
               <img 
@@ -33,7 +31,7 @@ export default function Footer() {
             </p>
           </div>
 
-          {/* Columna 2: Navegación (Ocupa 1 columna en móvil, se pondrá al lado de 'Legal') */}
+      
           <div className="col-span-1">
             <h3 className="text-white font-bold mb-4 uppercase text-xs tracking-widest">{t('footer.nav_title', 'Explorar')}</h3>
             <ul className="space-y-2 text-sm text-zinc-400">
@@ -52,7 +50,6 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Columna 3: Legal (Ocupa 1 columna en móvil, al lado de 'Explorar') */}
           <div className="col-span-1">
             <h3 className="text-white font-bold mb-4 uppercase text-xs tracking-widest">{t('footer.legal_title', 'Legal')}</h3>
             <ul className="space-y-2 text-sm text-zinc-400">
@@ -63,7 +60,6 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Columna 4: Contacto (Ocupa 2 columnas en móvil para que direcciones o emails largos quepan bien) */}
           <div className="col-span-2 lg:col-span-1">
             <h3 className="text-white font-bold mb-4 uppercase text-xs tracking-widest">{t('footer.contact_title', 'Contacto')}</h3>
             <ul className="space-y-3 text-sm text-zinc-400">
@@ -77,7 +73,6 @@ export default function Footer() {
               </li>
               <li className="flex items-center gap-3">
                 <Mail size={18} className="text-red-500 shrink-0" />
-                {/* Añadido break-all para evitar overflow en pantallas muy estrechas */}
                 <a href={`mailto:${SUPER_ADMIN_EMAIL}`} className="hover:text-white transition-colors break-all">
                   {SUPER_ADMIN_EMAIL}
                 </a>
@@ -86,8 +81,6 @@ export default function Footer() {
           </div>
 
         </div>
-
-        {/* Barra inferior de Copyright (márgenes ajustados para móvil) */}
         <div className="mt-8 md:mt-12 pt-6 md:pt-8 border-t border-zinc-800 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-zinc-500">
           <div className="flex items-center gap-2 text-center md:text-left">
             <Car size={14} className="text-zinc-600 shrink-0" />

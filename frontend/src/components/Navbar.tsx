@@ -148,22 +148,14 @@ export default function Navbar() {
   return (
     <nav className="w-full bg-zinc-900 text-white border-b border-zinc-800 sticky top-0 z-50">
       <div className="w-full px-4 sm:px-6 lg:px-8">
-        
-        {/* ESTRUCTURA PRINCIPAL: 3 PARTES (Izquierda, Centro, Derecha) */}
         <div className="flex justify-between items-center h-16">
-          
-          {/* 1. IZQUIERDA: Logo */}
           <div className="shrink-0 flex items-center mr-4">
             <Link to="/" onClick={closeMenus} className="flex items-center gap-2">
               <img src={logo} alt={`Logo de ${APP_NAME}`} className="h-10 w-auto object-contain" />
             </Link>
           </div>
-
-          {/* 2. CENTRO: Buscador (flex-1 para empujar a los lados, justificado al centro en escritorio) */}
           <div className="flex-1 flex justify-end lg:justify-center px-2 lg:px-6 min-w-0 z-50" ref={searchRef}>
             <div className="relative flex justify-end lg:justify-center w-full lg:max-w-md xl:max-w-lg">
-              
-              {/* Formulario Desktop (Siempre visible) & Mobile (Absoluto al hacer clic) */}
               <form 
                 onSubmit={handleSearch} 
                 className={`items-center bg-zinc-800 border border-zinc-700 rounded-lg overflow-hidden animate-in fade-in zoom-in duration-200 ${showSearchInput ? 'flex absolute right-0 top-1/2 -translate-y-1/2 w-[calc(100vw-5rem)] sm:w-80 z-50' : 'hidden lg:flex w-full'}`}
@@ -194,8 +186,6 @@ export default function Navbar() {
                   <X size={18} />
                 </button>
               </form>
-
-              {/* Botón Lupa en Móviles (solo si el input está oculto) */}
               {!showSearchInput && (
                 <button 
                   onClick={() => setShowSearchInput(true)} 
@@ -206,7 +196,6 @@ export default function Navbar() {
                 </button>
               )}
 
-              {/* Sugerencias de Búsqueda */}
               {showSuggestions && searchTerm.trim() !== "" && (
                 <div className={`absolute top-full mt-2 bg-zinc-800 border border-zinc-700 rounded-xl shadow-2xl overflow-hidden z-60 ${showSearchInput ? 'right-0 w-[calc(100vw-5rem)] sm:w-80' : 'hidden lg:block left-0 w-full'}`}>
                   {suggestions.length > 0 ? (
@@ -266,10 +255,8 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* 3. DERECHA: Menús, Perfil y Configuración */}
           <div className="shrink-0 flex items-center gap-2 lg:gap-4 xl:gap-6">
-            
-            {/* Menú Escritorio (Enlaces, Auth y Perfil) */}
+
             <div className="hidden lg:flex items-center space-x-4 xl:space-x-6">
               <Link to="/" className={`relative transition-all duration-300 ${location.pathname === '/' ? 'text-red-500 font-bold' : 'text-zinc-300 hover:text-red-500 font-medium'} after:absolute after:-bottom-1 after:left-0 after:h-2px after:w-full after:bg-red-500 after:transition-transform after:duration-300 after:origin-center ${location.pathname === '/' ? 'after:scale-x-100' : 'after:scale-x-0 hover:after:scale-x-100'}`}>
                 {t('navbar.home', 'Compras')}
@@ -352,7 +339,7 @@ export default function Navbar() {
               )}
             </div>
 
-            {/* Preferencias Escritorio (Banderas y Tema) */}
+
             <div className="hidden lg:flex items-center gap-2 xl:gap-3 border-l border-zinc-700 pl-3 xl:pl-4">
               <button
                 onClick={toggleTheme}
@@ -405,8 +392,7 @@ export default function Navbar() {
       {isMobileMenuOpen && (
         <div className="lg:hidden bg-zinc-900 border-t border-zinc-800 shadow-xl pb-6 animate-in slide-in-from-top-2">
           <div className="px-4 pt-4 space-y-2">
-            
-            {/* BLOQUE: Preferencias (Tema e Idioma) */}
+          
             <div className="flex items-center justify-between bg-zinc-800 p-3 rounded-lg mb-4">
               <div className="flex items-center gap-3">
                 <button 
