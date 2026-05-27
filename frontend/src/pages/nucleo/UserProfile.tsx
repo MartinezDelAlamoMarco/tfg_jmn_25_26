@@ -19,7 +19,6 @@ export default function UserProfile() {
 
     (async () => {
       try {
-        // 1) Fetch user (either public user by id or current authenticated user)
         if (id) {
           try {
             const res = await axios.get(`/users/${id}`);
@@ -36,9 +35,9 @@ export default function UserProfile() {
           }
         }
 
-        // 2) Fetch advertisements
+
         if (id) {
-          // Public ads for specific user
+
           try {
             const res = await axios.get(`/users/${id}/advertisements`);
             const data = res.data;
@@ -48,7 +47,7 @@ export default function UserProfile() {
             else if (Array.isArray(data?.items)) arr = data.items;
 
             if (arr.length === 0) {
-              // Fallback: get all and filter by owner id
+
               const allResp = await axios.get('/advertisements');
               const all = allResp.data;
               const list = Array.isArray(all) ? all : Array.isArray(all?.data) ? all.data : Array.isArray(all?.items) ? all.items : [];
@@ -69,14 +68,12 @@ export default function UserProfile() {
             }
           }
         } else {
-          // My advertisements (protected)
           try {
             const res = await axios.get('/my-advertisements');
             const data = res.data;
             const arr = Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : Array.isArray(data?.items) ? data.items : [];
             setAds(arr || []);
           } catch (e) {
-            // Fallback: try to grab all and filter by current user id (if available)
             try {
               const allResp = await axios.get('/advertisements');
               const all = allResp.data;

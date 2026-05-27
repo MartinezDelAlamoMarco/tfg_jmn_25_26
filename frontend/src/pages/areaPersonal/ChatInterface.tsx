@@ -490,8 +490,6 @@ const ChatInterface: React.FC = () => {
   );
 
   return (
-    // CAMBIO 1: Position 'fixed', top-16 (altura del Navbar), anclado a todos los bordes, con un alto z-index (z-40)
-    // Esto crea un layout 100% estático tapando el resto de la página y el Footer.
     <div className="fixed top-16 inset-x-0 bottom-0 flex bg-zinc-950 text-zinc-100 overflow-hidden font-sans z-40">
       {/* PANEL IZQUIERDA: LISTA */}
       <div
@@ -511,7 +509,6 @@ const ChatInterface: React.FC = () => {
               placeholder={t("common.search", "Buscar...")}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              // CAMBIO: Se usa text-[16px] fijo para bloquear el zoom de iOS/Android
               className="w-full pl-10 pr-4 py-3 bg-zinc-900 border border-zinc-700 rounded-xl outline-none text-[16px] focus:border-red-600 transition-colors"
             />
           </div>
@@ -948,7 +945,7 @@ const ChatInterface: React.FC = () => {
                   onSubmit={handleSendMessage}
                   className="flex gap-2 items-center max-w-4xl mx-auto w-full"
                 >
-                  {/* text-[16px] evita el zoom y w-full asegura que no se mueva */}
+                
                   <textarea
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
@@ -962,7 +959,7 @@ const ChatInterface: React.FC = () => {
                     style={{ minHeight: "48px", maxHeight: "120px" }}
                   />
 
-                  {/* w-12 h-12 con aspect-square y flex-none evita que el botón se deforme */}
+          
                   <button
                     type="submit"
                     disabled={!newMessage.trim()}

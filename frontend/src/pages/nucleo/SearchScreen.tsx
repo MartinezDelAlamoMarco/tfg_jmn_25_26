@@ -2,10 +2,10 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { API_BASE_URL } from "../../config";
 import { Link, useSearchParams } from "react-router-dom";
-import { useTranslation } from "react-i18next"; // <-- IMPRESCINDIBLE
+import { useTranslation } from "react-i18next"; 
 
 const SearchScreen = () => {
-  const { t } = useTranslation(); // <-- IMPRESCINDIBLE
+  const { t } = useTranslation(); 
   const [searchParams] = useSearchParams();
   const query = searchParams.get("q")?.toLowerCase() || "";
 
@@ -37,7 +37,7 @@ const SearchScreen = () => {
           {t("search_screen.results_for", "Resultados para:")}{" "}
           <span className="text-red-500">"{query}"</span>
         </h1>{" "}
-        {/* <-- MODIFICADO CON t() */}
+        
         {loading ? (
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-700 mx-auto"></div>
         ) : results.length > 0 ? (
@@ -106,7 +106,7 @@ const SearchScreen = () => {
                           {t("common.per_day", "/ día")}
                         </span>
                       )}{" "}
-                      {/* <-- MODIFICADO CON t() */}
+                      
                     </div>
                   </div>
 
@@ -118,7 +118,7 @@ const SearchScreen = () => {
                     {isRent
                       ? t("home.view_availability", "Ver disponibilidad")
                       : t("home.view_details", "Ver detalles")}{" "}
-                    {/* <-- MODIFICADO CON t() */}
+                    
                   </Link>
                 </div>
               );

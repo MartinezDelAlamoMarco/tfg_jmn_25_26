@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { API_BASE_URL } from "../../config";
-import { Heart, MessageCircle, Flag } from "lucide-react"; // <-- Importamos Flag
+import { Heart, MessageCircle, Flag } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import StarRating from "../../components/StarRating";
 

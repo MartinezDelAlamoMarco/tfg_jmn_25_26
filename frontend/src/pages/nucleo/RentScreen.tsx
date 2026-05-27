@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import { API_BASE_URL } from "../../config";
 import { Link } from "react-router-dom";
-import { useTranslation } from "react-i18next"; // <-- AÑADIDO IMPORT DE TRADUCCIÓN
+import { useTranslation } from "react-i18next";
 import { ListFilter, ListFilterPlus } from "lucide-react";
 
 interface Advertisement {
@@ -22,11 +22,11 @@ interface Advertisement {
   transmission_name?: string;
   tonality_name?: string;
   province_name?: string;
-  images: any; // Acepta Array o String para que no se cuelgue con la vista de Laravel
+  images: any; 
 }
 
 const RentScreen = () => {
-  const { t } = useTranslation(); // <-- INICIALIZADO EL HOOK DE TRADUCCIÓN
+  const { t } = useTranslation();
 
   // Guardamos TODOS los anuncios de alquiler aquí
   const [allAdvertisements, setAllAdvertisements] = useState<Advertisement[]>(
@@ -180,10 +180,10 @@ const RentScreen = () => {
       <div className="max-w-7xl mx-auto px-4 py-12">
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-6xl font-bold mb-4 uppercase italic tracking-tighter">
-            {t('rent_screen.fleet_of', 'Flota de')} <span className="text-red-700">{t('common.rent', 'Alquiler')}</span> {/* <-- MODIFICADO CON t() */}
+            {t('rent_screen.fleet_of', 'Flota de')} <span className="text-red-700">{t('common.rent', 'Alquiler')}</span> 
           </h1>
           <p className="text-xl text-zinc-400">
-            {t('rent_screen.subtitle', 'Encuentra el vehículo perfecto para tus viajes')} {/* <-- MODIFICADO CON t() */}
+            {t('rent_screen.subtitle', 'Encuentra el vehículo perfecto para tus viajes')} 
           </p>
         </div>
 
@@ -226,7 +226,7 @@ const RentScreen = () => {
                 onChange={handleFilterChange}
                 className="w-full px-4 pr-10 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white outline-none appearance-none transition-all duration-200 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
               >
-                <option value="">{t('filters.all_brands', 'Todas las marcas')}</option> {/* <-- MODIFICADO CON t() */}
+                <option value="">{t('filters.all_brands', 'Todas las marcas')}</option> 
                 {availableBrands.map((b) => (
                   <option key={b} value={b}>
                     {b}
@@ -248,7 +248,7 @@ const RentScreen = () => {
                 disabled={!filters.brand}
                 className="w-full px-4 pr-10 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white outline-none appearance-none disabled:opacity-50 transition-all duration-200 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
               >
-                <option value="">{t('filters.all_models', 'Todos los modelos')}</option> {/* <-- MODIFICADO CON t() */}
+                <option value="">{t('filters.all_models', 'Todos los modelos')}</option> 
                 {availableModels.map((m) => (
                   <option key={m} value={m}>
                     {m}
@@ -269,7 +269,7 @@ const RentScreen = () => {
                 onChange={handleFilterChange}
                 className="w-full px-4 pr-10 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white outline-none appearance-none transition-all duration-200 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
               >
-                <option value="">{t('filters.any_province', 'Cualquier provincia')}</option> {/* <-- MODIFICADO CON t() */}
+                <option value="">{t('filters.any_province', 'Cualquier provincia')}</option> 
                 {availableProvinces.map((p) => (
                   <option key={p} value={p}>
                     {p}
@@ -290,7 +290,7 @@ const RentScreen = () => {
               <input
                 type="number"
                 name="minPrice"
-                placeholder={t('filters.min_price_day', "Precio Min (€/día)")} // <-- MODIFICADO CON t()
+                placeholder={t('filters.min_price_day', "Precio Min (€/día)")} 
                 value={filters.minPrice}
                 onChange={handleFilterChange}
                 className="w-full px-4 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white outline-none"
@@ -298,7 +298,7 @@ const RentScreen = () => {
               <input
                 type="number"
                 name="maxPrice"
-                placeholder={t('filters.max_price_day', "Precio Max (€/día)")} // <-- MODIFICADO CON t()
+                placeholder={t('filters.max_price_day', "Precio Max (€/día)")} 
                 value={filters.maxPrice}
                 onChange={handleFilterChange}
                 className="w-full px-4 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white outline-none"
@@ -307,7 +307,7 @@ const RentScreen = () => {
               <input
                 type="number"
                 name="minYear"
-                placeholder={t('filters.min_year', "Año Min")} // <-- MODIFICADO CON t()
+                placeholder={t('filters.min_year', "Año Min")} 
                 value={filters.minYear}
                 onChange={handleFilterChange}
                 className="w-full px-4 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white outline-none"
@@ -315,7 +315,7 @@ const RentScreen = () => {
               <input
                 type="number"
                 name="maxYear"
-                placeholder={t('filters.max_year', "Año Max")} // <-- MODIFICADO CON t()
+                placeholder={t('filters.max_year', "Año Max")} 
                 value={filters.maxYear}
                 onChange={handleFilterChange}
                 className="w-full px-4 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white outline-none"
@@ -324,7 +324,7 @@ const RentScreen = () => {
               <input
                 type="number"
                 name="minKm"
-                placeholder={t('filters.min_km', "Km Min")} // <-- MODIFICADO CON t()
+                placeholder={t('filters.min_km', "Km Min")} 
                 value={filters.minKm}
                 onChange={handleFilterChange}
                 className="w-full px-4 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white outline-none"
@@ -332,7 +332,7 @@ const RentScreen = () => {
               <input
                 type="number"
                 name="maxKm"
-                placeholder={t('filters.max_km', "Km Max")} // <-- MODIFICADO CON t()
+                placeholder={t('filters.max_km', "Km Max")} 
                 value={filters.maxKm}
                 onChange={handleFilterChange}
                 className="w-full px-4 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white outline-none"
@@ -345,7 +345,7 @@ const RentScreen = () => {
                   onChange={handleFilterChange}
                   className="w-full px-4 pr-10 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white outline-none appearance-none transition-all duration-200 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
                 >
-                  <option value="">{t('common.fuel', 'Combustible')}</option> {/* <-- MODIFICADO CON t() */}
+                  <option value="">{t('common.fuel', 'Combustible')}</option> 
                   {availableFuels.map((f) => (
                     <option key={f} value={f}>
                       {f}
@@ -366,7 +366,7 @@ const RentScreen = () => {
                   onChange={handleFilterChange}
                   className="w-full px-4 pr-10 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white outline-none appearance-none transition-all duration-200 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
                 >
-                  <option value="">{t('common.transmission', 'Transmisión')}</option> {/* <-- MODIFICADO CON t() */}
+                  <option value="">{t('common.transmission', 'Transmisión')}</option> 
                   {availableTransmissions.map((t) => (
                     <option key={t} value={t}>
                       {t}
@@ -387,7 +387,7 @@ const RentScreen = () => {
                   onChange={handleFilterChange}
                   className="w-full px-4 pr-10 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white outline-none appearance-none transition-all duration-200 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
                 >
-                  <option value="">{t('common.color', 'Color')}</option> {/* <-- MODIFICADO CON t() */}
+                  <option value="">{t('common.color', 'Color')}</option> 
                   {availableColors.map((c) => (
                     <option key={c} value={c}>
                       {c}
@@ -408,11 +408,11 @@ const RentScreen = () => {
                   onChange={handleFilterChange}
                   className="w-full px-4 pr-10 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white outline-none appearance-none transition-all duration-200 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
                 >
-                  <option value="">{t('filters.doors_qty', 'Nº Puertas')}</option> {/* <-- MODIFICADO CON t() */}
-                  <option value="2">{t('filters.doors_2', '2 puertas')}</option> {/* <-- MODIFICADO CON t() */}
-                  <option value="3">{t('filters.doors_3', '3 puertas')}</option> {/* <-- MODIFICADO CON t() */}
-                  <option value="4">{t('filters.doors_4', '4 puertas')}</option> {/* <-- MODIFICADO CON t() */}
-                  <option value="5">{t('filters.doors_5', '5 puertas')}</option> {/* <-- MODIFICADO CON t() */}
+                  <option value="">{t('filters.doors_qty', 'Nº Puertas')}</option> 
+                  <option value="2">{t('filters.doors_2', '2 puertas')}</option> 
+                  <option value="3">{t('filters.doors_3', '3 puertas')}</option> 
+                  <option value="4">{t('filters.doors_4', '4 puertas')}</option> 
+                  <option value="5">{t('filters.doors_5', '5 puertas')}</option> 
                 </select>
                 <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-zinc-400">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -426,7 +426,7 @@ const RentScreen = () => {
 
         {/* --- LISTA DE ANUNCIOS FILTRADOS --- */}
         <div className="mb-4 text-zinc-400 font-bold">
-          {filteredAds.length} {t('home.vehicles_found', 'vehículos encontrados')} {/* <-- MODIFICADO CON t() */}
+          {filteredAds.length} {t('home.vehicles_found', 'vehículos encontrados')} 
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -459,11 +459,11 @@ const RentScreen = () => {
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-zinc-600 uppercase font-bold text-xs">
-                      {t('common.no_photo', 'Sin foto')} {/* <-- MODIFICADO CON t() */}
+                      {t('common.no_photo', 'Sin foto')} 
                     </div>
                   )}
                   <div className="absolute top-2 left-2 bg-red-700 text-white text-[10px] font-bold px-3 py-1 rounded shadow-lg uppercase tracking-widest">
-                    {t('common.rent', 'Alquiler')} {/* <-- MODIFICADO CON t() */}
+                    {t('common.rent', 'Alquiler')} 
                   </div>
                 </div>
 
@@ -472,7 +472,7 @@ const RentScreen = () => {
                     {v.brand_name} {v.model_name}
                   </h3>
                   <span className="px-2 py-1 text-[10px] bg-red-700/20 text-red-300 rounded-full font-bold uppercase">
-                    {v.state_name || t('common.available', "Disponible")} {/* <-- MODIFICADO CON t() */}
+                    {v.state_name || t('common.available', "Disponible")} 
                   </span>
                 </div>
 
@@ -487,7 +487,7 @@ const RentScreen = () => {
                         {Number(v.price).toLocaleString("es-ES")} €
                       </p>
                       <p className="text-sm text-zinc-500 font-bold uppercase italic">
-                        {t('common.per_day', '/ día')} {/* <-- MODIFICADO CON t() */}
+                        {t('common.per_day', '/ día')} 
                       </p>
                     </div>
                   </div>
@@ -497,7 +497,7 @@ const RentScreen = () => {
                   to={`/alquiler/${v.id}`}
                   className="block w-full text-center py-3 bg-red-700 hover:bg-red-600 rounded-lg font-bold transition uppercase tracking-widest text-sm"
                 >
-                  {t('home.view_availability', 'Ver disponibilidad')} {/* <-- MODIFICADO CON t() */}
+                  {t('home.view_availability', 'Ver disponibilidad')} 
                 </Link>
               </div>
             );

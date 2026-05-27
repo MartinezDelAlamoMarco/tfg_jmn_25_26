@@ -68,7 +68,6 @@ const AdminReportsPanel = () => {
           </thead>
           <tbody className="divide-y divide-zinc-800/50">
             {loading ? (
-              /* SPINNER INTEGRADO */
               <tr>
                 <td colSpan={5} className="p-20 text-center">
                   <div className="flex flex-col items-center gap-3">

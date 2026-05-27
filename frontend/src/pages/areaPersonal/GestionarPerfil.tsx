@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { Eye, EyeOff, Check, X } from "lucide-react"; // Importamos los iconos
-import { useTranslation } from "react-i18next"; // <-- IMPRESCINDIBLE
+import { useTranslation } from "react-i18next"; 
 
 export default function Profile() {
-  const { t } = useTranslation(); // <-- IMPRESCINDIBLE
+  const { t } = useTranslation(); 
   const [user, setUser] = useState(JSON.parse(localStorage.getItem("user") || "{}"));
   const [token] = useState(localStorage.getItem("auth_token"));
 
@@ -68,14 +68,14 @@ export default function Profile() {
       const data = await response.json();
 
       if (response.ok) {
-        setProfileMessage(t('profile.success_profile', "Perfil actualizado con éxito.")); // <-- MODIFICADO CON t()
+        setProfileMessage(t('profile.success_profile', "Perfil actualizado con éxito.")); 
         localStorage.setItem("user", JSON.stringify(data.user));
         setUser(data.user);
       } else {
-        setProfileMessage(data.message || t('profile.error_profile', "Error al actualizar el perfil.")); // <-- MODIFICADO CON t()
+        setProfileMessage(data.message || t('profile.error_profile', "Error al actualizar el perfil.")); 
       }
     } catch (error) {
-      setProfileMessage(t('profile.connection_error', "Error de conexión.")); // <-- MODIFICADO CON t()
+      setProfileMessage(t('profile.connection_error', "Error de conexión.")); 
     }
   };
 
@@ -104,15 +104,15 @@ export default function Profile() {
       const data = await response.json();
 
       if (response.ok) {
-        setPasswordMessage(t('profile.success_password', "Contraseña actualizada con éxito.")); // <-- MODIFICADO CON t()
+        setPasswordMessage(t('profile.success_password', "Contraseña actualizada con éxito.")); 
         setCurrentPassword("");
         setNewPassword("");
         setConfirmPassword("");
       } else {
-        setPasswordError(data.error || data.message || t('profile.error_password', "Error al actualizar la contraseña.")); // <-- MODIFICADO CON t()
+        setPasswordError(data.error || data.message || t('profile.error_password', "Error al actualizar la contraseña.")); 
       }
     } catch (error) {
-      setPasswordError(t('profile.connection_error', "Error de conexión.")); // <-- MODIFICADO CON t()
+      setPasswordError(t('profile.connection_error', "Error de conexión.")); 
     }
   };
 
@@ -126,43 +126,43 @@ export default function Profile() {
 
   return (
     <div className="max-w-4xl mx-auto p-6 mt-10 bg-zinc-900 border border-zinc-800 rounded-xl text-white">
-      <h1 className="text-3xl font-bold mb-8 border-b border-zinc-700 pb-4">{t('profile.manage_profile', "Gestionar Mi Perfil")}</h1> {/* <-- MODIFICADO CON t() */}
+      <h1 className="text-3xl font-bold mb-8 border-b border-zinc-700 pb-4">{t('profile.manage_profile', "Gestionar Mi Perfil")}</h1> 
 
       <div className="grid md:grid-cols-2 gap-12">
         {/* Formulario de Datos Personales */}
         <div>
-          <h2 className="text-xl font-semibold mb-4 text-red-500">{t('profile.personal_data', "Datos Personales")}</h2> {/* <-- MODIFICADO CON t() */}
+          <h2 className="text-xl font-semibold mb-4 text-red-500">{t('profile.personal_data', "Datos Personales")}</h2> 
           <form onSubmit={handleUpdateProfile} className="space-y-4">
             <div>
-              <label className="block text-zinc-400 text-sm mb-1">{t('profile.name', "Nombre")}</label> {/* <-- MODIFICADO CON t() */}
+              <label className="block text-zinc-400 text-sm mb-1">{t('profile.name', "Nombre")}</label> 
               <input type="text" value={name} onChange={(e) => setName(e.target.value)} 
                 className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-red-500 transition-all" required />
             </div>
             <div>
-              <label className="block text-zinc-400 text-sm mb-1">{t('profile.email', "Correo Electrónico")}</label> {/* <-- MODIFICADO CON t() */}
+              <label className="block text-zinc-400 text-sm mb-1">{t('profile.email', "Correo Electrónico")}</label> 
               <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} 
                 className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-red-500 transition-all" required />
             </div>
             <div>
-              <label className="block text-zinc-400 text-sm mb-1">{t('profile.telephone', "Teléfono")}</label> {/* <-- MODIFICADO CON t() */}
+              <label className="block text-zinc-400 text-sm mb-1">{t('profile.telephone', "Teléfono")}</label> 
               <input type="text" value={telephone} onChange={(e) => setTelephone(e.target.value)} 
                 className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-red-500 transition-all" />
             </div>
             {profileMessage && <p className={`text-sm ${profileMessage.includes("Error") ? "text-red-500" : "text-green-500"}`}>{profileMessage}</p>}
             <button type="submit" className="bg-red-700 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition-colors w-full">
-              {t('profile.save_changes', "Guardar Cambios")} {/* <-- MODIFICADO CON t() */}
+              {t('profile.save_changes', "Guardar Cambios")} 
             </button>
           </form>
         </div>
 
         {/* Formulario de Contraseña */}
         <div>
-          <h2 className="text-xl font-semibold mb-4 text-red-500">{t('profile.change_password', "Cambiar Contraseña")}</h2> {/* <-- MODIFICADO CON t() */}
+          <h2 className="text-xl font-semibold mb-4 text-red-500">{t('profile.change_password', "Cambiar Contraseña")}</h2> 
           <form onSubmit={handleUpdatePassword} className="space-y-4">
             
             {/* Contraseña Actual */}
             <div>
-              <label className="block text-zinc-400 text-sm mb-1">{t('profile.current_password', "Contraseña Actual")}</label> {/* <-- MODIFICADO CON t() */}
+              <label className="block text-zinc-400 text-sm mb-1">{t('profile.current_password', "Contraseña Actual")}</label> 
               <div className="relative">
                 <input 
                   type={showCurrentPassword ? "text" : "password"} 
@@ -183,7 +183,7 @@ export default function Profile() {
 
             {/* Nueva Contraseña */}
             <div>
-              <label className="block text-zinc-400 text-sm mb-1">{t('profile.new_password', "Nueva Contraseña")}</label> {/* <-- MODIFICADO CON t() */}
+              <label className="block text-zinc-400 text-sm mb-1">{t('profile.new_password', "Nueva Contraseña")}</label> 
               <div className="relative">
                 <input 
                   type={showNewPassword ? "text" : "password"} 
@@ -205,17 +205,17 @@ export default function Profile() {
             {/* Validaciones en tiempo real */}
             {newPassword.length > 0 && (
               <div className="bg-zinc-800/50 p-3 rounded-lg space-y-1 mt-2 border border-zinc-700/50">
-                <ValidationItem isValid={validations.length} text={t('profile.min_length', "Mínimo 8 caracteres")} /> {/* <-- MODIFICADO CON t() */}
-                <ValidationItem isValid={validations.uppercase} text={t('profile.uppercase', "Al menos una mayúscula")} /> {/* <-- MODIFICADO CON t() */}
-                <ValidationItem isValid={validations.lowercase} text={t('profile.lowercase', "Al menos una minúscula")} /> {/* <-- MODIFICADO CON t() */}
-                <ValidationItem isValid={validations.number} text={t('profile.number', "Al menos un número")} /> {/* <-- MODIFICADO CON t() */}
-                <ValidationItem isValid={validations.special} text={t('profile.special', "Al menos un carácter especial")} /> {/* <-- MODIFICADO CON t() */}
+                <ValidationItem isValid={validations.length} text={t('profile.min_length', "Mínimo 8 caracteres")} /> 
+                <ValidationItem isValid={validations.uppercase} text={t('profile.uppercase', "Al menos una mayúscula")} /> 
+                <ValidationItem isValid={validations.lowercase} text={t('profile.lowercase', "Al menos una minúscula")} /> 
+                <ValidationItem isValid={validations.number} text={t('profile.number', "Al menos un número")} /> 
+                <ValidationItem isValid={validations.special} text={t('profile.special', "Al menos un carácter especial")} /> 
               </div>
             )}
 
             {/* Confirmar Nueva Contraseña */}
             <div>
-              <label className="block text-zinc-400 text-sm mb-1">{t('profile.confirm_new_password', "Confirmar Nueva Contraseña")}</label> {/* <-- MODIFICADO CON t() */}
+              <label className="block text-zinc-400 text-sm mb-1">{t('profile.confirm_new_password', "Confirmar Nueva Contraseña")}</label> 
               <div className="relative">
                 <input 
                   type={showConfirmPassword ? "text" : "password"} 
@@ -236,7 +236,7 @@ export default function Profile() {
                 </button>
               </div>
               {confirmPassword.length > 0 && !validations.match && (
-                <p className="text-red-500 text-xs mt-1">{t('profile.passwords_not_match', "Las contraseñas no coinciden.")}</p> // <-- MODIFICADO CON t()
+                <p className="text-red-500 text-xs mt-1">{t('profile.passwords_not_match', "Las contraseñas no coinciden.")}</p> 
               )}
             </div>
 
@@ -251,7 +251,7 @@ export default function Profile() {
                   ? 'bg-red-700 hover:bg-red-600 text-white cursor-pointer' 
                   : 'bg-zinc-800 text-zinc-500 cursor-not-allowed border border-zinc-700'}`}
             >
-              {t('profile.update_password', "Actualizar Contraseña")} {/* <-- MODIFICADO CON t() */}
+              {t('profile.update_password', "Actualizar Contraseña")} 
             </button>
           </form>
         </div>

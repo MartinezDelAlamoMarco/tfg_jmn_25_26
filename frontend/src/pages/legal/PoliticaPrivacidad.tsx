@@ -41,7 +41,7 @@ export default function PoliticaPrivacidad() {
 
         <section className="space-y-12 text-sm leading-relaxed">
 
-          {/* 1. Responsable */}
+          {/* Responsable */}
           <article>
             <div className="flex items-center gap-3 mb-4">
               <UserCheck className="text-red-600" size={24} />
@@ -54,7 +54,7 @@ export default function PoliticaPrivacidad() {
             </p>
           </article>
 
-          {/* 2. Finalidad */}
+          {/* Finalidad */}
           <article>
             <div className="flex items-center gap-3 mb-4">
               <Target className="text-red-600" size={24} />
@@ -73,7 +73,7 @@ export default function PoliticaPrivacidad() {
             </div>
           </article>
 
-          {/* 3. Legitimación */}
+          {/*Legitimación */}
           <article>
             <div className="flex items-center gap-3 mb-4">
               <FileText className="text-red-600" size={24} />
@@ -90,7 +90,7 @@ export default function PoliticaPrivacidad() {
             </div>
           </article>
 
-          {/* 4. Conservación */}
+          {/* Conservación */}
           <article>
             <div className="flex items-center gap-3 mb-4">
               <Clock className="text-red-600" size={24} />
@@ -103,7 +103,7 @@ export default function PoliticaPrivacidad() {
             </p>
           </article>
 
-          {/* 5. Destinatarios */}
+          {/* Destinatarios */}
           <article>
             <div className="flex items-center gap-3 mb-4">
               <Share2 className="text-red-600" size={24} />
@@ -116,7 +116,7 @@ export default function PoliticaPrivacidad() {
             </p>
           </article>
 
-          {/* 6. Derechos */}
+          {/* Derechos */}
           <article>
             <div className="flex items-center gap-3 mb-4">
               <ShieldAlert className="text-red-600" size={24} />
@@ -140,7 +140,7 @@ export default function PoliticaPrivacidad() {
             </div>
           </article>
 
-          {/* 7. Obligatoriedad */}
+          {/*Obligatoriedad */}
           <article>
             <div className="flex items-center gap-3 mb-4">
               <AlertCircle className="text-red-600" size={24} />
@@ -154,7 +154,7 @@ export default function PoliticaPrivacidad() {
             </div>
           </article>
 
-          {/* 8. Seguridad */}
+          {/* Seguridad */}
           <article>
             <div className="flex items-center gap-3 mb-4">
               <Lock className="text-red-600" size={24} />

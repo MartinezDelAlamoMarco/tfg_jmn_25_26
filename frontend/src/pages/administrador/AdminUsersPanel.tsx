@@ -2,10 +2,10 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { Search, Trash2, ShieldCheck, User, ShieldAlert } from "lucide-react";
 import { API_BASE_URL, SUPER_ADMIN_EMAIL } from "../../config";
-import { useTranslation } from "react-i18next"; // <-- IMPRESCINDIBLE
+import { useTranslation } from "react-i18next"; 
 
 export default function AdminUsersPanel() {
-  const { t } = useTranslation(); // <-- IMPRESCINDIBLE
+  const { t } = useTranslation(); 
   const [users, setUsers] = useState<any[]>([]); // Inicializado como array vacío
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false); // Estado para controlar la carga
@@ -44,19 +44,19 @@ export default function AdminUsersPanel() {
       );
       fetchUsers();
     } catch (error: any) {
-      alert(error.response?.data?.message || t('admin_panel.error_change_role', "Error al cambiar rol")); // <-- MODIFICADO CON t()
+      alert(error.response?.data?.message || t('admin_panel.error_change_role', "Error al cambiar rol")); 
     }
   };
 
   const deleteUser = async (id: number) => {
-    if (!confirm(t('admin_panel.delete_user_confirm', "¿Eliminar usuario? Esta acción borrará todos sus anuncios y fotos. Es irreversible."))) return; // <-- MODIFICADO CON t()
+    if (!confirm(t('admin_panel.delete_user_confirm', "¿Eliminar usuario? Esta acción borrará todos sus anuncios y fotos. Es irreversible."))) return; 
     try {
       await axios.delete(`${API_BASE_URL}/admin/users/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchUsers();
     } catch (error: any) {
-      alert(error.response?.data?.message || t('admin_panel.error_delete', "Error al eliminar")); // <-- MODIFICADO CON t()
+      alert(error.response?.data?.message || t('admin_panel.error_delete', "Error al eliminar")); 
     }
   };
 
@@ -67,7 +67,7 @@ export default function AdminUsersPanel() {
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-red-500 transition-colors" size={20} />
         <input
           type="text"
-          placeholder={t('admin_panel.search_user_placeholder', "Buscar por nombre, correo o ID...")} // <-- MODIFICADO CON t()
+          placeholder={t('admin_panel.search_user_placeholder', "Buscar por nombre, correo o ID...")} 
           className="w-full bg-zinc-900 border border-zinc-800 rounded-xl py-4 pl-12 pr-4 text-white focus:outline-none focus:border-red-500 transition-all"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -79,9 +79,9 @@ export default function AdminUsersPanel() {
         <table className="w-full text-left">
           <thead>
             <tr className="border-b border-zinc-800 bg-zinc-900/80 text-xs font-black uppercase text-zinc-500">
-              <th className="p-5">{t('admin_panel.user', "Usuario")}</th> {/* <-- MODIFICADO CON t() */}
-              <th className="p-5 text-center">{t('admin_panel.role', "Rol")}</th> {/* <-- MODIFICADO CON t() */}
-              <th className="p-5 text-right">{t('admin_panel.actions', "Acciones")}</th> {/* <-- MODIFICADO CON t() */}
+              <th className="p-5">{t('admin_panel.user', "Usuario")}</th> 
+              <th className="p-5 text-center">{t('admin_panel.role', "Rol")}</th> 
+              <th className="p-5 text-right">{t('admin_panel.actions', "Acciones")}</th> 
             </tr>
           </thead>
           <tbody>
@@ -91,7 +91,7 @@ export default function AdminUsersPanel() {
                 <td colSpan={3} className="p-16 text-center">
                   <div className="flex flex-col items-center gap-3">
                     <div className="w-8 h-8 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
-                    <span className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-500">{t('admin_panel.sync_db', "Sincronizando Base de Datos...")}</span> {/* <-- MODIFICADO CON t() */}
+                    <span className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-500">{t('admin_panel.sync_db', "Sincronizando Base de Datos...")}</span> 
                   </div>
                 </td>
               </tr>
@@ -99,7 +99,7 @@ export default function AdminUsersPanel() {
               /* ESTADO VACÍO: Si no hay resultados */
               <tr>
                 <td colSpan={3} className="p-16 text-center text-zinc-500 italic">
-                  {t('admin_panel.no_users_found', "No se han encontrado usuarios que coincidan con la búsqueda.")} {/* <-- MODIFICADO CON t() */}
+                  {t('admin_panel.no_users_found', "No se han encontrado usuarios que coincidan con la búsqueda.")} 
                 </td>
               </tr>
             ) : (
@@ -127,21 +127,21 @@ export default function AdminUsersPanel() {
                           <button 
                             onClick={() => toggleRole(user)} 
                             className="p-2.5 bg-zinc-800 hover:bg-white hover:text-black rounded-xl transition-all shadow-lg active:scale-95"
-                            title={t('admin_panel.change_permissions', "Cambiar permisos")} // <-- MODIFICADO CON t()
+                            title={t('admin_panel.change_permissions', "Cambiar permisos")} 
                           >
                             {user.role === 'admin' ? <User size={18}/> : <ShieldCheck size={18}/>}
                           </button>
                           <button 
                             onClick={() => deleteUser(user.id)} 
                             className="p-2.5 bg-zinc-800 hover:bg-red-600 hover:text-white rounded-xl transition-all shadow-lg active:scale-95"
-                            title={t('admin_panel.delete_user', "Eliminar usuario")} // <-- MODIFICADO CON t()
+                            title={t('admin_panel.delete_user', "Eliminar usuario")} 
                           >
                             <Trash2 size={18}/>
                           </button>
                         </>
                       ) : (
                         <div className="flex items-center gap-2 text-[10px] font-black text-red-500 bg-red-500/10 px-4 py-2.5 rounded-xl border border-red-500/20 shadow-inner shadow-red-900/10">
-                          <ShieldAlert size={14} className="animate-pulse" /> {t('admin_panel.protected_account', "CUENTA PROTEGIDA")} {/* <-- MODIFICADO CON t() */}
+                          <ShieldAlert size={14} className="animate-pulse" /> {t('admin_panel.protected_account', "CUENTA PROTEGIDA")} 
                         </div>
                       )}
                     </div>

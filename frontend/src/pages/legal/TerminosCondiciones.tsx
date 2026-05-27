@@ -40,7 +40,7 @@ export default function TerminosCondiciones() {
 
         <section className="space-y-12 text-sm leading-relaxed">
 
-          {/* 1. Identificación */}
+          {/* Identificación */}
           <article>
             <div className="flex items-center gap-3 mb-4">
               <FileSignature className="text-red-600" size={24} />
@@ -58,7 +58,7 @@ export default function TerminosCondiciones() {
             </div>
           </article>
 
-          {/* 2. Objeto del Servicio */}
+          {/* Objeto del Servicio */}
           <article>
             <div className="flex items-center gap-3 mb-4">
               <Search className="text-red-600" size={24} />
@@ -71,7 +71,7 @@ export default function TerminosCondiciones() {
             </p>
           </article>
 
-          {/* 3. Precios */}
+          {/* Precios */}
           <article>
             <div className="flex items-center gap-3 mb-4">
               <CreditCard className="text-red-600" size={24} />
@@ -85,7 +85,7 @@ export default function TerminosCondiciones() {
             </div>
           </article>
 
-          {/* 4. Métodos de Pago */}
+          {/* Métodos de Pago */}
           <article>
             <div className="flex items-center gap-3 mb-4">
               <ShieldAlert className="text-red-600" size={24} />
@@ -102,7 +102,7 @@ export default function TerminosCondiciones() {
             </div>
           </article>
 
-          {/* 5. Entrega */}
+          {/* Entrega */}
           <article>
             <div className="flex items-center gap-3 mb-4">
               <Truck className="text-red-600" size={24} />
@@ -115,7 +115,7 @@ export default function TerminosCondiciones() {
             </p>
           </article>
 
-          {/* 6. Desistimiento */}
+          {/*Desistimiento */}
           <article>
             <div className="flex items-center gap-3 mb-4">
               <RotateCcw className="text-red-600" size={24} />
@@ -133,7 +133,7 @@ export default function TerminosCondiciones() {
             </div>
           </article>
 
-          {/* 7. Responsabilidad */}
+          {/* Responsabilidad */}
           <article>
             <div className="flex items-center gap-3 mb-4">
               <ShieldAlert className="text-red-600" size={24} />
@@ -146,7 +146,7 @@ export default function TerminosCondiciones() {
             </p>
           </article>
 
-          {/* 8. Legislación */}
+          {/* Legislación */}
           <article>
             <div className="flex items-center gap-3 mb-4">
               <Scale className="text-red-600" size={24} />

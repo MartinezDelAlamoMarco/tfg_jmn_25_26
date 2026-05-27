@@ -114,7 +114,7 @@ const Home = () => {
     });
   };
 
-  // --- EXTRACCIÓN DINÁMICA DE OPCIONES (Sin peticiones extra a BD) ---
+
   const availableBrands = [
     ...new Set(allAdvertisements.map((a) => a.brand_name)),
   ].filter(Boolean);
