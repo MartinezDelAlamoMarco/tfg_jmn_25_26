@@ -56,7 +56,7 @@ export default function Profile() {
     setProfileMessage("");
     
     try {
-      const response = await fetch(`${API_BASE_URL}/api/user/profile`, {
+      const response = await fetch(`${API_BASE_URL}/user/profile`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -88,7 +88,7 @@ export default function Profile() {
     setPasswordError("");
 
     try {
-      const response = await fetch("http://localhost:8000/api/user/password", {
+      const response = await fetch(`${API_BASE_URL}/user/password`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
