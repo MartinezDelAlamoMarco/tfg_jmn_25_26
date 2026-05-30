@@ -33,31 +33,28 @@ class MyAdvertisementsController extends Controller
 
     public function destroy($id)
     {
-        $userId = Auth::id();
-
-        // Buscamos el anuncio y cargamos sus imagenes 
-        $ad = Advertisement::with('images')->where('id', $id)
-            ->whereHas('vehicle', function ($query) use ($userId) {
-                $query->where('owner_id', $userId);
-            })->first();
+        $ad = Advertisement::with(['images', 'vehicle'])->find($id);
 
         if (!$ad) {
-            return response()->json(['message' => 'Anuncio no encontrado o no tienes permiso'], 404);
+            return response()->json(['message' => 'Anuncio no encontrado'], 404);
+        }
+
+        if ($ad->vehicle->owner_id !== Auth::id() && Auth::user()->role !== 'admin') {
+            return response()->json(['message' => 'No tienes permiso para eliminar este anuncio'], 403);
         }
 
         try {
             $driveService = new GoogleDriveService();
 
-            // Recorremos las imágenes del anuncio para borrarlas de Drive
+            // Recorremos las imagenes del anuncio para borrarlas de Drive
             foreach ($ad->images as $image) {
-                // Busca lo que hay después de "?id=" y antes del "&"
                 if (preg_match('/id=([a-zA-Z0-9_-]+)/', $image->image_url, $matches)) {
                     $fileId = $matches[1];
                     $driveService->deleteFile($fileId);
                 }
             }
 
-            //Borramos el anuncio de la BD
+            // Borramos las imagenes y el anuncio de la BD
             $ad->images()->delete();
             $ad->delete();
 
@@ -134,7 +131,7 @@ class MyAdvertisementsController extends Controller
     {
         $ad = Advertisement::with(['vehicle.model'])->findOrFail($id);
 
-        if ($ad->vehicle->owner_id !== Auth::id()) {
+        if ($ad->vehicle->owner_id !== Auth::id() && Auth::user()->role !== 'admin') {
             return response()->json(['error' => 'No autorizado'], 403);
         }
 
@@ -145,7 +142,7 @@ class MyAdvertisementsController extends Controller
     {
         $ad = Advertisement::with('vehicle')->findOrFail($id);
 
-        if ($ad->vehicle->owner_id !== Auth::id()) {
+        if ($ad->vehicle->owner_id !== Auth::id() && Auth::user()->role !== 'admin') {
             return response()->json(['error' => 'No autorizado'], 403);
         }
 
