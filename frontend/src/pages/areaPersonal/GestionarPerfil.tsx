@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Eye, EyeOff, Check, X } from "lucide-react"; // Importamos los iconos
 import { useTranslation } from "react-i18next"; 
+import { API_BASE_URL } from "../../config";
 
 export default function Profile() {
   const { t } = useTranslation(); 
@@ -55,7 +56,7 @@ export default function Profile() {
     setProfileMessage("");
     
     try {
-      const response = await fetch("http://localhost:8000/api/user/profile", {
+      const response = await fetch(`${API_BASE_URL}/api/user/profile`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
